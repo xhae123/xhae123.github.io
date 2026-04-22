@@ -1,0 +1,544 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>익숙한 N+1 문제, 캐싱이 가져온 26배의 속도 차이 · xhae123&#39;s notes</title>
+  <meta name="description" content="스포츠 SNS 플랫폼을 운영하다가 앱 활용 중 피드 조회가 너무 느린 현상을 발견했다. Caffeine 캐시를 넣어서 평균 응답 시간을 800ms에서 38ms로 줄였다." />
+  <link rel="canonical" href="https://xhae123.github.io/posts/11111/" />
+  <meta property="og:type" content="article" />
+  <meta property="og:site_name" content="xhae123&#39;s notes" />
+  <meta property="og:title" content="익숙한 N+1 문제, 캐싱이 가져온 26배의 속도 차이 · xhae123&#39;s notes" />
+  <meta property="og:description" content="스포츠 SNS 플랫폼을 운영하다가 앱 활용 중 피드 조회가 너무 느린 현상을 발견했다. Caffeine 캐시를 넣어서 평균 응답 시간을 800ms에서 38ms로 줄였다." />
+  <meta property="og:url" content="https://xhae123.github.io/posts/11111/" />
+  <meta property="og:locale" content="ko_KR" />
+  <meta property="og:image" content="https://velog.velcdn.com/images/xe0/post/c6bb270b-7282-44ac-83dd-52898c7a8374/image.png" />
+  <meta name="twitter:card" content="summary_large_image" />
+  <meta name="twitter:title" content="익숙한 N+1 문제, 캐싱이 가져온 26배의 속도 차이 · xhae123&#39;s notes" />
+  <meta name="twitter:description" content="스포츠 SNS 플랫폼을 운영하다가 앱 활용 중 피드 조회가 너무 느린 현상을 발견했다. Caffeine 캐시를 넣어서 평균 응답 시간을 800ms에서 38ms로 줄였다." />
+  <meta name="twitter:image" content="https://velog.velcdn.com/images/xe0/post/c6bb270b-7282-44ac-83dd-52898c7a8374/image.png" />
+  <link rel="preconnect" href="https://cdn.jsdelivr.net" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable.css" />
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500&display=swap" />
+  <link rel="stylesheet" href="/styles.css" />
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/github-dark.min.css" />
+  <meta property="article:published_time" content="2025-11-05T04:06:27.000Z" />
+  <meta property="article:author" content="김우진" />
+  <script type="application/ld+json">{"@context":"https://schema.org","@type":"BlogPosting","headline":"익숙한 N+1 문제, 캐싱이 가져온 26배의 속도 차이","description":"스포츠 SNS 플랫폼을 운영하다가 앱 활용 중 피드 조회가 너무 느린 현상을 발견했다. Caffeine 캐시를 넣어서 평균 응답 시간을 800ms에서 38ms로 줄였다.","datePublished":"2025-11-05T04:06:27.000Z","dateModified":"2025-11-05T04:06:27.000Z","author":{"@type":"Person","name":"김우진"},"url":"https://xhae123.github.io/posts/11111/","mainEntityOfPage":"https://xhae123.github.io/posts/11111/","image":"https://velog.velcdn.com/images/xe0/post/c6bb270b-7282-44ac-83dd-52898c7a8374/image.png"}</script>
+</head>
+<body>
+  <header class="site-header" id="site-header">
+    <div class="container">
+      <a class="site-label" href="/">xhae123&#39;s notes</a>
+      <a class="gh-link" href="https://github.com/xhae123" target="_blank" rel="noopener noreferrer" aria-label="GitHub @xhae123">
+        <svg class="gh-icon" width="14" height="14" viewBox="0 0 16 16" fill="currentColor" aria-hidden="true">
+          <path fill-rule="evenodd" d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.012 8.012 0 0 0 16 8c0-4.42-3.58-8-8-8z"/>
+        </svg>
+        xhae123
+      </a>
+    </div>
+  </header>
+  <main class="post-layout">
+    <div class="post-main">
+      <article class="post" id="post">
+        <header class="post-header">
+          <p class="post-meta">NOV 05, 2025</p>
+          <h1 class="post-title">익숙한 N+1 문제, 캐싱이 가져온 26배의 속도 차이</h1>
+        </header>
+        <div class="post-body" id="post-body">
+<html><head></head><body><h2 id="개요">개요</h2>
+<p>스포츠 SNS 플랫폼을 운영하다가 앱 활용 중 피드 조회가 너무 느린 현상을 발견했다. Caffeine 캐시를 넣어서 평균 응답 시간을 800ms에서 38ms로 줄였다.</p>
+<p><strong>핵심 지표</strong></p>
+<ul>
+<li>응답 시간: 800ms → 38ms (95% 개선)</li>
+<li>DB 쿼리: 81개 → 1개 (98% 감소)</li>
+<li>처리량: 3.8 req/s → 78.2 req/s (20배 증가)</li>
+</ul>
+<hr>
+<h2 id="1-문제">1. 문제</h2>
+<h3 id="11-피드-요구사항">1.1 피드 요구사항</h3>
+<p>피드는 두 종류다:</p>
+<ul>
+<li>완료된 경기: 결과, 점수, 리뷰 포함</li>
+<li>예정된 경기: 매칭 중, 예정, 진행 중 상태</li>
+</ul>
+<p>정렬은 이렇게 해야 했다:</p>
+<ol>
+<li>친구 참가 경기가 위로</li>
+<li>그 다음 일반 경기</li>
+<li>같은 우선순위면 최신순</li>
+</ol>
+<p>각 피드 아이템에는 <code>isFriend</code>, <code>isMyGame</code> 같은 유저별 정보도 들어간다.</p>
+<h3 id="12-초기-구현">1.2 초기 구현</h3>
+<p>네이티브 쿼리와 UNION ALL로 친구 경기 우선 정렬을 구현했다.</p>
+<pre data-lang="kotlin"><code class="language-kotlin hljs"><span class="hljs-function"><span class="hljs-keyword">fun</span> <span class="hljs-title">getFeed</span><span class="hljs-params">(myUserId: <span class="hljs-type">Long</span>)</span></span>: FeedResponse {
+    <span class="hljs-keyword">val</span> query = entityManager.createNativeQuery(<span class="hljs-string">"""
+        SELECT gr.id, 1 as priority FROM game_records gr
+        JOIN custom_game g ON gr.game_id = g.id
+        JOIN game_participation p ON p.game_id = g.id
+        JOIN friend f ON f.user_id = :myUserId AND f.friend_id = p.user_id
+        WHERE g.game_status = 'COMPLETED' AND f.status = 'ACCEPTED'
+
+        UNION ALL
+        -- 예정 경기 (친구) ...
+        UNION ALL
+        -- 완료 경기 (비친구) ...
+        UNION ALL
+        -- 예정 경기 (비친구) ...
+
+        ORDER BY priority, created_at DESC
+    """</span>)
+
+    <span class="hljs-keyword">return</span> results.map { toFeedItemResponse(it) }
+}</code></pre>
+<h3 id="13-성능-병목">1.3 성능 병목</h3>
+<p><strong>측정 환경</strong></p>
+<ul>
+<li>게임: 500개</li>
+<li>유저: 50명</li>
+<li>친구 관계: 평균 5명</li>
+</ul>
+<p><strong>응답 시간</strong>
+<img src="https://velog.velcdn.com/images/xe0/post/c6bb270b-7282-44ac-83dd-52898c7a8374/image.png" alt=""></p>
+<pre data-lang="makefile"><code class="hljs"><span class="hljs-section">평균: 820ms</span>
+<span class="hljs-section">중앙값: 780ms</span>
+<span class="hljs-section">P95: 1200ms</span>
+<span class="hljs-section">P99: 1800ms</span></code></pre>
+<p><strong>병목 지점</strong></p>
+<pre data-lang="erlang-repl"><code class="hljs">쿼리 실행: <span class="hljs-number">650</span>ms (<span class="hljs-number">79</span><span class="hljs-comment">%)</span>
+N+<span class="hljs-number">1</span> 쿼리: <span class="hljs-number">120</span>ms (<span class="hljs-number">15</span><span class="hljs-comment">%)</span>
+객체 매핑: <span class="hljs-number">30</span>ms (<span class="hljs-number">4</span><span class="hljs-comment">%)</span>
+기타: <span class="hljs-number">20</span>ms (<span class="hljs-number">2</span><span class="hljs-comment">%)</span></code></pre>
+<h4>문제 1: UNION ALL 다중 실행</h4>
+<p>UNION ALL이 4개의 독립적인 쿼리를 실행 후 병합한다. MySQL이 이걸 최적화 못 해서 Full Table Scan이 중복으로 일어난다.</p>
+<pre data-lang="sql"><code class="language-sql hljs">EXPLAIN ANALYZE 결과:
+<span class="hljs-operator">-</span> game_records (<span class="hljs-number">500</span> <span class="hljs-keyword">rows</span>) × <span class="hljs-number">2</span>회 스캔
+<span class="hljs-operator">-</span> custom_game (<span class="hljs-number">500</span> <span class="hljs-keyword">rows</span>) × <span class="hljs-number">2</span>회 스캔
+<span class="hljs-operator">-</span> friend (<span class="hljs-number">250</span> <span class="hljs-keyword">rows</span>) × <span class="hljs-number">2</span>회 스캔</code></pre>
+<h4>문제 2: N+1 쿼리</h4>
+<p>DTO 변환하면서 Lazy Loading이랑 추가 조회가 발생한다.</p>
+<pre data-lang="kotlin"><code class="language-kotlin hljs">results.map { toFeedItemResponse(it) }</code></pre>
+<p>각 아이템당:</p>
+<ul>
+<li>
+<code>game.rule</code> (Lazy Loading)</li>
+<li>
+<code>game.participations</code> (Lazy Loading)</li>
+<li><code>reviewRepository.findByGameId()</code></li>
+<li><code>commentService.getCommentCount()</code></li>
+</ul>
+<p><strong>실제 쿼리 수</strong>: 1 (메인) + 20 × 4 = 81 queries</p>
+<h4>문제 3: 페이지네이션 비효율</h4>
+<p>OFFSET 방식이라 offset 값만큼 row를 스캔하고 버린다. 페이지 뒤로 갈수록 느려진다.</p>
+<hr>
+<h2 id="2-해결">2. 해결</h2>
+<h3 id="21-캐싱-결정">2.1 캐싱 결정</h3>
+<p>피드 데이터 특성을 보니까 마치 교과서적인 상황처럼, 캐싱하기 좋았다.</p>
+<ul>
+<li>읽기:쓰기 비율 = 100:1</li>
+<li>완료된 경기는 안 바뀜</li>
+<li>예정 경기도 자주 안 바뀜</li>
+</ul>
+<h3 id="22-왜-caffeine인가">2.2 왜 Caffeine인가</h3>
+<p><code>ConcurrentHashMap&lt;Long, FeedItemResponse&gt;</code>로도 충분하지 않나? 처음엔 그렇게 생각했다.</p>
+<pre data-lang="kotlin"><code class="language-kotlin hljs"><span class="hljs-comment">// 단순 Map 방식</span>
+<span class="hljs-keyword">private</span> <span class="hljs-keyword">val</span> cache = ConcurrentHashMap&lt;<span class="hljs-built_in">Long</span>, FeedItemResponse&gt;()
+
+<span class="hljs-function"><span class="hljs-keyword">fun</span> <span class="hljs-title">put</span><span class="hljs-params">(id: <span class="hljs-type">Long</span>, item: <span class="hljs-type">FeedItemResponse</span>)</span></span> {
+    cache[id] = item
+}</code></pre>
+<p>문제는 메모리 관리다. Map은 명시적으로 remove하지 않으면 계속 쌓인다. 게임이 매일 수십 개씩 생기는데 제거 로직을 직접 짜야 한다.</p>
+<p>Caffeine은 이걸 알아서 해준다:</p>
+<pre data-lang="kotlin"><code class="language-kotlin hljs">Caffeine.newBuilder()
+    .maximumSize(<span class="hljs-number">5000</span>)  <span class="hljs-comment">// 5000개 초과하면 자동 제거</span>
+    .recordStats()       <span class="hljs-comment">// 히트율, 제거 횟수 모니터링</span>
+    .build()</code></pre>
+<ul>
+<li>
+<strong>maximumSize</strong>: Window TinyLFU 알고리즘으로 접근 빈도 낮은 항목 자동 제거</li>
+<li>
+<strong>recordStats</strong>: 캐시 히트율 모니터링 가능. 튜닝할 때 필요함</li>
+</ul>
+<p>직접 LRU 구현하는 것보다 검증된 라이브러리 쓰는 게 낫다.</p>
+<h3 id="23-redis-vs-caffeine">2.3 Redis vs Caffeine</h3>
+<p>Redis랑 Caffeine을 비교했다.</p>
+<table>
+<thead><tr>
+<th>항목</th>
+<th>Redis</th>
+<th>Caffeine</th>
+</tr></thead>
+<tbody>
+<tr>
+<td>지연 시간</td>
+<td>1-5ms (네트워크)</td>
+<td>&lt;0.1ms (인메모리)</td>
+</tr>
+<tr>
+<td>운영 복잡도</td>
+<td>높음 (별도 서버)</td>
+<td>낮음 (임베디드)</td>
+</tr>
+<tr>
+<td>적용 환경</td>
+<td>분산 환경</td>
+<td>단일 인스턴스</td>
+</tr>
+</tbody>
+</table>
+<p>단일 인스턴스라서 네트워크 I/O가 필요 없다. Caffeine으로 갔다.</p>
+<h3 id="24-아키텍처">2.4 아키텍처</h3>
+<pre data-lang="stylus"><code class="hljs"><span class="hljs-selector-attr">[서버 시작]</span>
+    ↓
+<span class="hljs-function"><span class="hljs-title">warmupCache</span><span class="hljs-params">()</span></span>
+    ├─ 최근 <span class="hljs-number">6</span>주 완료 경기 → Completed Cache (최대 <span class="hljs-number">5000</span>개)
+    └─ 예정/진행 중 경기 → Upcoming Cache (최대 <span class="hljs-number">2000</span>개)
+
+<span class="hljs-selector-attr">[조회 요청]</span>
+    ↓
+<span class="hljs-number">1</span>. 친구 목록 조회 (<span class="hljs-number">1</span> query)
+<span class="hljs-number">2</span>. 캐시에서 피드 조회 (<span class="hljs-number">0</span> query)
+<span class="hljs-number">3</span>. 메모리에서 정렬/필터링
+<span class="hljs-number">4</span>. 페이지네이션
+    ↓
+<span class="hljs-selector-attr">[응답]</span></code></pre>
+<p>서버 시작할 때 DB에서 데이터 로딩하고, 이후 조회는 메모리에서만 한다.</p>
+<h3 id="25-설계-결정">2.5 설계 결정</h3>
+<h4>TTL 안 씀</h4>
+<p>처음에는 <code>expireAfterWrite(30, MINUTES)</code>로 TTL을 줬다. 근데 생각해보니까:</p>
+<ul>
+<li>워밍할 때 최근 6주 데이터만 로딩함</li>
+<li>오래된 데이터는 애초에 캐시에 안 들어감</li>
+<li>TTL 관리가 불필요한 오버헤드</li>
+</ul>
+<p>그래서 <code>maximumSize</code>로 메모리 상한만 제어하고, Caffeine의 Window TinyLFU 알고리즘이 알아서 제거하게 했다.</p>
+<pre data-lang="kotlin"><code class="language-kotlin hljs"><span class="hljs-keyword">private</span> <span class="hljs-keyword">val</span> completedGameCache = Caffeine.newBuilder()
+    .maximumSize(<span class="hljs-number">5000</span>)
+    .recordStats()
+    .build()</code></pre>
+<h4>유저별 데이터 분리</h4>
+<p>처음에는 유저별 데이터(<code>isFriend</code>, <code>isMyGame</code>)를 캐시에 저장했다. 버그 났다. 모든 유저가 같은 캐시를 공유하니까 다른 사람 정보가 보이는 문제.</p>
+<p><strong>수정 전 (버그)</strong></p>
+<pre data-lang="kotlin"><code class="language-kotlin hljs"><span class="hljs-keyword">val</span> feedItem = toFeedItemResponse(
+    gameRecord,
+    isFriend = gameService.isFriend(myUserId),
+    isMyGame = gameService.isMyGame(myUserId)
+)
+cache.put(gameRecordId, feedItem)</code></pre>
+<p><strong>수정 후</strong></p>
+<pre data-lang="kotlin"><code class="language-kotlin hljs"><span class="hljs-comment">// 캐싱: 유저 독립적 데이터만</span>
+<span class="hljs-keyword">val</span> feedItem = toFeedItemResponse(
+    gameRecord,
+    isFriend = <span class="hljs-literal">false</span>,
+    isMyGame = <span class="hljs-literal">false</span>
+)
+cache.put(gameRecordId, feedItem)
+
+<span class="hljs-comment">// 조회: 동적 계산</span>
+<span class="hljs-function"><span class="hljs-keyword">fun</span> <span class="hljs-title">getFeed</span><span class="hljs-params">(myUserId: <span class="hljs-type">Long</span>)</span></span>: FeedResponse {
+    <span class="hljs-keyword">val</span> myFriendIds = friendRepository
+        .findAllByUserIdAndStatus(myUserId, ACCEPTED)
+        .map { it.friend.id }
+        .toSet()
+
+    <span class="hljs-keyword">val</span> allFeeds = cache.getAllFeeds()
+
+    <span class="hljs-keyword">return</span> allFeeds.map { feedItem -&gt;
+        feedItem.copy(
+            isFriend = feedItem.players.any { it.id <span class="hljs-keyword">in</span> myFriendIds },
+            isMyGame = feedItem.players.any { it.id == myUserId }
+        )
+    }
+}</code></pre>
+<p>유저 독립적인 데이터만 캐싱하고, 유저별 데이터는 조회할 때 계산하도록 바꿨다.</p>
+<hr>
+<h2 id="3-구현">3. 구현</h2>
+<h3 id="31-캐시-서비스">3.1 캐시 서비스</h3>
+<pre data-lang="kotlin"><code class="language-kotlin hljs"><span class="hljs-meta">@Service</span>
+<span class="hljs-keyword">class</span> <span class="hljs-title class_">FeedCacheService</span> {
+    <span class="hljs-keyword">private</span> <span class="hljs-keyword">val</span> completedGameCache: Cache&lt;<span class="hljs-built_in">Long</span>, FeedItemResponse&gt; =
+        Caffeine.newBuilder()
+            .maximumSize(<span class="hljs-number">5000</span>)
+            .recordStats()
+            .build()
+
+    <span class="hljs-keyword">private</span> <span class="hljs-keyword">val</span> upcomingGameCache: Cache&lt;<span class="hljs-built_in">Long</span>, FeedItemResponse&gt; =
+        Caffeine.newBuilder()
+            .maximumSize(<span class="hljs-number">2000</span>)
+            .recordStats()
+            .build()
+
+    <span class="hljs-function"><span class="hljs-keyword">fun</span> <span class="hljs-title">putCompletedGame</span><span class="hljs-params">(id: <span class="hljs-type">Long</span>, item: <span class="hljs-type">FeedItemResponse</span>)</span></span> {
+        completedGameCache.put(id, item)
+    }
+
+    <span class="hljs-function"><span class="hljs-keyword">fun</span> <span class="hljs-title">getAllFeeds</span><span class="hljs-params">()</span></span>: List&lt;FeedItemResponse&gt; {
+        <span class="hljs-keyword">return</span> completedGameCache.asMap().values.toList() +
+               upcomingGameCache.asMap().values.toList()
+    }
+}</code></pre>
+<h3 id="32-캐시-워밍">3.2 캐시 워밍</h3>
+<pre data-lang="kotlin"><code class="language-kotlin hljs"><span class="hljs-meta">@PostConstruct</span>
+<span class="hljs-meta">@Transactional(readOnly = true)</span>
+<span class="hljs-function"><span class="hljs-keyword">fun</span> <span class="hljs-title">warmupFeedCache</span><span class="hljs-params">()</span></span> {
+    <span class="hljs-keyword">val</span> sixWeeksAgo = LocalDateTime.now().minusWeeks(<span class="hljs-number">6</span>)
+
+    <span class="hljs-comment">// 완료 경기 로딩</span>
+    <span class="hljs-keyword">val</span> completedGames = gameRecordRepository.findAll()
+        .filter { it.recordTime.isAfter(sixWeeksAgo) }
+
+    completedGames.forEach { gameRecord -&gt;
+        <span class="hljs-keyword">try</span> {
+            <span class="hljs-keyword">val</span> feedItem = toFeedItemResponse(gameRecord, <span class="hljs-literal">false</span>, <span class="hljs-literal">false</span>)
+            feedCacheService.putCompletedGame(gameRecord.id, feedItem)
+        } <span class="hljs-keyword">catch</span> (e: Exception) {
+            log.error(e) { <span class="hljs-string">"캐시 워밍 실패: <span class="hljs-subst">${gameRecord.id}</span>"</span> }
+        }
+    }
+
+    <span class="hljs-comment">// 예정 경기 로딩</span>
+    <span class="hljs-keyword">val</span> upcomingStatuses = listOf(MATCHING, SCHEDULED, IN_PROGRESS)
+    <span class="hljs-keyword">val</span> upcomingGames = gameRepository.findAll()
+        .filter { it.gameStatus <span class="hljs-keyword">in</span> upcomingStatuses }
+
+    upcomingGames.forEach { game -&gt;
+        <span class="hljs-keyword">try</span> {
+            <span class="hljs-keyword">val</span> feedItem = toUpcomingGameFeedItem(game, <span class="hljs-literal">false</span>, <span class="hljs-literal">false</span>)
+            feedCacheService.putUpcomingGame(game.id, feedItem)
+        } <span class="hljs-keyword">catch</span> (e: Exception) {
+            log.error(e) { <span class="hljs-string">"캐시 워밍 실패: <span class="hljs-subst">${game.id}</span>"</span> }
+        }
+    }
+
+    log.info { <span class="hljs-string">"캐시 워밍 완료: <span class="hljs-subst">${completedGames.size + upcomingGames.size}</span>개"</span> }
+}</code></pre>
+<p>워밍 시간은 500개 게임 기준 약 2초. 서버 시작 시간이 좀 늘어나지만 괜찮은 수준이다.</p>
+<h3 id="33-피드-조회">3.3 피드 조회</h3>
+<pre data-lang="kotlin"><code class="language-kotlin hljs"><span class="hljs-function"><span class="hljs-keyword">fun</span> <span class="hljs-title">getFeed</span><span class="hljs-params">(myUserId: <span class="hljs-type">Long</span>, page: <span class="hljs-type">Int</span> = <span class="hljs-number">0</span>, size: <span class="hljs-type">Int</span> = <span class="hljs-number">20</span>)</span></span>: FeedResponse {
+    <span class="hljs-comment">// 1. 친구 목록 조회 (1 query)</span>
+    <span class="hljs-keyword">val</span> myFriendIds = friendRepository
+        .findAllByUserIdAndStatus(myUserId, FriendStatus.ACCEPTED)
+        .map { it.friend.id!! }
+        .toSet()
+
+    <span class="hljs-comment">// 2. 캐시에서 피드 조회 (0 query)</span>
+    <span class="hljs-keyword">val</span> allFeeds = feedCacheService.getAllFeeds()
+
+    <span class="hljs-comment">// 3. 유저별 데이터 계산 및 정렬</span>
+    <span class="hljs-keyword">val</span> processedFeeds = allFeeds
+        .map { feedItem -&gt;
+            feedItem.copy(
+                isFriend = feedItem.players.any { it.id <span class="hljs-keyword">in</span> myFriendIds },
+                isMyGame = feedItem.players.any { it.id == myUserId }
+            )
+        }
+        .sortedWith(
+            compareBy&lt;FeedItemResponse&gt; {
+                <span class="hljs-keyword">when</span> {
+                    it.isFriend &amp;&amp; it.isCompleted -&gt; <span class="hljs-number">1</span>
+                    it.isFriend &amp;&amp; !it.isCompleted -&gt; <span class="hljs-number">2</span>
+                    !it.isFriend &amp;&amp; it.isCompleted -&gt; <span class="hljs-number">3</span>
+                    <span class="hljs-keyword">else</span> -&gt; <span class="hljs-number">4</span>
+                }
+            }.thenByDescending { it.date }
+        )
+
+    <span class="hljs-comment">// 4. 페이지네이션</span>
+    <span class="hljs-keyword">val</span> startIndex = page * size
+    <span class="hljs-keyword">val</span> endIndex = minOf(startIndex + size, processedFeeds.size)
+
+    <span class="hljs-keyword">val</span> pagedFeeds = <span class="hljs-keyword">if</span> (startIndex &lt; processedFeeds.size) {
+        processedFeeds.subList(startIndex, endIndex)
+    } <span class="hljs-keyword">else</span> {
+        emptyList()
+    }
+
+    <span class="hljs-keyword">return</span> FeedResponse(
+        items = pagedFeeds,
+        totalPages = (processedFeeds.size + size - <span class="hljs-number">1</span>) / size,
+        currentPage = page
+    )
+}</code></pre>
+<hr>
+<h2 id="4-성능-측정">4. 성능 측정</h2>
+<h3 id="41-응답-시간">4.1 응답 시간</h3>
+<p><img src="https://velog.velcdn.com/images/xe0/post/b2a3366b-4082-4f9a-9d8b-869bf8b07ae5/image.png" alt=""></p>
+<table>
+<thead><tr>
+<th>지표</th>
+<th>Before</th>
+<th>After</th>
+<th>개선율</th>
+</tr></thead>
+<tbody>
+<tr>
+<td>평균</td>
+<td>820ms</td>
+<td>38ms</td>
+<td>95%</td>
+</tr>
+<tr>
+<td>중앙값</td>
+<td>780ms</td>
+<td>32ms</td>
+<td>96%</td>
+</tr>
+<tr>
+<td>P95</td>
+<td>1200ms</td>
+<td>65ms</td>
+<td>95%</td>
+</tr>
+<tr>
+<td>P99</td>
+<td>1800ms</td>
+<td>95ms</td>
+<td>95%</td>
+</tr>
+</tbody>
+</table>
+<h3 id="42-쿼리-수">4.2 쿼리 수</h3>
+<ul>
+<li>Before: 평균 81 queries</li>
+<li>After: 1 query (친구 목록 조회)</li>
+</ul>
+<p>DB 부하 98% 감소.</p>
+<h3 id="43-처리-시간-분해-after">4.3 처리 시간 분해 (After)</h3>
+<pre data-lang="erlang-repl"><code class="hljs">친구 조회: <span class="hljs-number">5</span>ms (<span class="hljs-number">13</span><span class="hljs-comment">%)</span>
+캐시 읽기: <span class="hljs-number">1</span>ms (<span class="hljs-number">3</span><span class="hljs-comment">%)</span>
+정렬/필터링: <span class="hljs-number">15</span>ms (<span class="hljs-number">39</span><span class="hljs-comment">%)</span>
+페이지네이션: <span class="hljs-number">2</span>ms (<span class="hljs-number">5</span><span class="hljs-comment">%)</span>
+기타: <span class="hljs-number">15</span>ms (<span class="hljs-number">40</span><span class="hljs-comment">%)</span></code></pre>
+<p>대부분 메모리 연산이다.</p>
+<h3 id="44-메모리-사용량">4.4 메모리 사용량</h3>
+<pre data-lang="nestedtext"><code class="hljs"><span class="hljs-attribute">완료 게임 250개</span><span class="hljs-punctuation">:</span> <span class="hljs-string">22MB</span>
+<span class="hljs-attribute">예정 게임 250개</span><span class="hljs-punctuation">:</span> <span class="hljs-string">23MB</span>
+<span class="hljs-attribute">총합</span><span class="hljs-punctuation">:</span> <span class="hljs-string">45MB</span>
+
+<span class="hljs-attribute">최대 (5000개)</span><span class="hljs-punctuation">:</span> <span class="hljs-string">450MB 예상</span></code></pre>
+<p>서버 메모리 2GB 대비 여유 있다.</p>
+<h3 id="45-동시성-테스트">4.5 동시성 테스트</h3>
+<p>Apache Bench로 부하 테스트:</p>
+<pre data-lang="bash"><code class="language-bash hljs">ab -n 10000 -c 100 http://localhost:8080/api/feed</code></pre>
+<table>
+<thead><tr>
+<th>지표</th>
+<th>Before</th>
+<th>After</th>
+<th>개선율</th>
+</tr></thead>
+<tbody>
+<tr>
+<td>Requests/sec</td>
+<td>3.8</td>
+<td>78.2</td>
+<td>20배</td>
+</tr>
+<tr>
+<td>Time/request</td>
+<td>820ms</td>
+<td>38ms</td>
+<td>95%</td>
+</tr>
+</tbody>
+</table>
+<hr>
+<h2 id="5-제약-사항">5. 제약 사항</h2>
+<h3 id="51-서버-재시작">5.1 서버 재시작</h3>
+<p>서버 재시작하면 캐시가 날아간다. <code>@PostConstruct</code>로 자동 워밍되긴 하는데 2초 정도 걸린다. 트래픽 늘어나면 Redis 검토할 예정.</p>
+<h3 id="52-분산-환경">5.2 분산 환경</h3>
+<p>지금은 단일 인스턴스다. 서버 늘리면 각 인스턴스가 독립적인 캐시를 갖게 돼서 동기화 문제가 생긴다.</p>
+<p><strong>해결 방안</strong></p>
+<ol>
+<li>Redis로 전환</li>
+<li>캐시 무효화 이벤트를 Kafka로 브로드캐스트</li>
+<li>로드밸런서 sticky session</li>
+</ol>
+<h3 id="53-친구-관계-변경">5.3 친구 관계 변경</h3>
+<p>친구 추가/삭제 시 피드에 반영돼야 한다. 지금은 <code>isFriend</code>를 조회할 때 계산하니까 캐시 무효화 없이 바로 반영된다.</p>
+<hr>
+<h2 id="6-정리">6. 정리</h2>
+<p>캐싱은 “빨라지게 하는 기술”이 아니라 “비싼 연산을 언제 한 번만 하게 만들 것인가”에 대한 선택이다.</p>
+<p><strong>핵심</strong></p>
+<ol>
+<li>유저 독립적인 데이터만 캐싱</li>
+<li>유저별 데이터는 조회할 때 계산</li>
+<li>서버 시작 시 캐시 워밍</li>
+</ol>
+<p><strong>결과</strong></p>
+<ul>
+<li>응답 시간: 820ms → 38ms (95% 개선)</li>
+<li>DB 쿼리: 81개 → 1개 (98% 감소)</li>
+<li>처리량: 3.8 req/s → 78.2 req/s (20배 증가)</li>
+</ul>
+<p><strong>트레이드오프</strong></p>
+<ul>
+<li>서버 부팅 시간 증가</li>
+<li>메모리 수백 MB 증가</li>
+<li>코드 복잡도 증가</li>
+</ul>
+</body></html>
+        </div>
+      </article>
+    <nav class="post-nav" aria-label="이전/다음 글">
+      <span></span>
+      <a class="post-nav-item post-nav-item--next" href="/posts/2222/">
+        <span class="post-nav-label">다음 글</span>
+        <span class="post-nav-title">배포 후에야 알게 되는 gRPC 스키마 불일치, Kubernetes에서 자동으로 잡기</span>
+      </a>
+    </nav>
+      <nav class="post-back">
+        <a href="/">← 목록으로</a>
+      </nav>
+    </div>
+    <aside class="toc" id="toc" aria-label="목차">
+      <p class="toc-title">목차</p>
+      <ul class="toc-list">
+        <li class="toc-item toc-item--h2"><a href="#개요" data-target="개요">개요</a></li>
+        <li class="toc-item toc-item--h2"><a href="#1-문제" data-target="1-문제">1. 문제</a></li>
+        <li class="toc-item toc-item--h3"><a href="#11-피드-요구사항" data-target="11-피드-요구사항">1.1 피드 요구사항</a></li>
+        <li class="toc-item toc-item--h3"><a href="#12-초기-구현" data-target="12-초기-구현">1.2 초기 구현</a></li>
+        <li class="toc-item toc-item--h3"><a href="#13-성능-병목" data-target="13-성능-병목">1.3 성능 병목</a></li>
+        <li class="toc-item toc-item--h2"><a href="#2-해결" data-target="2-해결">2. 해결</a></li>
+        <li class="toc-item toc-item--h3"><a href="#21-캐싱-결정" data-target="21-캐싱-결정">2.1 캐싱 결정</a></li>
+        <li class="toc-item toc-item--h3"><a href="#22-왜-caffeine인가" data-target="22-왜-caffeine인가">2.2 왜 Caffeine인가</a></li>
+        <li class="toc-item toc-item--h3"><a href="#23-redis-vs-caffeine" data-target="23-redis-vs-caffeine">2.3 Redis vs Caffeine</a></li>
+        <li class="toc-item toc-item--h3"><a href="#24-아키텍처" data-target="24-아키텍처">2.4 아키텍처</a></li>
+        <li class="toc-item toc-item--h3"><a href="#25-설계-결정" data-target="25-설계-결정">2.5 설계 결정</a></li>
+        <li class="toc-item toc-item--h2"><a href="#3-구현" data-target="3-구현">3. 구현</a></li>
+        <li class="toc-item toc-item--h3"><a href="#31-캐시-서비스" data-target="31-캐시-서비스">3.1 캐시 서비스</a></li>
+        <li class="toc-item toc-item--h3"><a href="#32-캐시-워밍" data-target="32-캐시-워밍">3.2 캐시 워밍</a></li>
+        <li class="toc-item toc-item--h3"><a href="#33-피드-조회" data-target="33-피드-조회">3.3 피드 조회</a></li>
+        <li class="toc-item toc-item--h2"><a href="#4-성능-측정" data-target="4-성능-측정">4. 성능 측정</a></li>
+        <li class="toc-item toc-item--h3"><a href="#41-응답-시간" data-target="41-응답-시간">4.1 응답 시간</a></li>
+        <li class="toc-item toc-item--h3"><a href="#42-쿼리-수" data-target="42-쿼리-수">4.2 쿼리 수</a></li>
+        <li class="toc-item toc-item--h3"><a href="#43-처리-시간-분해-after" data-target="43-처리-시간-분해-after">4.3 처리 시간 분해 (After)</a></li>
+        <li class="toc-item toc-item--h3"><a href="#44-메모리-사용량" data-target="44-메모리-사용량">4.4 메모리 사용량</a></li>
+        <li class="toc-item toc-item--h3"><a href="#45-동시성-테스트" data-target="45-동시성-테스트">4.5 동시성 테스트</a></li>
+        <li class="toc-item toc-item--h2"><a href="#5-제약-사항" data-target="5-제약-사항">5. 제약 사항</a></li>
+        <li class="toc-item toc-item--h3"><a href="#51-서버-재시작" data-target="51-서버-재시작">5.1 서버 재시작</a></li>
+        <li class="toc-item toc-item--h3"><a href="#52-분산-환경" data-target="52-분산-환경">5.2 분산 환경</a></li>
+        <li class="toc-item toc-item--h3"><a href="#53-친구-관계-변경" data-target="53-친구-관계-변경">5.3 친구 관계 변경</a></li>
+        <li class="toc-item toc-item--h2"><a href="#6-정리" data-target="6-정리">6. 정리</a></li>
+      </ul>
+    </aside>
+  </main>
+  <footer class="site-footer">
+    <div class="container">
+      <div class="footer-links">
+        <a class="footer-link" href="https://github.com/xhae123" target="_blank" rel="noopener noreferrer">
+          <svg width="13" height="13" viewBox="0 0 16 16" fill="currentColor" aria-hidden="true">
+            <path fill-rule="evenodd" d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.012 8.012 0 0 0 16 8c0-4.42-3.58-8-8-8z"/>
+          </svg>
+          github
+        </a>
+        <a class="footer-link" href="mailto:xhae000@gmail.com">contact me</a>
+      </div>
+      <p class="footer-meta">© <span id="year"></span> xhae123</p>
+    </div>
+  </footer>
+  <script src="/app.js"></script>
+</body>
+</html>

@@ -1,0 +1,439 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>트랜잭션의 경계는 어떻게 정해야할까: Outbox pattern으로 경계 줄이기 · xhae123&#39;s notes</title>
+  <meta name="description" content="리워드 적립 API(POST /rewards/earn)는 주문 완료 시 우리 서비스 DB에 기록하고, 로그를 남긴 뒤 파트너사에 API로 동기화하는 흐름입니다." />
+  <link rel="canonical" href="https://xhae123.github.io/posts/%ED%8A%B8%EB%9E%9C%EC%9E%AD%EC%85%98%EC%9D%98-%EA%B2%BD%EA%B3%84%EB%8A%94-%EC%96%B4%EB%96%BB%EA%B2%8C-%EC%A0%95%ED%95%B4%EC%95%BC%ED%95%A0%EA%B9%8C-Outbox-pattern%EC%9C%BC%EB%A1%9C-%EA%B2%BD%EA%B3%84-%EC%A4%84%EC%9D%B4%EA%B8%B0/" />
+  <meta property="og:type" content="article" />
+  <meta property="og:site_name" content="xhae123&#39;s notes" />
+  <meta property="og:title" content="트랜잭션의 경계는 어떻게 정해야할까: Outbox pattern으로 경계 줄이기 · xhae123&#39;s notes" />
+  <meta property="og:description" content="리워드 적립 API(POST /rewards/earn)는 주문 완료 시 우리 서비스 DB에 기록하고, 로그를 남긴 뒤 파트너사에 API로 동기화하는 흐름입니다." />
+  <meta property="og:url" content="https://xhae123.github.io/posts/%ED%8A%B8%EB%9E%9C%EC%9E%AD%EC%85%98%EC%9D%98-%EA%B2%BD%EA%B3%84%EB%8A%94-%EC%96%B4%EB%96%BB%EA%B2%8C-%EC%A0%95%ED%95%B4%EC%95%BC%ED%95%A0%EA%B9%8C-Outbox-pattern%EC%9C%BC%EB%A1%9C-%EA%B2%BD%EA%B3%84-%EC%A4%84%EC%9D%B4%EA%B8%B0/" />
+  <meta property="og:locale" content="ko_KR" />
+  <meta property="og:image" content="https://velog.velcdn.com/images/xe0/post/8312cbb5-87b5-445d-babc-0add71b28fd8/image.png" />
+  <meta name="twitter:card" content="summary_large_image" />
+  <meta name="twitter:title" content="트랜잭션의 경계는 어떻게 정해야할까: Outbox pattern으로 경계 줄이기 · xhae123&#39;s notes" />
+  <meta name="twitter:description" content="리워드 적립 API(POST /rewards/earn)는 주문 완료 시 우리 서비스 DB에 기록하고, 로그를 남긴 뒤 파트너사에 API로 동기화하는 흐름입니다." />
+  <meta name="twitter:image" content="https://velog.velcdn.com/images/xe0/post/8312cbb5-87b5-445d-babc-0add71b28fd8/image.png" />
+  <link rel="preconnect" href="https://cdn.jsdelivr.net" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable.css" />
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500&display=swap" />
+  <link rel="stylesheet" href="/styles.css" />
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/github-dark.min.css" />
+  <meta property="article:published_time" content="2026-02-19T00:39:12.000Z" />
+  <meta property="article:author" content="김우진" />
+  <script type="application/ld+json">{"@context":"https://schema.org","@type":"BlogPosting","headline":"트랜잭션의 경계는 어떻게 정해야할까: Outbox pattern으로 경계 줄이기","description":"리워드 적립 API(POST /rewards/earn)는 주문 완료 시 우리 서비스 DB에 기록하고, 로그를 남긴 뒤 파트너사에 API로 동기화하는 흐름입니다.","datePublished":"2026-02-19T00:39:12.000Z","dateModified":"2026-02-19T00:39:12.000Z","author":{"@type":"Person","name":"김우진"},"url":"https://xhae123.github.io/posts/%ED%8A%B8%EB%9E%9C%EC%9E%AD%EC%85%98%EC%9D%98-%EA%B2%BD%EA%B3%84%EB%8A%94-%EC%96%B4%EB%96%BB%EA%B2%8C-%EC%A0%95%ED%95%B4%EC%95%BC%ED%95%A0%EA%B9%8C-Outbox-pattern%EC%9C%BC%EB%A1%9C-%EA%B2%BD%EA%B3%84-%EC%A4%84%EC%9D%B4%EA%B8%B0/","mainEntityOfPage":"https://xhae123.github.io/posts/%ED%8A%B8%EB%9E%9C%EC%9E%AD%EC%85%98%EC%9D%98-%EA%B2%BD%EA%B3%84%EB%8A%94-%EC%96%B4%EB%96%BB%EA%B2%8C-%EC%A0%95%ED%95%B4%EC%95%BC%ED%95%A0%EA%B9%8C-Outbox-pattern%EC%9C%BC%EB%A1%9C-%EA%B2%BD%EA%B3%84-%EC%A4%84%EC%9D%B4%EA%B8%B0/","image":"https://velog.velcdn.com/images/xe0/post/8312cbb5-87b5-445d-babc-0add71b28fd8/image.png"}</script>
+</head>
+<body>
+  <header class="site-header" id="site-header">
+    <div class="container">
+      <a class="site-label" href="/">xhae123&#39;s notes</a>
+      <a class="gh-link" href="https://github.com/xhae123" target="_blank" rel="noopener noreferrer" aria-label="GitHub @xhae123">
+        <svg class="gh-icon" width="14" height="14" viewBox="0 0 16 16" fill="currentColor" aria-hidden="true">
+          <path fill-rule="evenodd" d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.012 8.012 0 0 0 16 8c0-4.42-3.58-8-8-8z"/>
+        </svg>
+        xhae123
+      </a>
+    </div>
+  </header>
+  <main class="post-layout">
+    <div class="post-main">
+      <article class="post" id="post">
+        <header class="post-header">
+          <p class="post-meta">FEB 19, 2026</p>
+          <h1 class="post-title">트랜잭션의 경계는 어떻게 정해야할까: Outbox pattern으로 경계 줄이기</h1>
+        </header>
+        <div class="post-body" id="post-body">
+<html><head></head><body><h2 id="0-테스트-환경--관측-지표">0. 테스트 환경 / 관측 지표</h2>
+<ul>
+<li>부하 도구: k6 (<code>ramping-vus</code>)</li>
+<li>DB: MySQL (InnoDB)</li>
+<li>ORM: Spring Data JPA</li>
+<li>커넥션 풀: HikariCP (<code>maximumPoolSize=10</code>)</li>
+<li>관측 지표:<ul>
+<li>API latency: p50/p95/p99/max</li>
+<li>HikariCP: active/pending counts</li>
+</ul>
+</li>
+</ul>
+<hr>
+<h2 id="1-문제-상황">1. 문제 상황</h2>
+<p><img src="https://velog.velcdn.com/images/xe0/post/8312cbb5-87b5-445d-babc-0add71b28fd8/image.png" alt=""></p>
+<p>리워드 적립 API(<code>POST /rewards/earn</code>)는 주문 완료 시 우리 서비스 DB에 기록하고, 로그를 남긴 뒤 파트너사에 API로 동기화하는 흐름입니다.</p>
+<p>부하 테스트에서 VU를 50까지 올리자 응답 시간이 급격히 치솟았습니다.</p>
+<p><img src="https://velog.velcdn.com/images/xe0/post/7b74dd7b-394e-4ac9-bac5-d655ccc95d73/image.png" alt=""><img src="https://velog.velcdn.com/images/xe0/post/22a855d4-b734-48bf-bb9b-3b69c0beb5eb/image.png" alt=""></p>
+<p>평균 약 6.2초, 처리한 요청 수 3,510개.</p>
+<p align="center">
+  <img src="https://velog.velcdn.com/images/xe0/post/a51fb19e-600b-4cb5-a97c-39739b0a161e/image.png" width="340"><img src="https://velog.velcdn.com/images/xe0/post/b4af00f9-7adb-4a9b-b7bb-6851e0c7cc77/image.png" width="340"></p>
+
+<p>활성 커넥션이 부하 시작 얼마 안 돼서 10개(최대치)에 도달했고, 그 직후부터 pending이 쌓이기 시작했습니다. pending은 35개까지 치솟았습니다.</p>
+<p>"DB가 느리다"가 아니라, 애플리케이션이 커넥션을 오래 물고 있다는 신호입니다.</p>
+<hr>
+<h2 id="2-왜-처음엔-이렇게-설계했나">2. 왜 처음엔 이렇게 설계했나</h2>
+<p>지금 보면 "외부 HTTP 호출을 트랜잭션에 넣다니" 싶지만, 당시엔 나름 합리적이었습니다.</p>
+<ul>
+<li>"적립 성공하면 감사 로그도 남기고, 파트너 동기화도 반드시 성공해야지."</li>
+<li>"중간에 실패하면 전체 롤백하는 게 안전하잖아."</li>
+</ul>
+<p>논리적으로 하나의 업무 흐름처럼 보여서 트랜잭션 하나로 묶었던 거죠.</p>
+<p>그런데 트랜잭션이 '논리적 흐름'을 묶어주는 건 아닙니다. 결국 커넥션과 락을 얼마나 오래 잡느냐의 문제거든요.</p>
+<hr>
+<h2 id="3-트랜잭션이-너무-오래-산다">3. 트랜잭션이 너무 오래 산다</h2>
+<p>커넥션 풀 고갈의 흔한 원인은 두 가지입니다.</p>
+<ol>
+<li>쿼리 자체가 느려서 커넥션을 오래 점유</li>
+<li>쿼리는 빠른데 트랜잭션 경계가 넓어서 커밋이 늦고, 커넥션 반환도 늦음</li>
+</ol>
+<p>이번 건 2번이 99.99% 유력해 보였습니다. pending이 빠르게 쌓였고, "특정 구간에서 요청이 멈춘 느낌"이 있었거든요.</p>
+<hr>
+<h2 id="4-트랜잭션-안의-외부-io">4. 트랜잭션 안의 외부 I/O</h2>
+<p>당시 코드입니다.</p>
+<pre data-lang="kotlin"><code class="language-kotlin hljs"><span class="hljs-meta">@Transactional</span>
+<span class="hljs-function"><span class="hljs-keyword">fun</span> <span class="hljs-title">earnReward</span><span class="hljs-params">(request: <span class="hljs-type">EarnRewardRequest</span>)</span></span>: EarnRewardResponse {
+
+    <span class="hljs-comment">// 1) X lock 획득</span>
+    <span class="hljs-keyword">val</span> summary = userRewardSummaryRepository
+        .findByUserIdAndYearMonthForUpdate(userId, yearMonth)
+
+    <span class="hljs-comment">// 2) 내부 상태 변경</span>
+    summary.totalAmount += request.amount
+
+    <span class="hljs-comment">// 3) ledger 기록</span>
+    <span class="hljs-keyword">val</span> ledger = rewardLedgerRepository.save(
+        RewardLedger(...)
+    )
+
+    <span class="hljs-comment">// 4) audit 기록</span>
+    auditLogRepository.save(
+        AuditLog(...)
+    )
+
+    <span class="hljs-comment">// 5) 파트너사 동기화 (외부 HTTP)</span>
+    partnerApiClient.syncRewardPoints(
+        userId = request.userId,
+        amount = request.amount,
+        ledgerId = ledger.id
+    )
+}</code></pre>
+<p>파트너 호출은 동기 방식이었습니다.</p>
+<pre data-lang="kotlin"><code class="language-kotlin hljs"><span class="hljs-meta">@Component</span>
+<span class="hljs-keyword">class</span> <span class="hljs-title class_">PartnerApiClient</span>(
+    <span class="hljs-keyword">private</span> <span class="hljs-keyword">val</span> webClient: WebClient
+) {
+    <span class="hljs-function"><span class="hljs-keyword">fun</span> <span class="hljs-title">syncRewardPoints</span><span class="hljs-params">(userId: <span class="hljs-type">Long</span>, amount: <span class="hljs-type">Long</span>, ledgerId: <span class="hljs-type">Long</span>)</span></span> {
+        webClient.post()
+            .uri(<span class="hljs-string">"/api/v1/points/sync"</span>)
+            .bodyValue(
+                SyncRequest(
+                    userId = userId,
+                    amount = amount,
+                    idempotencyKey = ledgerId.toString()
+                )
+            )
+            .retrieve()
+            .bodyToMono(<span class="hljs-built_in">Void</span>::<span class="hljs-keyword">class</span>.java)
+            .block() <span class="hljs-comment">// 응답이 올 때까지 대기</span>
+    }
+}</code></pre>
+<p>핵심은 <code>.block()</code>입니다.</p>
+<ul>
+<li>네트워크 응답이 올 때까지 스레드 대기</li>
+<li>트랜잭션은 안 끝남</li>
+<li>커넥션과 X lock 계속 점유</li>
+</ul>
+<blockquote>
+<p>외부 네트워크 지연이 그대로 커넥션 점유 시간, 락 점유 시간이 됩니다.</p>
+</blockquote>
+<hr>
+<h2 id="5-상한-계산">5. 상한 계산</h2>
+<p>풀 사이즈 10, 외부 호출로 트랜잭션이 평균 100ms 늘어난다면:</p>
+<pre data-lang="abnf"><code class="hljs">최대 처리량 상한 ≈ poolSize / holdingTime
+                <span class="hljs-operator">=</span> <span class="hljs-number">10</span> / <span class="hljs-number">0.1</span>
+                <span class="hljs-operator">=</span> <span class="hljs-number">100</span> tx/s</code></pre>
+<p>단순한 계산이지만 시사점은 큽니다.</p>
+<ul>
+<li>요청 몰리면 10개만 실행, 나머지는 커넥션 대기</li>
+<li>대기열(pending) 쌓이고, p95/p99 급등</li>
+</ul>
+<hr>
+<h2 id="6-락-대기가-커넥션을-연쇄로-묶는다">6. 락 대기가 커넥션을 연쇄로 묶는다</h2>
+<p>더 나쁜 건 <code>SELECT ... FOR UPDATE</code>입니다.</p>
+<ul>
+<li>요청 A가 X lock 잡은 채 파트너 응답 대기</li>
+<li>요청 B~N은 같은 row의 X lock 풀릴 때까지 대기</li>
+<li>B~N도 트랜잭션 안에서 대기하니까 자기 커넥션을 물고 기다림</li>
+</ul>
+<p>동일 userId가 hot key가 되면:</p>
+<ul>
+<li>락 대기열이 커넥션 점유열로 바뀜</li>
+<li>풀 전체가 빠르게 소진</li>
+<li>관계없는 userId 요청까지 영향</li>
+</ul>
+<p>단순히 "커넥션이 부족했다"가 아닙니다.</p>
+<blockquote>
+<p>트랜잭션 경계 + 락 경합 + 외부 I/O가 결합해서 커넥션 풀이 폭발적으로 고갈된 케이스입니다.</p>
+</blockquote>
+<hr>
+<h2 id="7-원자성-경계를-잘못-잡았다">7. 원자성 경계를 잘못 잡았다</h2>
+<p>각 작업이 정말 "같이 커밋돼야 하는가?"로 분해하면 답이 보입니다.</p>
+<table>
+<thead><tr>
+<th>작업</th>
+<th>내부 정합성에 원자적으로 필요?</th>
+<th>트랜잭션에 묶을 실익</th>
+</tr></thead>
+<tbody>
+<tr>
+<td>summary UPDATE + ledger INSERT</td>
+<td>✅</td>
+<td>큼</td>
+</tr>
+<tr>
+<td>audit INSERT</td>
+<td>❌</td>
+<td>낮음</td>
+</tr>
+<tr>
+<td>파트너 API 호출</td>
+<td>❌ (애초에 원자성 불가)</td>
+<td>없음</td>
+</tr>
+</tbody>
+</table>
+<p>파트너 동기화는 트랜잭션에 넣는다고 원자성이 생기지 않습니다.</p>
+<ul>
+<li>외부 호출 성공 → 내부 DB 롤백: "외부는 적립, 내부는 미적립"</li>
+<li>외부 호출 실패 → 내부 DB 커밋: "내부는 적립, 외부는 미반영"</li>
+</ul>
+<blockquote>
+<p>외부 시스템과의 정합성은 트랜잭션으로 해결되지 않습니다. 멱등성, 재시도, 비동기 처리로 풀어야 하는 문제입니다.</p>
+</blockquote>
+<hr>
+<h2 id="8-왜-async가-아니라-outbox인가">8. 왜 <code>@Async</code>가 아니라 Outbox인가</h2>
+<p>외부 호출을 트랜잭션 밖으로 빼는 방법은 여럿 있습니다. 가장 쉬운 건 <code>@Async</code>입니다.</p>
+<h3 id="옵션-a-async">옵션 A: <code>@Async</code>
+</h3>
+<p>장점:</p>
+<ul>
+<li>구현 쉽고 latency 즉각 개선</li>
+</ul>
+<p>단점:</p>
+<ul>
+<li>프로세스 재시작 시 유실</li>
+<li>실패 재시도/상태 추적/운영 대응을 직접 구현해야 함</li>
+</ul>
+<h3 id="옵션-b-transactional-outbox">옵션 B: Transactional Outbox</h3>
+<p>장점:</p>
+<ul>
+<li>"DB 커밋"과 "처리 예약"이 같은 트랜잭션 → 예약이 100% 보장되면 이후 수행은 어렵지 않음</li>
+<li>상태(PENDING/DONE/DEAD_LETTER)로 운영 가능</li>
+<li>서버 재시작해도 DB에 PENDING 이벤트가 남아서 재처리 가능</li>
+</ul>
+<p>단점:</p>
+<ul>
+<li>폴링 지연 (유저에게 빠른 결과 못 줌)</li>
+<li>outbox 테이블 운영 필요 (정리/인덱스/모니터링)</li>
+<li>기본적으로 at-least-once → 멱등성 구현 필요</li>
+</ul>
+<p>이 시스템은 유실을 허용하기 어려웠고, 추적 가능성이 더 중요했습니다. 옵션 B를 선택했습니다.</p>
+<hr>
+<h2 id="9-트랜잭션-경계-축소--outbox">9. 트랜잭션 경계 축소 + Outbox</h2>
+<p>메인 트랜잭션에서는 내부 정합성만 처리합니다.</p>
+<pre data-lang="kotlin"><code class="language-kotlin hljs"><span class="hljs-meta">@Transactional</span>  <span class="hljs-comment">// 커넥션 점유: 짧아짐</span>
+<span class="hljs-function"><span class="hljs-keyword">fun</span> <span class="hljs-title">earnReward</span><span class="hljs-params">(request: <span class="hljs-type">EarnRewardRequest</span>)</span></span>: EarnRewardResponse {
+
+    <span class="hljs-keyword">val</span> summary = userRewardSummaryRepository
+        .findByUserIdAndYearMonthForUpdate(userId, yearMonth)
+
+    summary.totalAmount += request.amount
+
+    <span class="hljs-keyword">val</span> ledger = rewardLedgerRepository.save(...)
+
+    <span class="hljs-comment">// "나중에 처리할 작업"을 같은 트랜잭션에 기록</span>
+    outboxEventRepository.save(
+        OutboxEvent(
+            type = <span class="hljs-string">"REWARD_EARNED"</span>,
+            payload = toJson(ledger),
+            status = <span class="hljs-string">"PENDING"</span>,
+            retryCount = <span class="hljs-number">0</span>
+        )
+    )
+}</code></pre>
+<p>처리는 별도 스케줄러에서.</p>
+<pre data-lang="kotlin"><code class="language-kotlin hljs"><span class="hljs-meta">@Scheduled(fixedDelay = 500)</span>
+<span class="hljs-function"><span class="hljs-keyword">fun</span> <span class="hljs-title">processOutbox</span><span class="hljs-params">()</span></span> {
+    outboxEventRepository.findPending(MAX_RETRY).forEach { event -&gt;
+        <span class="hljs-keyword">try</span> {
+            <span class="hljs-keyword">val</span> payload = parse(event.payload)
+
+            partnerApiClient.syncRewardPoints(
+                userId = payload.userId,
+                amount = payload.amount,
+                ledgerId = payload.ledgerId
+            )
+
+            auditLogRepository.save(...)
+            event.status = <span class="hljs-string">"DONE"</span>
+        } <span class="hljs-keyword">catch</span> (ex: Exception) {
+            event.retryCount++
+            <span class="hljs-keyword">if</span> (event.retryCount &gt;= MAX_RETRY) event.status = <span class="hljs-string">"DEAD_LETTER"</span>
+        }
+        outboxEventRepository.save(event)
+    }
+}</code></pre>
+<hr>
+<h2 id="10-감수한-트레이드오프">10. 감수한 트레이드오프</h2>
+<h3 id="101-즉시성-대신-최대-지연을-정의했다">10.1 즉시성 대신 "최대 지연"을 정의했다</h3>
+<p>폴링(500ms)을 쓰는 순간, 파트너 반영은 "즉시"가 아니게 됩니다.</p>
+<ul>
+<li>평균 지연: ~250ms</li>
+<li>최악 지연: ~500ms + 처리 시간 + 큐잉</li>
+</ul>
+<p>즉시성 대신 상한이 있는 지연을 선택한 겁니다. 이건 기술 선택이 아니라 요구사항 선택이에요.</p>
+<h3 id="102-exactly-once는-자동으로-생기지-않는다">10.2 Exactly-once는 자동으로 생기지 않는다</h3>
+<p>Outbox는 대개 at-least-once 전송입니다. 중복 전송 가능성을 전제로 하므로 파트너 API에 멱등성 키가 필요합니다.</p>
+<ul>
+<li>
+<code>ledgerId</code>를 idempotency key로 사용</li>
+<li>동일 key 재요청 시 중복 적립 방지</li>
+</ul>
+<h3 id="103-outbox는-새로운-운영-대상이다">10.3 Outbox는 새로운 운영 대상이다</h3>
+<p>도입과 동시에 다음이 운영 이슈가 됩니다.</p>
+<ul>
+<li>PENDING 누적 시 알림/모니터링</li>
+<li>DONE 데이터 정리 (보관 주기)</li>
+<li>폴링 쿼리 효율 (인덱스, 배치 크기)</li>
+<li>DEAD_LETTER 처리 프로세스 (수동 재처리/원인 분석)</li>
+</ul>
+<hr>
+<h2 id="11-결과">11. 결과</h2>
+<p><img src="https://velog.velcdn.com/images/xe0/post/65db9b86-86f0-4993-83cb-8b0fd5748dc1/image.png" alt=""></p>
+<p><img src="https://velog.velcdn.com/images/xe0/post/806e223c-feca-489a-bfdf-ab00361926e8/image.png" alt=""></p>
+<table>
+<thead><tr>
+<th>지표</th>
+<th>Before</th>
+<th>After</th>
+<th>개선율</th>
+</tr></thead>
+<tbody>
+<tr>
+<td>avg</td>
+<td>624.1ms</td>
+<td>15.9ms</td>
+<td>-97%</td>
+</tr>
+<tr>
+<td>p50</td>
+<td>477.7ms</td>
+<td>4.7ms</td>
+<td>-99%</td>
+</tr>
+<tr>
+<td>p95</td>
+<td>1,483.2ms</td>
+<td>58.7ms</td>
+<td>-96%</td>
+</tr>
+<tr>
+<td>p99</td>
+<td>1,746.3ms</td>
+<td>239.2ms</td>
+<td>-86%</td>
+</tr>
+<tr>
+<td>max</td>
+<td>2,734.7ms</td>
+<td>1,309.0ms</td>
+<td>-52%</td>
+</tr>
+<tr>
+<td>처리량</td>
+<td>3,510건</td>
+<td>21,725건</td>
+<td>+6.2배</td>
+</tr>
+</tbody>
+</table>
+<p>평균 응답 속도가 대폭 줄었고, 시간당 처리량이 6배 늘었습니다.</p>
+<p align="center">
+  <img src="https://velog.velcdn.com/images/xe0/post/ed3d57d9-a7f8-4aa1-9d9e-2bf101bdae6e/image.png" width="340"><img src="https://velog.velcdn.com/images/xe0/post/a57f0d82-abce-4aa6-8d2d-c0b89e0e23cd/image.png" width="340"></p>
+
+<ul>
+<li>활성 커넥션이 최대치에 도달한 시점이 훨씬 늦어지고, 지속 시간도 짧아졌습니다.</li>
+<li>pending도 기존 대비 10배 이상 줄었습니다.</li>
+</ul>
+<p>대단한 쿼리 튜닝이나 아키텍처 변경이 아닙니다.</p>
+<blockquote>
+<p>네트워크 대기 시간을 트랜잭션 자원(커넥션/락)에서 분리한 결과입니다.</p>
+</blockquote>
+<hr>
+<h2 id="12-핵심-인사이트">12. 핵심 인사이트</h2>
+<ul>
+<li>트랜잭션 경계 = 커넥션/락 점유 구간입니다. "코드 블록"이 아니에요. 뭘 묶고 뭘 빼야 하는지, 비즈니스 판단이 먼저입니다.</li>
+<li>외부 호출을 트랜잭션 안에 두면, 네트워크 지연이 고스란히 DB 자원 점유로 이어집니다.</li>
+<li>Outbox가 마법처럼 다 해결해주진 않습니다. 유실 없는 비동기 처리를 위한 최소 장치일 뿐이에요.</li>
+<li>대신 즉시성, 운영 부담, 멱등성 설계 비용을 함께 지불해야 합니다.</li>
+</ul>
+</body></html>
+        </div>
+      </article>
+    <nav class="post-nav" aria-label="이전/다음 글">
+      <a class="post-nav-item post-nav-item--prev" href="/posts/%EB%B0%94%EC%9D%B4%EB%B8%8C-%EC%BD%94%EB%94%A9-%EC%8B%9C%EB%8C%80-%EC%99%9C-%EB%8B%A4%EC%8B%9C-SQL%EC%9D%B8%EA%B0%80/">
+        <span class="post-nav-label">이전 글</span>
+        <span class="post-nav-title">바이브 코딩 시대, 왜 다시 SQL인가?</span>
+      </a>
+      <a class="post-nav-item post-nav-item--next" href="/posts/%EB%B3%B8%EC%A7%88%EC%A0%81-%EB%B3%B5%EC%9E%A1%EC%84%B1%EA%B3%BC-%EC%9A%B0%EC%97%B0%EC%A0%81-%EB%B3%B5%EC%9E%A1%EC%84%B1-%EC%8A%A4%ED%94%84%EB%A7%81%EC%97%90%EC%84%9C-FP%EB%8A%94-%EC%96%B4%EB%94%94%EA%B9%8C%EC%A7%80-%EB%B0%80%EC%96%B4%EB%84%A3%EC%9D%84-%EC%88%98-%EC%9E%88%EB%8A%94%EA%B0%80/">
+        <span class="post-nav-label">다음 글</span>
+        <span class="post-nav-title">본질적 복잡성과 우연적 복잡성 — 스프링에서 FP는 어디까지 밀어넣을 수 있는가</span>
+      </a>
+    </nav>
+      <nav class="post-back">
+        <a href="/">← 목록으로</a>
+      </nav>
+    </div>
+    <aside class="toc" id="toc" aria-label="목차">
+      <p class="toc-title">목차</p>
+      <ul class="toc-list">
+        <li class="toc-item toc-item--h2"><a href="#0-테스트-환경--관측-지표" data-target="0-테스트-환경--관측-지표">0. 테스트 환경 / 관측 지표</a></li>
+        <li class="toc-item toc-item--h2"><a href="#1-문제-상황" data-target="1-문제-상황">1. 문제 상황</a></li>
+        <li class="toc-item toc-item--h2"><a href="#2-왜-처음엔-이렇게-설계했나" data-target="2-왜-처음엔-이렇게-설계했나">2. 왜 처음엔 이렇게 설계했나</a></li>
+        <li class="toc-item toc-item--h2"><a href="#3-트랜잭션이-너무-오래-산다" data-target="3-트랜잭션이-너무-오래-산다">3. 트랜잭션이 너무 오래 산다</a></li>
+        <li class="toc-item toc-item--h2"><a href="#4-트랜잭션-안의-외부-io" data-target="4-트랜잭션-안의-외부-io">4. 트랜잭션 안의 외부 I/O</a></li>
+        <li class="toc-item toc-item--h2"><a href="#5-상한-계산" data-target="5-상한-계산">5. 상한 계산</a></li>
+        <li class="toc-item toc-item--h2"><a href="#6-락-대기가-커넥션을-연쇄로-묶는다" data-target="6-락-대기가-커넥션을-연쇄로-묶는다">6. 락 대기가 커넥션을 연쇄로 묶는다</a></li>
+        <li class="toc-item toc-item--h2"><a href="#7-원자성-경계를-잘못-잡았다" data-target="7-원자성-경계를-잘못-잡았다">7. 원자성 경계를 잘못 잡았다</a></li>
+        <li class="toc-item toc-item--h2"><a href="#8-왜-async가-아니라-outbox인가" data-target="8-왜-async가-아니라-outbox인가">8. 왜 @Async가 아니라 Outbox인가</a></li>
+        <li class="toc-item toc-item--h3"><a href="#옵션-a-async" data-target="옵션-a-async">옵션 A: @Async</a></li>
+        <li class="toc-item toc-item--h3"><a href="#옵션-b-transactional-outbox" data-target="옵션-b-transactional-outbox">옵션 B: Transactional Outbox</a></li>
+        <li class="toc-item toc-item--h2"><a href="#9-트랜잭션-경계-축소--outbox" data-target="9-트랜잭션-경계-축소--outbox">9. 트랜잭션 경계 축소 + Outbox</a></li>
+        <li class="toc-item toc-item--h2"><a href="#10-감수한-트레이드오프" data-target="10-감수한-트레이드오프">10. 감수한 트레이드오프</a></li>
+        <li class="toc-item toc-item--h3"><a href="#101-즉시성-대신-최대-지연을-정의했다" data-target="101-즉시성-대신-최대-지연을-정의했다">10.1 즉시성 대신 &quot;최대 지연&quot;을 정의했다</a></li>
+        <li class="toc-item toc-item--h3"><a href="#102-exactly-once는-자동으로-생기지-않는다" data-target="102-exactly-once는-자동으로-생기지-않는다">10.2 Exactly-once는 자동으로 생기지 않는다</a></li>
+        <li class="toc-item toc-item--h3"><a href="#103-outbox는-새로운-운영-대상이다" data-target="103-outbox는-새로운-운영-대상이다">10.3 Outbox는 새로운 운영 대상이다</a></li>
+        <li class="toc-item toc-item--h2"><a href="#11-결과" data-target="11-결과">11. 결과</a></li>
+        <li class="toc-item toc-item--h2"><a href="#12-핵심-인사이트" data-target="12-핵심-인사이트">12. 핵심 인사이트</a></li>
+      </ul>
+    </aside>
+  </main>
+  <footer class="site-footer">
+    <div class="container">
+      <div class="footer-links">
+        <a class="footer-link" href="https://github.com/xhae123" target="_blank" rel="noopener noreferrer">
+          <svg width="13" height="13" viewBox="0 0 16 16" fill="currentColor" aria-hidden="true">
+            <path fill-rule="evenodd" d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.012 8.012 0 0 0 16 8c0-4.42-3.58-8-8-8z"/>
+          </svg>
+          github
+        </a>
+        <a class="footer-link" href="mailto:xhae000@gmail.com">contact me</a>
+      </div>
+      <p class="footer-meta">© <span id="year"></span> xhae123</p>
+    </div>
+  </footer>
+  <script src="/app.js"></script>
+</body>
+</html>

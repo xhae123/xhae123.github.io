@@ -1,0 +1,675 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>본질적 복잡성과 우연적 복잡성 — 스프링에서 FP는 어디까지 밀어넣을 수 있는가 · xhae123&#39;s notes</title>
+  <meta name="description" content="코틀린과 스프링으로 주문 서비스를 만들면 대체로 이런 모양이 나온다." />
+  <link rel="canonical" href="https://xhae123.github.io/posts/%EB%B3%B8%EC%A7%88%EC%A0%81-%EB%B3%B5%EC%9E%A1%EC%84%B1%EA%B3%BC-%EC%9A%B0%EC%97%B0%EC%A0%81-%EB%B3%B5%EC%9E%A1%EC%84%B1-%EC%8A%A4%ED%94%84%EB%A7%81%EC%97%90%EC%84%9C-FP%EB%8A%94-%EC%96%B4%EB%94%94%EA%B9%8C%EC%A7%80-%EB%B0%80%EC%96%B4%EB%84%A3%EC%9D%84-%EC%88%98-%EC%9E%88%EB%8A%94%EA%B0%80/" />
+  <meta property="og:type" content="article" />
+  <meta property="og:site_name" content="xhae123&#39;s notes" />
+  <meta property="og:title" content="본질적 복잡성과 우연적 복잡성 — 스프링에서 FP는 어디까지 밀어넣을 수 있는가 · xhae123&#39;s notes" />
+  <meta property="og:description" content="코틀린과 스프링으로 주문 서비스를 만들면 대체로 이런 모양이 나온다." />
+  <meta property="og:url" content="https://xhae123.github.io/posts/%EB%B3%B8%EC%A7%88%EC%A0%81-%EB%B3%B5%EC%9E%A1%EC%84%B1%EA%B3%BC-%EC%9A%B0%EC%97%B0%EC%A0%81-%EB%B3%B5%EC%9E%A1%EC%84%B1-%EC%8A%A4%ED%94%84%EB%A7%81%EC%97%90%EC%84%9C-FP%EB%8A%94-%EC%96%B4%EB%94%94%EA%B9%8C%EC%A7%80-%EB%B0%80%EC%96%B4%EB%84%A3%EC%9D%84-%EC%88%98-%EC%9E%88%EB%8A%94%EA%B0%80/" />
+  <meta property="og:locale" content="ko_KR" />
+  <meta property="og:image" content="https://velog.velcdn.com/images/xe0/post/38c72e5e-bacb-4ca4-8233-f738f16f31bc/image.png" />
+  <meta name="twitter:card" content="summary_large_image" />
+  <meta name="twitter:title" content="본질적 복잡성과 우연적 복잡성 — 스프링에서 FP는 어디까지 밀어넣을 수 있는가 · xhae123&#39;s notes" />
+  <meta name="twitter:description" content="코틀린과 스프링으로 주문 서비스를 만들면 대체로 이런 모양이 나온다." />
+  <meta name="twitter:image" content="https://velog.velcdn.com/images/xe0/post/38c72e5e-bacb-4ca4-8233-f738f16f31bc/image.png" />
+  <link rel="preconnect" href="https://cdn.jsdelivr.net" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable.css" />
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500&display=swap" />
+  <link rel="stylesheet" href="/styles.css" />
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/github-dark.min.css" />
+  <meta property="article:published_time" content="2026-03-22T03:53:33.000Z" />
+  <meta property="article:author" content="김우진" />
+  <script type="application/ld+json">{"@context":"https://schema.org","@type":"BlogPosting","headline":"본질적 복잡성과 우연적 복잡성 — 스프링에서 FP는 어디까지 밀어넣을 수 있는가","description":"코틀린과 스프링으로 주문 서비스를 만들면 대체로 이런 모양이 나온다.","datePublished":"2026-03-22T03:53:33.000Z","dateModified":"2026-03-22T03:53:33.000Z","author":{"@type":"Person","name":"김우진"},"url":"https://xhae123.github.io/posts/%EB%B3%B8%EC%A7%88%EC%A0%81-%EB%B3%B5%EC%9E%A1%EC%84%B1%EA%B3%BC-%EC%9A%B0%EC%97%B0%EC%A0%81-%EB%B3%B5%EC%9E%A1%EC%84%B1-%EC%8A%A4%ED%94%84%EB%A7%81%EC%97%90%EC%84%9C-FP%EB%8A%94-%EC%96%B4%EB%94%94%EA%B9%8C%EC%A7%80-%EB%B0%80%EC%96%B4%EB%84%A3%EC%9D%84-%EC%88%98-%EC%9E%88%EB%8A%94%EA%B0%80/","mainEntityOfPage":"https://xhae123.github.io/posts/%EB%B3%B8%EC%A7%88%EC%A0%81-%EB%B3%B5%EC%9E%A1%EC%84%B1%EA%B3%BC-%EC%9A%B0%EC%97%B0%EC%A0%81-%EB%B3%B5%EC%9E%A1%EC%84%B1-%EC%8A%A4%ED%94%84%EB%A7%81%EC%97%90%EC%84%9C-FP%EB%8A%94-%EC%96%B4%EB%94%94%EA%B9%8C%EC%A7%80-%EB%B0%80%EC%96%B4%EB%84%A3%EC%9D%84-%EC%88%98-%EC%9E%88%EB%8A%94%EA%B0%80/","image":"https://velog.velcdn.com/images/xe0/post/38c72e5e-bacb-4ca4-8233-f738f16f31bc/image.png"}</script>
+</head>
+<body>
+  <header class="site-header" id="site-header">
+    <div class="container">
+      <a class="site-label" href="/">xhae123&#39;s notes</a>
+      <a class="gh-link" href="https://github.com/xhae123" target="_blank" rel="noopener noreferrer" aria-label="GitHub @xhae123">
+        <svg class="gh-icon" width="14" height="14" viewBox="0 0 16 16" fill="currentColor" aria-hidden="true">
+          <path fill-rule="evenodd" d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.012 8.012 0 0 0 16 8c0-4.42-3.58-8-8-8z"/>
+        </svg>
+        xhae123
+      </a>
+    </div>
+  </header>
+  <main class="post-layout">
+    <div class="post-main">
+      <article class="post" id="post">
+        <header class="post-header">
+          <p class="post-meta">MAR 22, 2026</p>
+          <h1 class="post-title">본질적 복잡성과 우연적 복잡성 — 스프링에서 FP는 어디까지 밀어넣을 수 있는가</h1>
+        </header>
+        <div class="post-body" id="post-body">
+<html><head></head><body><h2 id="0-익숙한-코드에서-시작한다">0. 익숙한 코드에서 시작한다</h2>
+<p>코틀린과 스프링으로 주문 서비스를 만들면 대체로 이런 모양이 나온다.</p>
+<pre data-lang="kotlin"><code class="language-kotlin hljs"><span class="hljs-meta">@Transactional</span>
+<span class="hljs-function"><span class="hljs-keyword">fun</span> <span class="hljs-title">create</span><span class="hljs-params">(request: <span class="hljs-type">OrderRequest</span>)</span></span>: OrderResponse {
+    <span class="hljs-keyword">val</span> order = GoodsOrder()
+    <span class="hljs-keyword">for</span> (itemRequest <span class="hljs-keyword">in</span> request.items) {
+        <span class="hljs-keyword">val</span> goods = goodsService.getGoods(itemRequest.goodsId)
+        goods.decreaseStock(itemRequest.quantity)
+        <span class="hljs-keyword">val</span> subtotal = goods.calculateTotalPrice(itemRequest.quantity)
+        <span class="hljs-keyword">val</span> discount = discountService.calculateDiscount(goods, quantity, subtotal)
+        <span class="hljs-keyword">val</span> orderItem = OrderItem(
+            goods = goods,
+            quantity = itemRequest.quantity,
+            unitPrice = goods.price,
+            subtotal = subtotal,
+            discountAmount = discount
+        )
+        order.addItem(orderItem)
+    }
+    order.calculatePrices()
+    <span class="hljs-keyword">return</span> OrderResponse.from(orderRepository.save(order))
+}</code></pre>
+<p>동작한다. 잘 동작한다. 그런데 뜯어보면 side effect가 여기저기 숨어있다.</p>
+<p><code>decreaseStock()</code>부터 보자. 상태를 변경하는 side effect가 있는데, 시그니처에는 드러나지 않는다.</p>
+<pre data-lang="kotlin"><code class="language-kotlin hljs"><span class="hljs-function"><span class="hljs-keyword">fun</span> <span class="hljs-title">decreaseStock</span><span class="hljs-params">(quantity: <span class="hljs-type">Int</span>)</span></span> {
+    <span class="hljs-keyword">if</span> (stock &lt; quantity) <span class="hljs-keyword">throw</span> OutOfStockException(...)
+    stock -= quantity
+}</code></pre>
+<p>반환 타입이 <code>Unit</code>이다. 이 메서드가 <code>Goods</code>의 <code>stock</code> 필드를 바꾼다는 건 구현을 열어봐야 안다. <code>cancel()</code>은 더 심하다. <code>GoodsOrder</code>의 메서드인데 <code>Goods</code>의 재고까지 바꾼다.</p>
+<pre data-lang="kotlin"><code class="language-kotlin hljs"><span class="hljs-function"><span class="hljs-keyword">fun</span> <span class="hljs-title">cancel</span><span class="hljs-params">()</span></span> {
+    changeStatus(OrderStatus.CANCELLED)
+    items.forEach { it.goods.increaseStock(it.quantity) }
+}</code></pre>
+<p>다음으로, 한 <code>for</code>문 안에 DB 조회, 재고 검증, 가격 계산, 할인 계산, 상태 변경이 전부 섞여있다. 비즈니스 로직만 따로 테스트하려면 이렇게 된다.</p>
+<pre data-lang="kotlin"><code class="language-kotlin hljs"><span class="hljs-keyword">val</span> goodsService = mock&lt;GoodsService&gt;()
+<span class="hljs-keyword">val</span> discountService = mock&lt;DiscountService&gt;()
+<span class="hljs-keyword">val</span> orderRepository = mock&lt;OrderRepository&gt;()
+whenever(goodsService.getGoods(<span class="hljs-number">1L</span>)).thenReturn(goods)
+whenever(discountService.calculateDiscount(any(), any(), any())).thenReturn(<span class="hljs-number">1000</span>)
+whenever(orderRepository.save(any())).thenAnswer { it.arguments[<span class="hljs-number">0</span>] }</code></pre>
+<p>mock 3개를 세팅하고 나서야 테스트를 시작할 수 있다. 검증하고 싶었던 건 "10,000원짜리 상품 2개 주문하면 20,000원인가?" 이 한 가지뿐인데 말이다.</p>
+<p>마지막으로, <code>decreaseStock()</code>이 재고 부족 시 예외를 던진다. 그런데 재고 부족이 정말 "예외적 상황"인가? 주문 서비스에서 재고 부족은 충분히 예상 가능한 비즈니스 결과다.</p>
+<p>이 문제들이 실무에서 왜 중요한가. 숨겨진 side effect는 코드 리뷰에서 잡기 어렵고, 새 팀원이 <code>cancel()</code>을 호출하면서 재고가 바뀌는 걸 모르면 버그로 이어진다. IO와 계산의 혼합은 테스트 작성 비용을 높이고, mock 세팅에 쏟는 시간이 쌓이면 "테스트를 안 쓰는 게 빠르다"는 유혹으로 연결된다. 예외 기반 에러 처리는 시그니처에 실패 가능성이 드러나지 않아서, 호출자가 예외를 핸들링하지 않은 채 프로덕션에 나가고 나서야 장애로 발견되는 경우가 생긴다. 개별로 보면 사소하지만, 서비스가 커지면서 이런 것들이 누적되면 개발 속도와 안정성 모두에 영향을 준다.</p>
+<hr>
+<p>이런 불편함이 쌓이면 결국 FP를 검토하게 된다. immutable data, pure function, typed error handling. 위의 문제들을 정확히 겨냥하는 도구처럼 보인다.</p>
+<p>직접 해봤다. 코틀린/스프링 주문 서비스에 FP를 극한까지 밀어넣었다. JPA 엔티티를 <code>data class</code>로 바꿨고, 예외를 <code>sealed class</code>로 대체했고, 할인 정책을 고차 함수로 전환했고, Arrow의 <code>Either</code>까지 도입했다.</p>
+<p>결론부터 말하면 — <strong>되는 것과 안 되는 것이 있었다.</strong> 흥미로운 건, "안 되는 것"의 이유가 두 종류였다는 점이다.</p>
+<p>하나는 <strong>도구의 한계</strong>다. JPA가 <code>val</code>을 거부하는 것, <code>@Transactional</code>이 <code>Either</code>를 모르는 것. 이건 다른 도구를 쓰면 사라진다.</p>
+<p>다른 하나는 <strong>문제 자체의 본성</strong>이다. 변경을 추적하려면 상태가 필요하다는 것, encapsulation을 풀면 안전망이 약해진다는 것. 이건 어떤 도구를 써도 남는다.</p>
+<p>Fred Brooks가 1986년에 쓴 "No Silver Bullet"에서는 전자를 <strong>우연적 복잡성(accidental complexity)</strong>, 후자를 <strong>본질적 복잡성(essential complexity)</strong>이라고 부른다. 이 구분이 실무에서 중요한 이유는 단순하다. <strong>대응이 완전히 다르기 때문이다.</strong></p>
+<p>우연적 벽은 선택의 문제다. 도구를 바꾸든, 관례를 존중하고 돌아가든.
+본질적 벽은 타협의 문제다. 완벽한 해결이 없으므로, 트레이드오프를 의식적으로 설계해야 한다.</p>
+<p>이 글은 코틀린/스프링 주문 서비스에 FP를 극한까지 밀어넣으면서 만난 벽들을, 하나하나 "이건 본질인가 우연인가?"로 판별한 기록이다.</p>
+<h2 id="1-jpa-엔티티를-immutable로-만들-수-있을까--우연적-벽">1. JPA 엔티티를 immutable로 만들 수 있을까? — 우연적 벽</h2>
+<p>mutable state가 side effect의 근원이라면, 가장 직관적인 해결책은 immutable로 만드는 것이다. 코틀린에는 <code>data class</code>와 <code>val</code>이라는 훌륭한 도구가 있으니, JPA 엔티티에 그대로 적용해보기로 했다.</p>
+<pre data-lang="kotlin"><code class="language-kotlin hljs"><span class="hljs-comment">// Before: 가변 엔티티</span>
+<span class="hljs-meta">@Entity</span>
+<span class="hljs-keyword">class</span> <span class="hljs-title class_">GoodsOrder</span>(
+    <span class="hljs-meta">@OneToMany(mappedBy = <span class="hljs-string">"order"</span>, cascade = [CascadeType.ALL])</span>
+    <span class="hljs-keyword">var</span> items: MutableList&lt;OrderItem&gt; = mutableListOf(),
+
+    <span class="hljs-meta">@Enumerated(EnumType.STRING)</span>
+    <span class="hljs-keyword">var</span> status: OrderStatus = OrderStatus.PENDING,
+
+    <span class="hljs-keyword">var</span> totalPrice: <span class="hljs-built_in">Int</span> = <span class="hljs-number">0</span>,
+    <span class="hljs-keyword">var</span> totalDiscount: <span class="hljs-built_in">Int</span> = <span class="hljs-number">0</span>,
+    <span class="hljs-keyword">var</span> finalPrice: <span class="hljs-built_in">Int</span> = <span class="hljs-number">0</span>,
+
+    <span class="hljs-meta">@Id</span> <span class="hljs-meta">@GeneratedValue(strategy = GenerationType.IDENTITY)</span>
+    <span class="hljs-keyword">var</span> id: <span class="hljs-built_in">Long</span> = <span class="hljs-number">0</span>
+) {
+    <span class="hljs-function"><span class="hljs-keyword">fun</span> <span class="hljs-title">addItem</span><span class="hljs-params">(item: <span class="hljs-type">OrderItem</span>)</span></span> {
+        items.add(item)
+        item.order = <span class="hljs-keyword">this</span>
+    }
+
+    <span class="hljs-function"><span class="hljs-keyword">fun</span> <span class="hljs-title">changeStatus</span><span class="hljs-params">(newStatus: <span class="hljs-type">OrderStatus</span>)</span></span> {
+        <span class="hljs-keyword">if</span> (!status.canTransitionTo(newStatus)) <span class="hljs-keyword">throw</span> InvalidStatusException(...)
+        <span class="hljs-keyword">this</span>.status = newStatus
+    }
+}</code></pre>
+<pre data-lang="kotlin"><code class="language-kotlin hljs"><span class="hljs-comment">// After: 불변 엔티티 시도</span>
+<span class="hljs-meta">@Entity</span>
+<span class="hljs-keyword">data</span> <span class="hljs-keyword">class</span> <span class="hljs-title class_">GoodsOrder</span>(
+    <span class="hljs-meta">@OneToMany(mappedBy = <span class="hljs-string">"order"</span>, cascade = [CascadeType.ALL])</span>
+    <span class="hljs-keyword">val</span> items: List&lt;OrderItem&gt; = emptyList(),
+
+    <span class="hljs-meta">@Enumerated(EnumType.STRING)</span>
+    <span class="hljs-keyword">val</span> status: OrderStatus = OrderStatus.PENDING,
+
+    <span class="hljs-keyword">val</span> totalPrice: <span class="hljs-built_in">Int</span> = <span class="hljs-number">0</span>,
+    <span class="hljs-keyword">val</span> totalDiscount: <span class="hljs-built_in">Int</span> = <span class="hljs-number">0</span>,
+    <span class="hljs-keyword">val</span> finalPrice: <span class="hljs-built_in">Int</span> = <span class="hljs-number">0</span>,
+
+    <span class="hljs-meta">@Id</span> <span class="hljs-meta">@GeneratedValue(strategy = GenerationType.IDENTITY)</span>
+    <span class="hljs-keyword">val</span> id: <span class="hljs-built_in">Long</span> = <span class="hljs-number">0</span>
+)
+
+<span class="hljs-comment">// 상태 변경은 copy()로 새 객체 반환</span>
+<span class="hljs-function"><span class="hljs-keyword">fun</span> GoodsOrder.<span class="hljs-title">withItem</span><span class="hljs-params">(item: <span class="hljs-type">OrderItem</span>)</span></span>: GoodsOrder =
+    copy(items = items + item)
+
+<span class="hljs-function"><span class="hljs-keyword">fun</span> GoodsOrder.<span class="hljs-title">withStatus</span><span class="hljs-params">(newStatus: <span class="hljs-type">OrderStatus</span>)</span></span>: GoodsOrder =
+    copy(status = newStatus)</code></pre>
+<p><code>var</code>가 <code>val</code>로 바뀌고, 상태 변경 메서드가 사라졌다. <code>order.withItem(item).withCalculatedPrices()</code>처럼 체이닝으로 의도를 표현할 수 있게 됐다. 상태 변경 순서에 대한 고민도 없다. 컴파일도 통과한다. 앱도 뜬다. INSERT도 된다.</p>
+<p><strong>그런데 UPDATE가 안 된다.</strong></p>
+<pre data-lang="kotlin"><code class="language-kotlin hljs"><span class="hljs-keyword">val</span> updated = order.withStatus(OrderStatus.CONFIRMED)
+orderRepository.save(updated)
+<span class="hljs-comment">// DB를 확인하면: status = PENDING. 안 바뀌었다.</span>
+<span class="hljs-comment">// 예외? 없다. 에러 로그? 없다. 그냥 조용히 무시된다.</span></code></pre>
+<p>컬렉션은 더 심하다.</p>
+<pre data-lang="kotlin"><code class="language-kotlin hljs"><span class="hljs-keyword">val</span> order = orderRepository.findById(<span class="hljs-number">1L</span>).<span class="hljs-keyword">get</span>()
+println(order.items.size)
+<span class="hljs-comment">// 출력: 0</span>
+<span class="hljs-comment">// 실제로는 아이템 3개를 넣었다. 500 에러도 안 난다. 정상 응답에 빈 배열이 온다.</span></code></pre>
+<p><strong>컴파일 에러가 아니라 runtime silent failure다.</strong> 이게 단순한 "안 됨"보다 훨씬 위험한 이유는, 테스트 없이는 발견할 수 없기 때문이다. 프로덕션에서 "주문했는데 상태가 안 바뀌어요" 이슈로 처음 발견될 수 있다.</p>
+<h3 id="왜-이런-일이-벌어지는가">왜 이런 일이 벌어지는가</h3>
+<p>Hibernate의 작동 원리 네 가지가 동시에 깨진다.</p>
+<p><strong>dirty checking:</strong> Hibernate는 트랜잭션이 끝날 때 엔티티 필드의 변경을 감지해서 UPDATE를 만든다. <code>val</code>이면 필드가 바뀔 수 없으니 Hibernate가 "변경 없음"으로 판단한다. UPDATE 쿼리 자체가 나가지 않는다.</p>
+<p><strong>copy()와 영속성 컨텍스트:</strong> <code>copy()</code>는 새 JVM 인스턴스를 만든다. Hibernate가 관리하고 있던 원래 인스턴스와는 완전히 별개의 객체다. <code>save()</code>를 호출해도 Hibernate는 이걸 "기존 엔티티의 갱신"이 아니라 "새 엔티티의 삽입"으로 처리하려 한다.</p>
+<p><strong>PersistentBag:</strong> <code>@OneToMany</code>로 선언된 컬렉션은 Hibernate가 자체 구현체인 <code>PersistentBag</code>으로 교체한다. 이 교체가 setter를 통해 일어나는데, <code>val</code>이면 setter가 없다. 결과적으로 Hibernate의 컬렉션이 주입되지 못하고, 생성자에서 설정한 <code>emptyList()</code>가 그대로 남는다.</p>
+<p><strong>data class의 equals/hashCode:</strong> <code>data class</code>는 모든 프로퍼티를 기반으로 <code>equals()</code>와 <code>hashCode()</code>를 생성한다. JPA는 엔티티의 동일성을 id 기반으로 관리하는데, status 하나만 바뀌어도 <code>equals()</code>가 false를 반환하면서 Hibernate의 1차 캐시 관리가 무너진다.</p>
+<h3 id="그런데-왜-컴파일은-되는가">그런데 왜 컴파일은 되는가?</h3>
+<p>코틀린의 <code>kotlin("plugin.jpa")</code>가 no-arg constructor를 자동 생성하고, <code>kotlin("plugin.spring")</code>이 <code>open</code> 키워드를 자동으로 붙여준다. JPA가 요구하는 두 가지 조건이 컴파일 시점에 조용히 충족되기 때문에, <code>data class</code> + <code>val</code> 엔티티가 아무 경고 없이 빌드된다.</p>
+<p>플러그인이 "이건 JPA 엔티티인데 <code>data class</code>로 선언하면 위험합니다" 같은 경고를 줄 수 있었을 텐데, 그런 경고는 없다. 컴파일이 되니까 동작할 거라고 생각하는 건 자연스러운 일이다.</p>
+<h3 id="판정-우연적-복잡성">판정: 우연적 복잡성</h3>
+<p>이 벽은 <strong>JPA/Hibernate의 설계 선택</strong>에서 비롯된다.</p>
+<p>immutable collection을 지원하는 ORM은 존재한다. Exposed나 jOOQ에서는 <code>val</code>과 <code>data class</code>를 자연스럽게 쓸 수 있다. Hibernate가 setter 기반으로 상태를 관리하는 건 Java 초기부터 이어져 온 설계 방식이지, 영속성이 반드시 이렇게 동작해야 하는 건 아니다.</p>
+<p>다만, 여기에는 본질적 성분이 하나 섞여있다. "변경을 추적하려면 상태가 있어야 한다"는 원리 자체는 도구에 독립적이다. dirty checking이라는 구체적 방식은 우연적이지만, 변경 추적이 가변성을 전제한다는 점은 본질적이다. 이 구분은 섹션 4에서 다시 다룬다.</p>
+<h2 id="2-벽을-돌아가다--도메인-모델-분리">2. 벽을 돌아가다 — 도메인 모델 분리</h2>
+<p>JPA 엔티티를 immutable로 만들 수 없다면, 발상을 바꿔야 한다. 엔티티 자체에 FP를 적용하는 대신, <strong>FP를 위한 별도의 모델을 만들고 비즈니스 로직을 그쪽으로 옮기는 것</strong>이다.</p>
+<p>JPA 엔티티는 그대로 둔다. <code>var</code>, <code>class</code>, <code>MutableList</code> — Hibernate가 원하는 대로. 대신 비즈니스 계산에 필요한 데이터만 뽑아서 불변 모델을 만든다.</p>
+<pre data-lang="kotlin"><code class="language-kotlin hljs"><span class="hljs-comment">/** 불변 도메인 모델 — JPA를 모른다 */</span>
+<span class="hljs-keyword">data</span> <span class="hljs-keyword">class</span> <span class="hljs-title class_">GoodsSnapshot</span>(
+    <span class="hljs-keyword">val</span> id: <span class="hljs-built_in">Long</span>,
+    <span class="hljs-keyword">val</span> name: String,
+    <span class="hljs-keyword">val</span> price: <span class="hljs-built_in">Int</span>,
+    <span class="hljs-keyword">val</span> stock: <span class="hljs-built_in">Int</span>,
+    <span class="hljs-keyword">val</span> categoryDiscountRate: <span class="hljs-built_in">Int</span>
+)</code></pre>
+<p>이 모델로 계산하는 pure function을 만든다. DB를 모르고, Spring을 모르고, 예외를 던지지 않는다.</p>
+<pre data-lang="kotlin"><code class="language-kotlin hljs"><span class="hljs-comment">/** Functional Core — pure function. 입력 → 출력만. */</span>
+<span class="hljs-keyword">object</span> OrderCalculator {
+    <span class="hljs-function"><span class="hljs-keyword">fun</span> <span class="hljs-title">calculate</span><span class="hljs-params">(
+        inputs: <span class="hljs-type">List</span>&lt;<span class="hljs-type">OrderItemInput</span>&gt;,
+        goodsMap: <span class="hljs-type">Map</span>&lt;<span class="hljs-type">Long</span>, GoodsSnapshot&gt;,
+        discountPolicy: (<span class="hljs-type">GoodsSnapshot</span>, <span class="hljs-type">Int</span>, <span class="hljs-type">Int</span>) -&gt; <span class="hljs-type">Int</span>
+    )</span></span>: OrderResult {
+        <span class="hljs-keyword">val</span> aggregated = inputs.groupBy { it.goodsId }
+            .map { (goodsId, group) -&gt; OrderItemInput(goodsId, group.sumOf { it.quantity }) }
+
+        <span class="hljs-keyword">for</span> (input <span class="hljs-keyword">in</span> aggregated) {
+            <span class="hljs-keyword">val</span> goods = goodsMap[input.goodsId]
+                ?: <span class="hljs-keyword">return</span> OrderResult.Failed(listOf(OrderError.GoodsNotFound(input.goodsId)))
+
+            <span class="hljs-keyword">if</span> (goods.stock &lt; input.quantity)
+                <span class="hljs-keyword">return</span> OrderResult.Failed(listOf(OrderError.OutOfStock(goods.id, goods.stock, input.quantity)))
+
+            <span class="hljs-keyword">val</span> subtotal = goods.price * input.quantity
+            <span class="hljs-keyword">val</span> discount = discountPolicy(goods, input.quantity, subtotal)
+            <span class="hljs-comment">// ... 결과 조립</span>
+        }
+        <span class="hljs-comment">// ... 결과 조립 생략</span>
+        <span class="hljs-keyword">return</span> OrderResult.Success(OrderCalculation(items, totalPrice, totalDiscount, finalPrice, stockDeductions))
+    }
+}</code></pre>
+<p>에러는 예외가 아니라 <code>sealed class</code>로 반환한다.</p>
+<pre data-lang="kotlin"><code class="language-kotlin hljs"><span class="hljs-keyword">sealed</span> <span class="hljs-keyword">class</span> <span class="hljs-title class_">OrderError</span> {
+    <span class="hljs-keyword">data</span> <span class="hljs-keyword">class</span> <span class="hljs-title class_">OutOfStock</span>(<span class="hljs-keyword">val</span> goodsId: <span class="hljs-built_in">Long</span>, <span class="hljs-keyword">val</span> available: <span class="hljs-built_in">Int</span>, <span class="hljs-keyword">val</span> requested: <span class="hljs-built_in">Int</span>) : OrderError()
+    <span class="hljs-keyword">data</span> <span class="hljs-keyword">class</span> <span class="hljs-title class_">GoodsNotFound</span>(<span class="hljs-keyword">val</span> goodsId: <span class="hljs-built_in">Long</span>) : OrderError()
+}
+
+<span class="hljs-keyword">sealed</span> <span class="hljs-keyword">class</span> <span class="hljs-title class_">OrderResult</span> {
+    <span class="hljs-keyword">data</span> <span class="hljs-keyword">class</span> <span class="hljs-title class_">Success</span>(<span class="hljs-keyword">val</span> calculation: OrderCalculation) : OrderResult()
+    <span class="hljs-keyword">data</span> <span class="hljs-keyword">class</span> <span class="hljs-title class_">Failed</span>(<span class="hljs-keyword">val</span> errors: List&lt;OrderError&gt;) : OrderResult()
+}</code></pre>
+<p>서비스는 IO만 담당한다. DB에서 엔티티를 꺼내고, 스냅샷으로 변환하고, Core를 호출하고, 결과에 따라 엔티티를 조립해서 저장한다.</p>
+<pre data-lang="kotlin"><code class="language-kotlin hljs"><span class="hljs-comment">/** Imperative Shell — IO 조율만 */</span>
+<span class="hljs-meta">@Transactional</span>
+<span class="hljs-function"><span class="hljs-keyword">fun</span> <span class="hljs-title">create</span><span class="hljs-params">(request: <span class="hljs-type">OrderRequest</span>)</span></span>: OrderResponse {
+    <span class="hljs-comment">// 1. IO: DB에서 상품 조회</span>
+    <span class="hljs-keyword">val</span> goodsEntities = request.items.map { it.goodsId }.distinct()
+        .associateWith { goodsService.getGoods(it) }
+
+    <span class="hljs-comment">// 2. 변환: JPA 엔티티 → 불변 스냅샷</span>
+    <span class="hljs-keyword">val</span> snapshots = goodsEntities.mapValues { (_, g) -&gt; g.toSnapshot() }
+
+    <span class="hljs-comment">// 3. Core 호출: pure computation (DB 모름, 예외 안 던짐)</span>
+    <span class="hljs-keyword">val</span> inputs = request.items.map { OrderItemInput(it.goodsId, it.quantity) }
+    <span class="hljs-keyword">val</span> result = OrderCalculator.calculate(inputs, snapshots, discountPolicy)
+
+    <span class="hljs-comment">// 4. 결과 처리: 실패면 예외, 성공이면 엔티티 조립 + 저장</span>
+    <span class="hljs-keyword">return</span> <span class="hljs-keyword">when</span> (result) {
+        <span class="hljs-keyword">is</span> OrderResult.Failed -&gt; <span class="hljs-keyword">throw</span> result.errors.first().toException()
+        <span class="hljs-keyword">is</span> OrderResult.Success -&gt; {
+            <span class="hljs-keyword">val</span> calc = result.calculation
+            <span class="hljs-keyword">for</span> (deduction <span class="hljs-keyword">in</span> calc.stockDeductions) {
+                goodsEntities[deduction.goodsId]!!.applyStockDeduction(deduction.quantity)
+            }
+            <span class="hljs-keyword">val</span> order = GoodsOrder()
+            <span class="hljs-keyword">for</span> (itemCalc <span class="hljs-keyword">in</span> calc.items) {
+                order.addItem(OrderItem(
+                    goods = goodsEntities[itemCalc.goodsId]!!,
+                    quantity = itemCalc.quantity,
+                    unitPrice = itemCalc.unitPrice,
+                    subtotal = itemCalc.subtotal,
+                    discountAmount = itemCalc.discountAmount
+                ))
+            }
+            order.totalPrice = calc.totalPrice
+            order.totalDiscount = calc.totalDiscount
+            order.finalPrice = calc.finalPrice
+            OrderResponse.from(orderRepository.save(order))
+        }
+    }
+}</code></pre>
+<p>이 구조에는 이름이 있다. Gary Bernhardt가 2012년 "Boundaries" 강연에서 발표한 <strong>Functional Core / Imperative Shell</strong> 패턴이다. pure function으로 계산하는 Core와, IO를 orchestrate하는 Shell을 분리한다.</p>
+<p><img src="https://velog.velcdn.com/images/xe0/post/38c72e5e-bacb-4ca4-8233-f738f16f31bc/image.png" alt=""></p>
+<h3 id="이-구조에서-테스트는-어떻게-달라지는가">이 구조에서 테스트는 어떻게 달라지는가</h3>
+<p>이 전환에서 가장 체감이 큰 부분이다.</p>
+<pre data-lang="kotlin"><code class="language-kotlin hljs"><span class="hljs-comment">// Before: mock 3개</span>
+<span class="hljs-keyword">val</span> goodsService = mock&lt;GoodsService&gt;()
+<span class="hljs-keyword">val</span> discountService = mock&lt;DiscountService&gt;()
+<span class="hljs-keyword">val</span> orderRepository = mock&lt;OrderRepository&gt;()
+whenever(goodsService.getGoods(<span class="hljs-number">1L</span>)).thenReturn(goods)
+whenever(discountService.calculateDiscount(any(), any(), any())).thenReturn(<span class="hljs-number">1000</span>)
+whenever(orderRepository.save(any())).thenAnswer { it.arguments[<span class="hljs-number">0</span>] }
+<span class="hljs-keyword">val</span> service = OrderService(orderRepository, goodsService, discountService)
+<span class="hljs-comment">// 이제야 테스트를 시작할 수 있다</span>
+
+
+<span class="hljs-comment">// After: mock 0개</span>
+<span class="hljs-keyword">val</span> result = OrderCalculator.calculate(
+    inputs = listOf(OrderItemInput(<span class="hljs-number">1L</span>, <span class="hljs-number">2</span>)),
+    goodsMap = mapOf(<span class="hljs-number">1L</span> to GoodsSnapshot(<span class="hljs-number">1L</span>, <span class="hljs-string">"티셔츠"</span>, <span class="hljs-number">10000</span>, <span class="hljs-number">5</span>, <span class="hljs-number">10</span>)),
+    discountPolicy = { _, _, subtotal -&gt; (subtotal * <span class="hljs-number">0.10</span>).toInt() }
+)
+assert(result <span class="hljs-keyword">is</span> OrderResult.Success)
+assertEquals(<span class="hljs-number">18000</span>, (result <span class="hljs-keyword">as</span> OrderResult.Success).calculation.finalPrice)
+<span class="hljs-comment">// 끝. DB 없다. 스프링 컨텍스트 없다. mock 없다.</span></code></pre>
+<p>DB가 필요 없으니 테스트가 밀리초 단위로 돌아간다. 같은 입력이면 항상 같은 출력이 나오니 결과가 결정적이다. "이 테스트가 왜 실패했지?"라는 고민이 사라진다 — 입력만 보면 된다.</p>
+<h3 id="대가-shell이-뚱뚱해졌다">대가: Shell이 뚱뚱해졌다</h3>
+<p>1회차 <code>create()</code>는 15줄이었다. FC/IS를 적용한 후 35줄이 됐다. 매핑 코드(엔티티 → 스냅샷, Core 결과 → 엔티티)가 늘어난 것이다.</p>
+<p>그런데 이 "늘어난 코드"를 자세히 보면, 상당 부분이 <strong>1회차에서 암묵적이었던 것의 명시화</strong>다.</p>
+<p>예를 들어, 같은 상품이 여러 번 들어올 때의 수량 합산. 1회차에서는 JPA 1차 캐시의 인스턴스 동일성에 의존해서 "우연히" 동작하고 있었다. 2회차에서는 Core가 <code>groupBy</code>로 명시적으로 합산한다. 코드 한 줄이 늘었지만, JPA 구현의 내부 동작에 의존하지 않게 됐다.</p>
+<p>순수 매핑 코드(toSnapshot, 엔티티 조립)는 진짜 새로운 overhead다. 모델을 분리하면 반드시 따라오는 비용이다. 이 비용이 Core의 테스트 용이성을 상쇄하는가는 프로젝트 규모에 따라 다르다. 비즈니스 로직이 복잡할수록 Core의 이득이 커지고, 매핑의 비용은 일정하니, 규모가 커질수록 이득이 압도한다.</p>
+<p>FC/IS 구조가 잡혔으니, 이제 Core에 넣을 수 있는 비즈니스 로직을 더 찾아볼 차례다. 재고 검증과 할인 정책 — 이 두 곳에서 FP 전환이 어떤 마찰을 일으키는지, 그리고 그 벽이 본질인지 우연인지를 확인한다.</p>
+<h2 id="3-pure-function의-영역을-넓히다">3. Pure function의 영역을 넓히다</h2>
+<h3 id="3-1-재고-검증--본질적-긴장-encapsulation-vs-composition">3-1. 재고 검증 — 본질적 긴장: encapsulation vs composition</h3>
+<p>1회차 코드에서 재고 차감은 <code>Goods</code> 엔티티의 메서드였다.</p>
+<pre data-lang="kotlin"><code class="language-kotlin hljs"><span class="hljs-keyword">class</span> <span class="hljs-title class_">Goods</span> {
+    <span class="hljs-function"><span class="hljs-keyword">fun</span> <span class="hljs-title">decreaseStock</span><span class="hljs-params">(quantity: <span class="hljs-type">Int</span>)</span></span> {
+        <span class="hljs-keyword">if</span> (stock &lt; quantity) <span class="hljs-keyword">throw</span> OutOfStockException(
+            <span class="hljs-string">"재고가 부족합니다. 현재 재고: <span class="hljs-variable">$stock</span>, 요청 수량: <span class="hljs-variable">$quantity</span>"</span>
+        )
+        stock -= quantity
+    }
+}</code></pre>
+<p>이 메서드는 두 가지 일을 한다. <strong>validation</strong>(재고가 충분한가?)과 <strong>execution</strong>(재고를 줄여라). OOP 관점에서는 자연스럽다. 객체가 자기 invariant(stock &gt;= 0)를 스스로 지키는 것이니까.</p>
+<p>그런데 2회차에서는 이미 Core(<code>OrderCalculator</code>)에서 재고 검증을 하고 있다. Shell에서 <code>decreaseStock()</code>을 호출하면 <strong>같은 검증이 두 번 실행</strong>된다. 게다가 Core는 <code>sealed class</code>로 에러를 반환하는데, <code>decreaseStock()</code>은 예외를 던진다. 패턴이 충돌한다.</p>
+<p>검증과 실행을 분리했다.</p>
+<pre data-lang="kotlin"><code class="language-kotlin hljs"><span class="hljs-comment">// Core: pure function. Int 두 개 넣으면 결과 나온다.</span>
+<span class="hljs-function"><span class="hljs-keyword">fun</span> <span class="hljs-title">validateStock</span><span class="hljs-params">(stock: <span class="hljs-type">Int</span>, quantity: <span class="hljs-type">Int</span>)</span></span>: StockValidation =
+    <span class="hljs-keyword">if</span> (stock &gt;= quantity) StockValidation.Sufficient
+    <span class="hljs-keyword">else</span> StockValidation.Insufficient(available = stock, requested = quantity)
+
+<span class="hljs-comment">// 엔티티: 검증 없이 차감만. Core가 검증을 보장한다.</span>
+<span class="hljs-keyword">class</span> <span class="hljs-title class_">Goods</span> {
+    <span class="hljs-function"><span class="hljs-keyword">fun</span> <span class="hljs-title">applyStockDeduction</span><span class="hljs-params">(quantity: <span class="hljs-type">Int</span>)</span></span> {
+        stock -= quantity
+    }
+}</code></pre>
+<p><code>validateStock(10, 3)</code>은 <code>StockValidation.Sufficient</code>를 반환한다. mock이 필요 없다. DB도 필요 없다. 함수 하나를 호출하면 끝이다.</p>
+<p>side effect도 해소됐다. <code>Goods</code> 엔티티에서 <code>OutOfStockException</code> import가 사라졌다. 도메인 엔티티가 Spring의 HTTP 예외(<code>HttpStatus</code>를 참조하는 <code>BusinessException</code>)에 의존하던 문제가 끊어진 것이다.</p>
+<p>그러나 여기에는 트레이드오프가 있다. <code>applyStockDeduction()</code>은 검증 없이 재고를 차감한다. 누군가 Core를 거치지 않고 이 메서드를 직접 호출하면 음수 재고가 될 수 있다. 1회차의 <code>decreaseStock()</code>은 그 자체로 안전했다. 호출자가 누구든 재고 부족이면 예외가 터졌다.</p>
+<p><strong>판정: 본질적 복잡성.</strong></p>
+<p>도구의 문제가 아니다. encapsulation(객체가 자기를 방어)과 composition(검증과 실행을 분리해서 조합)은 어떤 언어, 어떤 프레임워크에서든 존재하는 설계 trade-off다. encapsulation을 풀면 유연해지지만 방어막이 약해진다. composition을 하면 테스트가 쉬워지지만 convention에 의존하게 된다. FC/IS에서는 "Shell이 항상 Core를 먼저 호출하고, Core의 결과에 따라서만 실행한다"는 플로우 자체를 방어막으로 삼는다. 컴파일러가 강제하지는 않지만, 코드 리뷰에서 잡을 수 있는 수준이다.</p>
+<h3 id="3-2-할인-정책--우연적-벽만-있는-곳">3-2. 할인 정책 — 우연적 벽만 있는 곳</h3>
+<p>재고 검증에서 본질적 긴장을 경험한 직후, 할인 정책을 전환했다. 대비가 극명했다.</p>
+<p>1회차의 할인 정책은 전략 패턴(Strategy Pattern)으로 구현되어 있었다.</p>
+<pre data-lang="kotlin"><code class="language-kotlin hljs"><span class="hljs-keyword">interface</span> <span class="hljs-title class_">DiscountPolicy</span> {
+    <span class="hljs-function"><span class="hljs-keyword">fun</span> <span class="hljs-title">calculate</span><span class="hljs-params">(goods: <span class="hljs-type">Goods</span>, quantity: <span class="hljs-type">Int</span>, subtotal: <span class="hljs-type">Int</span>)</span></span>: <span class="hljs-built_in">Int</span>
+}
+
+<span class="hljs-meta">@Component</span>
+<span class="hljs-keyword">class</span> <span class="hljs-title class_">QuantityDiscountPolicy</span> : <span class="hljs-type">DiscountPolicy</span> {
+    <span class="hljs-keyword">override</span> <span class="hljs-function"><span class="hljs-keyword">fun</span> <span class="hljs-title">calculate</span><span class="hljs-params">(goods: <span class="hljs-type">Goods</span>, quantity: <span class="hljs-type">Int</span>, subtotal: <span class="hljs-type">Int</span>)</span></span>: <span class="hljs-built_in">Int</span> =
+        <span class="hljs-keyword">if</span> (quantity &gt;= <span class="hljs-number">3</span>) (subtotal * <span class="hljs-number">0.10</span>).toInt() <span class="hljs-keyword">else</span> <span class="hljs-number">0</span>
+}
+
+<span class="hljs-meta">@Component</span>
+<span class="hljs-keyword">class</span> <span class="hljs-title class_">CategoryDiscountPolicy</span> : <span class="hljs-type">DiscountPolicy</span> {
+    <span class="hljs-keyword">override</span> <span class="hljs-function"><span class="hljs-keyword">fun</span> <span class="hljs-title">calculate</span><span class="hljs-params">(goods: <span class="hljs-type">Goods</span>, quantity: <span class="hljs-type">Int</span>, subtotal: <span class="hljs-type">Int</span>)</span></span>: <span class="hljs-built_in">Int</span> {
+        <span class="hljs-keyword">if</span> (goods.category.discountRate &lt;= <span class="hljs-number">0</span>) <span class="hljs-keyword">return</span> <span class="hljs-number">0</span>
+        <span class="hljs-keyword">return</span> (subtotal * goods.category.discountRate / <span class="hljs-number">100.0</span>).toInt()
+    }
+}
+
+<span class="hljs-meta">@Service</span>
+<span class="hljs-keyword">class</span> <span class="hljs-title class_">DiscountService</span>(<span class="hljs-keyword">private</span> <span class="hljs-keyword">val</span> policies: List&lt;DiscountPolicy&gt;) {
+    <span class="hljs-function"><span class="hljs-keyword">fun</span> <span class="hljs-title">calculateDiscount</span><span class="hljs-params">(goods: <span class="hljs-type">Goods</span>, quantity: <span class="hljs-type">Int</span>, subtotal: <span class="hljs-type">Int</span>)</span></span>: <span class="hljs-built_in">Int</span> =
+        policies.maxOfOrNull { it.calculate(goods, quantity, subtotal) } ?: <span class="hljs-number">0</span>
+}</code></pre>
+<p>인터페이스 1개, 구현체 2개, 서비스 1개. 파일 2개. 클래스 4개.</p>
+<p>그런데 <code>DiscountPolicy</code> 인터페이스를 보면, 메서드가 하나다. <code>calculate()</code> 하나. 이건 본질적으로 함수 타입 <code>(Goods, Int, Int) -&gt; Int</code>과 같다.</p>
+<pre data-lang="kotlin"><code class="language-kotlin hljs"><span class="hljs-keyword">typealias</span> DiscountPolicy = (GoodsSnapshot, <span class="hljs-built_in">Int</span>, <span class="hljs-built_in">Int</span>) -&gt; <span class="hljs-built_in">Int</span>
+
+<span class="hljs-keyword">val</span> quantityDiscount: DiscountPolicy = { _, quantity, subtotal -&gt;
+    <span class="hljs-keyword">if</span> (quantity &gt;= <span class="hljs-number">3</span>) (subtotal * <span class="hljs-number">0.10</span>).toInt() <span class="hljs-keyword">else</span> <span class="hljs-number">0</span>
+}
+
+<span class="hljs-keyword">val</span> categoryDiscount: DiscountPolicy = { goods, _, subtotal -&gt;
+    <span class="hljs-keyword">if</span> (goods.categoryDiscountRate &lt;= <span class="hljs-number">0</span>) <span class="hljs-number">0</span>
+    <span class="hljs-keyword">else</span> (subtotal * goods.categoryDiscountRate / <span class="hljs-number">100.0</span>).toInt()
+}
+
+<span class="hljs-function"><span class="hljs-keyword">fun</span> <span class="hljs-title">bestDiscount</span><span class="hljs-params">(policies: <span class="hljs-type">List</span>&lt;<span class="hljs-type">DiscountPolicy</span>&gt;)</span></span>: DiscountPolicy =
+    { goods, quantity, subtotal -&gt;
+        policies.maxOfOrNull { it(goods, quantity, subtotal) } ?: <span class="hljs-number">0</span>
+    }
+
+<span class="hljs-keyword">val</span> defaultDiscountPolicy = bestDiscount(listOf(quantityDiscount, categoryDiscount))</code></pre>
+<p>클래스 4개가 함수 3개 + 고차 함수 1개가 됐다. 파일 2개가 1개가 됐다. <code>@Component</code>와 <code>@Service</code>가 사라졌다. <code>Goods</code> 엔티티에 대한 의존도 사라졌다 — <code>GoodsSnapshot</code>을 받으니 Core에서 직접 쓸 수 있다.</p>
+<p>Shell에 있던 어색한 브릿지 코드도 사라졌다. 1회차에서는 <code>DiscountService</code>가 <code>Goods</code> 엔티티를 받는데 Core는 <code>GoodsSnapshot</code>을 쓰기 때문에, Shell에서 함수 타입으로 래핑하는 변환 코드가 필요했다. 할인 정책 자체가 <code>GoodsSnapshot</code> 기반이 되면서 브릿지가 불필요해졌다.</p>
+<p><strong>이 전환에서 마찰이 거의 없었던 이유는 단순하다.</strong> 할인 정책에는 IO가 없다. DB를 읽지 않는다. state를 변경하지 않는다. 입력(상품 정보, 수량, 소계)을 받아서 출력(할인 금액)을 반환할 뿐이다. 본질적으로 pure computation이니, pure function으로 표현하는 데 아무 저항이 없다.</p>
+<p><strong>판정: 우연적 복잡성.</strong></p>
+<p>SAM(Single Abstract Method) 인터페이스를 interface + class + DI로 구현한 건 Spring의 convention에서 비롯된 것이다. Strategy Pattern의 본질은 "behavior를 교체 가능하게 만든다"이고, 이건 function type으로도 동일하게 달성할 수 있다. OOP에서는 interface로, FP에서는 function type으로 — <strong>둘 다 "behavior를 값으로 다루기"라는 같은 본질에 도달하는 서로 다른 경로</strong>다.</p>
+<p>단, 정책이 DB에서 할인율을 읽어야 한다면 이야기가 달라진다. IO가 필요해지면 pure function이 깨지고, Shell에서 값을 미리 조회해서 Core에 주입하는 구조가 필요해진다. 현재 구현에서는 할인율이 하드코딩이라 문제가 없지만, 이건 "운이 좋은" 케이스다.</p>
+<h3 id="두-전환의-대비에서-보이는-패턴">두 전환의 대비에서 보이는 패턴</h3>
+<p>재고 검증은 본질적 긴장이 있었다. 할인 정책은 벽이 없었다. 차이가 뭔가?</p>
+<p><strong>"이 로직에 IO가 있는가?"</strong></p>
+<p>할인 정책: IO가 없다. pure computation이다. → FP 전환 마찰 제로.
+재고 검증: 검증은 pure하지만, 차감은 IO(상태 변경)다. → 분리는 가능하지만 encapsulation과의 긴장.
+재고 차감: IO다. 엔티티의 상태를 바꾼다. → FP로 만들 수 없다. Shell의 영역.</p>
+<p><strong>IO의 유무가 FP 전환의 난이도를 결정한다.</strong> IO가 없으면 벽이 없다. IO가 있으면 분리가 필요하고, 분리하면 본질적 트레이드오프를 마주하게 된다. 이것이 섹션 3의 핵심 발견이다.</p>
+<h2 id="4-벽에-부딪히다--본질과-우연이-동시에-오는-구간">4. 벽에 부딪히다 — 본질과 우연이 동시에 오는 구간</h2>
+<p>섹션 3까지는 "자연스러운 개선"의 영역이었다. 코틀린 기본 기능만으로, 스프링과 싸우지 않으면서 FP를 적용할 수 있었다. 여기서부터 달라진다.</p>
+<h3 id="4-1-cancel은-왜-core로-빠지지-않는가--본질적-벽">4-1. cancel()은 왜 Core로 빠지지 않는가 — 본질적 벽</h3>
+<p><code>create()</code>는 FC/IS로 깔끔하게 분리됐다. 그러면 <code>cancel()</code>도 같은 방식으로 할 수 있을까?</p>
+<p>1회차의 <code>cancel()</code>은 이렇게 생겼다.</p>
+<pre data-lang="kotlin"><code class="language-kotlin hljs"><span class="hljs-function"><span class="hljs-keyword">fun</span> <span class="hljs-title">cancel</span><span class="hljs-params">()</span></span> {
+    changeStatus(OrderStatus.CANCELLED)
+    items.forEach { it.goods.increaseStock(it.quantity) }
+}</code></pre>
+<p>상태 전이 검증은 pure function으로 뺄 수 있었다.</p>
+<pre data-lang="kotlin"><code class="language-kotlin hljs"><span class="hljs-function"><span class="hljs-keyword">fun</span> <span class="hljs-title">validateStatusTransition</span><span class="hljs-params">(from: <span class="hljs-type">OrderStatus</span>, to: <span class="hljs-type">OrderStatus</span>)</span></span>: StatusTransitionResult =
+    <span class="hljs-keyword">if</span> (from.canTransitionTo(to)) StatusTransitionResult.Allowed(from, to)
+    <span class="hljs-keyword">else</span> StatusTransitionResult.Denied(from, to)</code></pre>
+<p><code>validateStatusTransition(PENDING, CANCELLED)</code>은 pure function이다. mock도 DB도 필요 없다. 여기까지는 좋다.</p>
+<p>문제는 재고 복원(<code>items.forEach { it.goods.increaseStock(it.quantity) }</code>)이다. 이걸 Core에서 "명령서"로 만들어보려 했다. <code>CancelCommand</code>, <code>StockRestoration</code>, <code>OrderItemSnapshot</code> — 3개의 타입과 <code>buildStockRestorations</code> 함수를 만들었다.</p>
+<p>그리고 전부 지웠다.</p>
+<p>만들어도 Shell에서 결국 JPA 엔티티(<code>items.forEach { it.goods }</code>)로 실행해야 하니, 명령서가 중간에 낀 번역 비용만 추가하는 셈이었다. Core가 "goodsId 1번의 재고를 2개 복원하라"는 명령서를 만들어도, Shell은 그 명령서를 해체해서 다시 JPA 관계 그래프를 탐색해야 한다. YAGNI 위반이다.</p>
+<p><strong><code>create()</code>와 <code>cancel()</code>의 결정적 차이:</strong></p>
+<p><img src="https://velog.velcdn.com/images/xe0/post/71ae9fb6-8e40-489e-a1cc-f58aa0b87923/image.png" alt=""></p>
+<p><strong>판정: 본질적 복잡성.</strong></p>
+<p>이건 JPA 때문이 아니다. Exposed를 쓰든, jOOQ를 쓰든, "이미 영속화된 데이터를 조작하는 유스케이스"에서는 pure function이 할 수 있는 게 검증뿐이고, 실행은 필연적으로 상태 변경이다. 섹션 1에서 예고했던 본질적 성분 — "변경을 추적하려면 상태가 있어야 한다"는 원리가 여기서 구체적으로 드러난다. dirty checking이라는 구체적 방식은 우연적이지만, "이미 있는 것을 바꾸는 행위 자체가 상태 변경을 전제한다"는 것은 본질적이다.</p>
+<p><strong>"새로 만드는 것"은 FP에 유리하고, "이미 있는 것을 바꾸는 것"은 OOP에 유리하다.</strong> 이건 도구의 문제가 아니라 도메인의 본성이다.</p>
+<p>cancel()에서 본질적 벽을 확인한 뒤, 다른 방향으로 FP를 밀어봤다. 이번에는 에러 처리 — 예외를 완전히 제거하면 어떻게 되는가?</p>
+<h3 id="4-2-예외를-제거하면-무엇을-잃는가--우연적-벽의-집중포화">4-2. 예외를 제거하면 무엇을 잃는가 — 우연적 벽의 집중포화</h3>
+<p>Core는 <code>sealed class</code>로 에러를 반환하지만, Shell(서비스)에서 다시 예외로 변환해서 <code>@ControllerAdvice</code>에 맡기고 있었다. 이 변환을 제거해보기로 했다. 서비스가 <code>Either&lt;OrderError, OrderResponse&gt;</code>를 반환하고, 컨트롤러에서 직접 HTTP 매핑을 하는 구조다.</p>
+<pre data-lang="kotlin"><code class="language-kotlin hljs"><span class="hljs-comment">// Before: 서비스가 예외를 던지고, @ControllerAdvice가 글로벌 핸들링</span>
+<span class="hljs-meta">@RestController</span>
+<span class="hljs-keyword">class</span> <span class="hljs-title class_">OrderController</span> {
+    <span class="hljs-meta">@PostMapping</span> <span class="hljs-meta">@ResponseStatus(HttpStatus.CREATED)</span>
+    <span class="hljs-function"><span class="hljs-keyword">fun</span> <span class="hljs-title">create</span><span class="hljs-params">(<span class="hljs-meta">@RequestBody</span> request: <span class="hljs-type">OrderRequest</span>)</span></span>: OrderResponse {
+        <span class="hljs-keyword">return</span> orderService.create(request)  <span class="hljs-comment">// 한 줄</span>
+    }
+}
+
+<span class="hljs-comment">// After: 서비스가 Either 반환, 컨트롤러가 fold</span>
+<span class="hljs-meta">@RestController</span>
+<span class="hljs-keyword">class</span> <span class="hljs-title class_">OrderController</span> {
+    <span class="hljs-meta">@PostMapping</span>
+    <span class="hljs-function"><span class="hljs-keyword">fun</span> <span class="hljs-title">create</span><span class="hljs-params">(<span class="hljs-meta">@RequestBody</span> request: <span class="hljs-type">OrderRequest</span>)</span></span>: ResponseEntity&lt;Any&gt; {
+        <span class="hljs-keyword">return</span> orderService.create(request).fold(
+            ifLeft = { it.toResponseEntity() },
+            ifRight = { ResponseEntity.status(HttpStatus.CREATED).body(it) }
+        )
+    }
+}</code></pre>
+<p>변경 후 잃은 것들이 쏟아졌다.</p>
+<p><strong><code>@ControllerAdvice</code>의 글로벌 핸들링이 깨졌다.</strong> 1회차에서는 서비스가 예외를 던지면 <code>@ControllerAdvice</code>가 한 곳에서 HTTP 매핑을 처리했다. 컨트롤러는 비즈니스 로직을 호출하기만 하면 됐다. sealed class로 바꾸자 모든 컨트롤러 메서드에 <code>fold</code> 분기가 반복됐다.</p>
+<p><strong><code>ResponseEntity&lt;Any&gt;</code>.</strong> 성공이면 <code>OrderResponse</code>, 실패면 <code>ErrorResponse</code>. 컴파일러는 <code>Any</code>만 보니 타입 안전성이 사라졌다. Swagger 문서 자동 생성도 깨진다.</p>
+<p><strong>프로젝트 내 일관성 파괴.</strong> 주문 도메인만 sealed class 기반이고, 상품/카테고리는 여전히 예외 기반이다. 한 프로젝트에 에러 처리 방식이 두 개 공존하는 셈이다.</p>
+<p>여기서 아이러니한 발견이 있었다.</p>
+<blockquote>
+<p><strong><code>@ControllerAdvice</code>는 "예외의 글로벌 핸들러"이자 "스프링이 이미 제공하고 있는 FP적 관심사 분리"였다.</strong></p>
+</blockquote>
+<p>1회차의 <code>@ControllerAdvice</code>가 하던 일을 다시 보면 — 에러 처리를 비즈니스 로직에서 분리해서 한 곳에 모아 처리한다. 이건 FP에서 말하는 "관심사 분리"를 AOP로 달성하고 있는 것이다. sealed class로 바꾸면 이 분리가 깨지고 에러 처리가 각 컨트롤러로 흩어진다.</p>
+<p><strong>FP가 항상 관심사 분리에 유리한 건 아니다.</strong> 프레임워크가 이미 제공하는 분리 메커니즘을 FP로 대체하면 오히려 관심사가 흩어질 수 있다.</p>
+<p><strong>판정: 우연적 복잡성.</strong> <code>@ControllerAdvice</code>가 예외 전용인 건 스프링의 설계 선택이다. Ktor의 <code>StatusPages</code>는 값 기반 에러도 처리한다. 그러나 스프링 안에서 이 벽을 넘으려면, <strong>비용이 원래 문제의 비용보다 크다.</strong> 이게 우연적 복잡성의 핵심 특성이다 — "불가능"이 아니라 "비용 과다".</p>
+<h2 id="5-transactional의-함정--바이트코드를-까보다">5. @Transactional의 함정 — 바이트코드를 까보다</h2>
+<p>섹션 4-2에서 예외를 제거하고 <code>Either</code>를 도입했다. 수제 <code>sealed class</code>(<code>OrderResult</code>)로 시작했지만, 서비스와 컨트롤러까지 값 기반 에러를 관통시키려면 결국 Arrow의 <code>Either&lt;OrderError, T&gt;</code>와 <code>Raise</code> DSL이 필요했다. 에러 전파를 <code>raise()</code>/<code>bind()</code>로 자동화하기 위해서다.</p>
+<p>그런데 <code>Either</code>를 도입한 뒤, 한 가지 의문이 남았다. <code>@Transactional</code> 메서드가 <code>Either.Left</code>를 반환하면, 트랜잭션은 롤백되는가 커밋되는가?</p>
+<p>결론부터 말하면 — <strong>커밋된다.</strong> 이유를 알려면 Arrow의 내부를 열어봐야 한다.</p>
+<h3 id="arrow-raise의-정체">Arrow Raise의 정체</h3>
+<p>Arrow의 <code>either { }</code> 블록 안에서 <code>raise(error)</code>를 호출하면, 내부적으로 예외가 던져진다.</p>
+<pre data-lang="aspectj"><code class="hljs">raise(<span class="hljs-keyword">error</span>)
+  → <span class="hljs-keyword">throw</span> NoTrace(<span class="hljs-keyword">error</span>, raise)
+      <span class="hljs-keyword">extends</span> RaiseCancellationException
+          <span class="hljs-keyword">extends</span> CancellationException
+              <span class="hljs-keyword">extends</span> IllegalStateException
+                  <span class="hljs-keyword">extends</span> RuntimeException</code></pre>
+<p><code>RuntimeException</code>의 자식이다. 스프링의 <code>@Transactional</code>은 <code>RuntimeException</code>이면 롤백한다. 그러면 롤백되어야 하지 않은가?</p>
+<h3 id="실행-순서가-답이다">실행 순서가 답이다</h3>
+<p><code>either { }</code>는 코틀린의 <code>inline fun</code>이다. 메서드의 바이트코드 안에 인라인된다. 내부적으로는 평범한 <code>try-catch</code>다.</p>
+<pre data-lang="aspectj"><code class="hljs"><span class="hljs-meta">@Transactional</span> AOP 프록시 (바깥)
+  └─ 실제 메서드 호출
+      └─ either { } 의 <span class="hljs-keyword">try</span>-<span class="hljs-keyword">catch</span> (안쪽)
+          └─ raise(<span class="hljs-keyword">error</span>)
+          └─ → <span class="hljs-keyword">throw</span> NoTrace
+          └─ <span class="hljs-keyword">catch</span> (e: RaiseCancellationException) → Either.Left(<span class="hljs-keyword">error</span>) 반환
+      └─ 메서드가 Either.Left를 정상 반환
+  └─ 프록시가 보는 것: 예외 없이 정상 반환됨 → commit</code></pre>
+<p><code>either { }</code>의 <code>try-catch</code>가 <code>@Transactional</code> 프록시보다 <strong>안쪽</strong>에 있다. <code>raise()</code>가 던진 예외는 <code>either</code>가 먼저 잡아서 <code>Either.Left</code>로 변환한다. 프록시는 예외를 볼 기회가 없다. 정상 반환으로 인식하고 커밋한다.</p>
+<h3 id="왜-이게-위험한가">왜 이게 위험한가</h3>
+<p>현재 코드는 안전하다. FC/IS 원칙에 따라 Core 호출(pure computation)이 IO(재고 차감) <strong>이전에</strong> 실행되기 때문이다. 계산이 실패하면 IO에 도달하지 않고 <code>Either.Left</code>로 빠져나간다.</p>
+<p>하지만 순서가 바뀌면?</p>
+<pre data-lang="kotlin"><code class="language-kotlin hljs"><span class="hljs-meta">@Transactional</span>
+<span class="hljs-function"><span class="hljs-keyword">fun</span> <span class="hljs-title">dangerousCreate</span><span class="hljs-params">(request: <span class="hljs-type">OrderRequest</span>)</span></span>: Either&lt;OrderError, OrderResponse&gt; = either {
+    <span class="hljs-comment">// IO: 재고를 먼저 차감했다</span>
+    goodsEntities[goodsId]!!.applyStockDeduction(quantity)
+
+    <span class="hljs-comment">// Core: 그 다음에 계산을 한다</span>
+    <span class="hljs-keyword">val</span> calc = OrderCalculator.calculateEither(inputs, snapshots, policy).bind()
+    <span class="hljs-comment">//                                                                   ^^^^</span>
+    <span class="hljs-comment">// bind()가 Left면 raise() → 예외 → either가 catch → Either.Left 반환</span>
+    <span class="hljs-comment">// @Transactional은 커밋</span>
+    <span class="hljs-comment">// → 재고는 줄었는데 주문은 생성되지 않음. 데이터 정합성 파괴.</span>
+}</code></pre>
+<p>예외 기반이었다면 이런 문제가 없다. <code>throw</code>하면 <code>@Transactional</code>이 잡아서 롤백한다. IO 순서와 무관하게 안전하다.</p>
+<p><strong><code>Either</code>를 쓰면 예외가 제공하던 안전망(자동 롤백)이 사라진다.</strong> 그리고 이건 Arrow의 문제가 아니라, 값 기반 에러 처리와 예외 기반 트랜잭션 관리가 만나는 지점에서 발생하는 구조적 간극이다.</p>
+<h3 id="spring-팀의-공식-입장">Spring 팀의 공식 입장</h3>
+<p><strong>Spring Framework #27323</strong> — "<code>Result</code> return types for <code>@Transactional</code> Kotlin functions" → <strong>declined.</strong></p>
+<p>Spring 팀은 <code>Result</code>나 <code>Either</code> 같은 값 기반 에러 패턴을 <code>@Transactional</code>에서 인식하도록 지원할 계획이 없다고 밝혔다. 트랜잭션 롤백은 예외 기반으로만 동작한다.</p>
+<p><strong>판정: 우연적 복잡성이다.</strong> 값 기반 롤백은 기술적으로 구현 가능하다. Spring 팀이 하지 않기로 결정한 것이다.</p>
+<p>그러나 이 우연적 복잡성은 단순하지 않다. <code>@Transactional</code>의 예외 기반 롤백, <code>@ControllerAdvice</code>의 예외 기반 핸들링, <code>ResponseEntity</code>의 타입 시스템 — 이것들이 전부 "예외로 에러를 표현한다"는 하나의 세계관 위에 서있다. 개별 컴포넌트의 설계 선택이 아니라 <strong>프레임워크의 철학</strong>이다.</p>
+<blockquote>
+<p><strong>우연적 복잡성도 충분히 쌓이면 본질적처럼 느껴진다.</strong> 하나의 벽은 넘을 수 있지만, 벽이 프레임워크의 모든 레이어에 걸쳐 있으면 "프레임워크를 바꾸는 것"에 가까운 비용이 든다. 스프링 안에서 FP의 에러 처리를 밀어넣는 건, 결국 스프링의 세계관과 싸우는 일이다.</p>
+</blockquote>
+<h2 id="6-벽의-지도--어디서-싸우고-어디서-돌아가는가">6. 벽의 지도 — 어디서 싸우고 어디서 돌아가는가</h2>
+<p>여정을 정리한다.</p>
+<h3 id="판별-결과-종합">판별 결과 종합</h3>
+<table>
+<thead><tr>
+<th>전환</th>
+<th>벽의 종류</th>
+<th>대응</th>
+</tr></thead>
+<tbody>
+<tr>
+<td>JPA 엔티티 불변화 (섹션 1)</td>
+<td>우연적</td>
+<td>돌아감 — 도메인 모델 분리</td>
+</tr>
+<tr>
+<td>FC/IS 도입 (섹션 2)</td>
+<td>—</td>
+<td>우연적 벽 우회를 위한 구조 설계</td>
+</tr>
+<tr>
+<td>재고 검증 분리 (섹션 3-1)</td>
+<td>본질적</td>
+<td>타협 — 플로우로 안전 보장</td>
+</tr>
+<tr>
+<td>할인 정책 전환 (섹션 3-2)</td>
+<td>우연적</td>
+<td>해소 — pure computation이라 벽 자체가 없음</td>
+</tr>
+<tr>
+<td>cancel() Core 분리 (섹션 4-1)</td>
+<td>본질적</td>
+<td>타협 — 검증만 Core, 실행은 Shell</td>
+</tr>
+<tr>
+<td>예외 제거 (섹션 4-2)</td>
+<td>우연적</td>
+<td>돌아감 — 비용이 이득을 초과</td>
+</tr>
+<tr>
+<td>@Transactional + Either (섹션 5)</td>
+<td>우연적</td>
+<td>돌아감 — 안전망 상실 위험</td>
+</tr>
+</tbody>
+</table>
+<p>여기서 패턴이 보인다.</p>
+<p><strong>pure computation 영역</strong>(할인 정책, 재고 검증, 주문 가격 계산)에서는 FP 전환이 자연스럽고 이득이 컸다. accidental wall은 쉽게 넘거나 돌아갔고, essential wall은 타협 가능한 수준이었다.</p>
+<p><strong>프레임워크 infrastructure 영역</strong>(@Transactional, @ControllerAdvice, ResponseEntity)에서는 accidental wall이 한꺼번에 터졌다. 개별로는 넘을 수 있었지만, 전부 "예외 기반"이라는 하나의 세계관에 묶여있어서, 하나를 바꾸면 전체가 흔들렸다.</p>
+<h3 id="최적-멈춤-지점">최적 멈춤 지점</h3>
+<p><img src="https://velog.velcdn.com/images/xe0/post/c033870d-5aff-4461-932e-35e5ea14f3db/image.png" alt=""></p>
+<p><strong>손익분기선은 "pure computation"과 "framework infrastructure"의 경계에 있다.</strong> 
+pure computation 영역까지는 밀어도 괜찮다. 그 너머는 프레임워크의 세계관과 싸우게 된다.</p>
+<h3 id="실무-구조-core에서-fp-shell에서-oop-경계에서-변환">실무 구조: "Core에서 FP, Shell에서 OOP, 경계에서 변환"</h3>
+<pre data-lang="kotlin"><code class="language-kotlin hljs"><span class="hljs-comment">// ✅ Core: pure function. Either로 에러 표현. mock 0개 테스트 가능.</span>
+<span class="hljs-keyword">object</span> OrderCalculator {
+    <span class="hljs-function"><span class="hljs-keyword">fun</span> <span class="hljs-title">calculate</span><span class="hljs-params">(
+        inputs: <span class="hljs-type">List</span>&lt;<span class="hljs-type">OrderItemInput</span>&gt;,
+        goodsMap: <span class="hljs-type">Map</span>&lt;<span class="hljs-type">Long</span>, GoodsSnapshot&gt;,
+        discountPolicy: <span class="hljs-type">DiscountPolicy</span>
+    )</span></span>: Either&lt;OrderError, OrderCalculation&gt; = either {
+        <span class="hljs-comment">// pure computation only. DB 모름. 예외 안 던짐.</span>
+    }
+}
+
+<span class="hljs-comment">// ✅ 도메인 모델: 불변. JPA 무관.</span>
+<span class="hljs-keyword">data</span> <span class="hljs-keyword">class</span> <span class="hljs-title class_">GoodsSnapshot</span>(<span class="hljs-keyword">val</span> id: <span class="hljs-built_in">Long</span>, <span class="hljs-keyword">val</span> price: <span class="hljs-built_in">Int</span>, <span class="hljs-keyword">val</span> stock: <span class="hljs-built_in">Int</span>, ...)
+
+<span class="hljs-comment">// ✅ 할인 정책: 함수 타입 + 고차 함수.</span>
+<span class="hljs-keyword">typealias</span> DiscountPolicy = (GoodsSnapshot, <span class="hljs-built_in">Int</span>, <span class="hljs-built_in">Int</span>) -&gt; <span class="hljs-built_in">Int</span>
+<span class="hljs-keyword">val</span> defaultPolicy = bestDiscount(listOf(quantityDiscount, categoryDiscount))
+
+<span class="hljs-comment">// ⚠️ Shell: 스프링 관례 유지. Core의 Either → 예외로 변환.</span>
+<span class="hljs-meta">@Service</span>
+<span class="hljs-keyword">class</span> <span class="hljs-title class_">OrderService</span>(...) {
+    <span class="hljs-meta">@Transactional</span>
+    <span class="hljs-function"><span class="hljs-keyword">fun</span> <span class="hljs-title">create</span><span class="hljs-params">(request: <span class="hljs-type">OrderRequest</span>)</span></span>: OrderResponse {
+        <span class="hljs-keyword">val</span> calc = OrderCalculator.calculate(inputs, snapshots, defaultPolicy)
+            .getOrElse { error -&gt; <span class="hljs-keyword">throw</span> error.toException() }
+        <span class="hljs-comment">// ↑ 경계에서 변환: Either → 예외. @Transactional 롤백 안전.</span>
+        <span class="hljs-comment">// IO: 재고 차감, 엔티티 조립, 저장</span>
+        ...
+    }
+}
+
+<span class="hljs-comment">// ✅ 컨트롤러: 단순 위임. @ControllerAdvice가 에러 처리.</span>
+<span class="hljs-meta">@RestController</span>
+<span class="hljs-keyword">class</span> <span class="hljs-title class_">OrderController</span>(<span class="hljs-keyword">private</span> <span class="hljs-keyword">val</span> orderService: OrderService) {
+    <span class="hljs-meta">@PostMapping</span> <span class="hljs-meta">@ResponseStatus(HttpStatus.CREATED)</span>
+    <span class="hljs-function"><span class="hljs-keyword">fun</span> <span class="hljs-title">create</span><span class="hljs-params">(<span class="hljs-meta">@RequestBody</span> request: <span class="hljs-type">OrderRequest</span>)</span></span>: OrderResponse =
+        orderService.create(request)
+}</code></pre>
+<p>이 구조가 하는 것을 정리하면 이렇다.</p>
+<ul>
+<li>
+<strong>Core</strong>: FP를 자유롭게 쓴다. <code>Either</code>, <code>sealed class</code>, pure function — 벽이 없으니 마음껏.</li>
+<li>
+<strong>Shell</strong>: 스프링 관례를 존중한다. <code>@Service</code>, <code>@Transactional</code>, 예외 기반 에러 — 프레임워크와 싸우지 않는다.</li>
+<li>
+<strong>경계</strong>: <code>Either</code>를 예외로 변환한다. <code>getOrElse { throw it.toException() }</code> — 이 한 줄이 두 세계를 연결한다.</li>
+</ul>
+<p><code>@Transactional</code>이 롤백을 보장하고, <code>@ControllerAdvice</code>가 에러를 글로벌하게 처리하고, 컨트롤러는 한 줄로 남는다. 프레임워크가 제공하는 안전망을 그대로 활용하면서, Core의 테스트 용이성은 확보된다.</p>
+<h2 id="7-결론">7. 결론</h2>
+<p>이 글을 관통하는 질문은 하나였다. <strong>"이 벽은 본질적인가, 우연적인가?"</strong></p>
+<p>essential wall은 타협의 대상이다. encapsulation을 풀면 유연해지지만 방어막이 약해진다. 생성은 FP에 유리하지만 변경은 OOP에 유리하다. 이건 어떤 도구를 써도 남는 trade-off이고, 완벽한 해결이 아니라 의식적 설계가 필요하다.</p>
+<p>우연적 벽은 선택의 대상이다. JPA의 <code>PersistentBag</code>이 <code>val</code>을 거부하는 건 넘을 수 있다 — 도메인 모델을 분리하면 된다. <code>@ControllerAdvice</code>가 예외 전용인 건 넘을 수 있다 — 그러나 비용이 이득을 초과하면 돌아가는 게 낫다.</p>
+<p>극한까지 밀어봐야 이 판별이 가능해진다. 밀어보기 전에는 "이론적으로 FC/IS가 좋다"에서 멈추게 된다. 밀어봤기 때문에 <code>@Transactional</code>이 <code>raise()</code>를 어떻게 처리하는지, <code>@ControllerAdvice</code>가 이미 관심사 분리를 제공하고 있었다는 것을 발견할 수 있었다.</p>
+<p>마지막으로 하나. FP vs OOP라는 프레이밍 자체가 정확하지 않다는 생각이 들었다. 더 정확한 변수는 <strong>pure vs impure</strong>다.</p>
+<ul>
+<li>IO가 없는 pure computation → paradigm에 관계없이 테스트가 쉽고 추론이 쉽다.</li>
+<li>IO가 있는 impure code → paradigm에 관계없이 mock이 필요하고 복잡도가 올라간다.</li>
+</ul>
+<p>FC/IS가 하는 일의 본질은 "FP를 도입하는 것"이 아니라 <strong>"pure한 것과 impure한 것을 구조적으로 분리하는 것"</strong>이다. 그리고 그 분리의 경계가, 스프링에서 FP가 살 수 있는 자리다.</p>
+<p>이 글이 다룬 범위는 <strong>단일 서비스 내부의 계층 설계</strong>다. 서비스 간 통신에서의 에러 전파(gRPC의 Status, 이벤트 기반 아키텍처에서의 실패 처리 등)나, 분산 환경에서의 트랜잭션 관리는 또 다른 차원의 문제이고, 본질/우연의 구분도 달라질 수 있다. 이 부분은 별도의 주제로 다뤄져야 한다.</p>
+<blockquote>
+<p>*"There is no single development, in either technology or management technique, which by itself promises even one order of magnitude improvement within a decade in productivity, in reliability, in simplicity."*
+— Fred Brooks, "No Silver Bullet" (1986)</p>
+</blockquote>
+<p>40년이 지났다. FP도 은탄환이 아니다. 그러나 벽의 종류를 알면, 어디서 싸우고 어디서 돌아갈지는 판단할 수 있다.</p>
+</body></html>
+        </div>
+      </article>
+    <nav class="post-nav" aria-label="이전/다음 글">
+      <a class="post-nav-item post-nav-item--prev" href="/posts/%ED%8A%B8%EB%9E%9C%EC%9E%AD%EC%85%98%EC%9D%98-%EA%B2%BD%EA%B3%84%EB%8A%94-%EC%96%B4%EB%96%BB%EA%B2%8C-%EC%A0%95%ED%95%B4%EC%95%BC%ED%95%A0%EA%B9%8C-Outbox-pattern%EC%9C%BC%EB%A1%9C-%EA%B2%BD%EA%B3%84-%EC%A4%84%EC%9D%B4%EA%B8%B0/">
+        <span class="post-nav-label">이전 글</span>
+        <span class="post-nav-title">트랜잭션의 경계는 어떻게 정해야할까: Outbox pattern으로 경계 줄이기</span>
+      </a>
+      <a class="post-nav-item post-nav-item--next" href="/posts/%EA%B7%B9%EB%8F%84%EB%A1%9C-%EB%B0%9C%EC%A0%84%EB%90%9C-%EB%AA%85%EC%84%B8%ED%94%84%EB%A1%AC%ED%94%84%ED%8A%B8%EB%8A%94-%EC%BD%94%EB%93%9C%EC%99%80-%EA%B5%AC%EB%B3%84%EB%90%98%EC%A7%80-%EC%95%8A%EB%8A%94%EB%8B%A4/">
+        <span class="post-nav-label">다음 글</span>
+        <span class="post-nav-title">극도로 발전된 명세(프롬프트)는 코드와 구별되지 않는다</span>
+      </a>
+    </nav>
+      <nav class="post-back">
+        <a href="/">← 목록으로</a>
+      </nav>
+    </div>
+    <aside class="toc" id="toc" aria-label="목차">
+      <p class="toc-title">목차</p>
+      <ul class="toc-list">
+        <li class="toc-item toc-item--h2"><a href="#0-익숙한-코드에서-시작한다" data-target="0-익숙한-코드에서-시작한다">0. 익숙한 코드에서 시작한다</a></li>
+        <li class="toc-item toc-item--h2"><a href="#1-jpa-엔티티를-immutable로-만들-수-있을까--우연적-벽" data-target="1-jpa-엔티티를-immutable로-만들-수-있을까--우연적-벽">1. JPA 엔티티를 immutable로 만들 수 있을까? — 우연적 벽</a></li>
+        <li class="toc-item toc-item--h3"><a href="#왜-이런-일이-벌어지는가" data-target="왜-이런-일이-벌어지는가">왜 이런 일이 벌어지는가</a></li>
+        <li class="toc-item toc-item--h3"><a href="#그런데-왜-컴파일은-되는가" data-target="그런데-왜-컴파일은-되는가">그런데 왜 컴파일은 되는가?</a></li>
+        <li class="toc-item toc-item--h3"><a href="#판정-우연적-복잡성" data-target="판정-우연적-복잡성">판정: 우연적 복잡성</a></li>
+        <li class="toc-item toc-item--h2"><a href="#2-벽을-돌아가다--도메인-모델-분리" data-target="2-벽을-돌아가다--도메인-모델-분리">2. 벽을 돌아가다 — 도메인 모델 분리</a></li>
+        <li class="toc-item toc-item--h3"><a href="#이-구조에서-테스트는-어떻게-달라지는가" data-target="이-구조에서-테스트는-어떻게-달라지는가">이 구조에서 테스트는 어떻게 달라지는가</a></li>
+        <li class="toc-item toc-item--h3"><a href="#대가-shell이-뚱뚱해졌다" data-target="대가-shell이-뚱뚱해졌다">대가: Shell이 뚱뚱해졌다</a></li>
+        <li class="toc-item toc-item--h2"><a href="#3-pure-function의-영역을-넓히다" data-target="3-pure-function의-영역을-넓히다">3. Pure function의 영역을 넓히다</a></li>
+        <li class="toc-item toc-item--h3"><a href="#3-1-재고-검증--본질적-긴장-encapsulation-vs-composition" data-target="3-1-재고-검증--본질적-긴장-encapsulation-vs-composition">3-1. 재고 검증 — 본질적 긴장: encapsulation vs composition</a></li>
+        <li class="toc-item toc-item--h3"><a href="#3-2-할인-정책--우연적-벽만-있는-곳" data-target="3-2-할인-정책--우연적-벽만-있는-곳">3-2. 할인 정책 — 우연적 벽만 있는 곳</a></li>
+        <li class="toc-item toc-item--h3"><a href="#두-전환의-대비에서-보이는-패턴" data-target="두-전환의-대비에서-보이는-패턴">두 전환의 대비에서 보이는 패턴</a></li>
+        <li class="toc-item toc-item--h2"><a href="#4-벽에-부딪히다--본질과-우연이-동시에-오는-구간" data-target="4-벽에-부딪히다--본질과-우연이-동시에-오는-구간">4. 벽에 부딪히다 — 본질과 우연이 동시에 오는 구간</a></li>
+        <li class="toc-item toc-item--h3"><a href="#4-1-cancel은-왜-core로-빠지지-않는가--본질적-벽" data-target="4-1-cancel은-왜-core로-빠지지-않는가--본질적-벽">4-1. cancel()은 왜 Core로 빠지지 않는가 — 본질적 벽</a></li>
+        <li class="toc-item toc-item--h3"><a href="#4-2-예외를-제거하면-무엇을-잃는가--우연적-벽의-집중포화" data-target="4-2-예외를-제거하면-무엇을-잃는가--우연적-벽의-집중포화">4-2. 예외를 제거하면 무엇을 잃는가 — 우연적 벽의 집중포화</a></li>
+        <li class="toc-item toc-item--h2"><a href="#5-transactional의-함정--바이트코드를-까보다" data-target="5-transactional의-함정--바이트코드를-까보다">5. @Transactional의 함정 — 바이트코드를 까보다</a></li>
+        <li class="toc-item toc-item--h3"><a href="#arrow-raise의-정체" data-target="arrow-raise의-정체">Arrow Raise의 정체</a></li>
+        <li class="toc-item toc-item--h3"><a href="#실행-순서가-답이다" data-target="실행-순서가-답이다">실행 순서가 답이다</a></li>
+        <li class="toc-item toc-item--h3"><a href="#왜-이게-위험한가" data-target="왜-이게-위험한가">왜 이게 위험한가</a></li>
+        <li class="toc-item toc-item--h3"><a href="#spring-팀의-공식-입장" data-target="spring-팀의-공식-입장">Spring 팀의 공식 입장</a></li>
+        <li class="toc-item toc-item--h2"><a href="#6-벽의-지도--어디서-싸우고-어디서-돌아가는가" data-target="6-벽의-지도--어디서-싸우고-어디서-돌아가는가">6. 벽의 지도 — 어디서 싸우고 어디서 돌아가는가</a></li>
+        <li class="toc-item toc-item--h3"><a href="#판별-결과-종합" data-target="판별-결과-종합">판별 결과 종합</a></li>
+        <li class="toc-item toc-item--h3"><a href="#최적-멈춤-지점" data-target="최적-멈춤-지점">최적 멈춤 지점</a></li>
+        <li class="toc-item toc-item--h3"><a href="#실무-구조-core에서-fp-shell에서-oop-경계에서-변환" data-target="실무-구조-core에서-fp-shell에서-oop-경계에서-변환">실무 구조: &quot;Core에서 FP, Shell에서 OOP, 경계에서 변환&quot;</a></li>
+        <li class="toc-item toc-item--h2"><a href="#7-결론" data-target="7-결론">7. 결론</a></li>
+      </ul>
+    </aside>
+  </main>
+  <footer class="site-footer">
+    <div class="container">
+      <div class="footer-links">
+        <a class="footer-link" href="https://github.com/xhae123" target="_blank" rel="noopener noreferrer">
+          <svg width="13" height="13" viewBox="0 0 16 16" fill="currentColor" aria-hidden="true">
+            <path fill-rule="evenodd" d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.012 8.012 0 0 0 16 8c0-4.42-3.58-8-8-8z"/>
+          </svg>
+          github
+        </a>
+        <a class="footer-link" href="mailto:xhae000@gmail.com">contact me</a>
+      </div>
+      <p class="footer-meta">© <span id="year"></span> xhae123</p>
+    </div>
+  </footer>
+  <script src="/app.js"></script>
+</body>
+</html>

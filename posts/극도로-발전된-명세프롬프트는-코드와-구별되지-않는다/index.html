@@ -1,0 +1,182 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>극도로 발전된 명세(프롬프트)는 코드와 구별되지 않는다 · xhae123&#39;s notes</title>
+  <meta name="description" content="Karpathy가 &quot;가장 핫한 새 프로그래밍 언어는 영어&quot;라고 했을 때 많은 사람이 고개를 끄덕였다. 나도 그랬다. 근데 직접 자연어로 에이전트를 제어하는 문서를 쓰고, 그게 깨지는 걸 반복해서 겪고 나니까 좀 다른 생각이 들었다. 영어가 프로그래밍 언어가 된 게 아니라, 프로그래밍 언" />
+  <link rel="canonical" href="https://xhae123.github.io/posts/%EA%B7%B9%EB%8F%84%EB%A1%9C-%EB%B0%9C%EC%A0%84%EB%90%9C-%EB%AA%85%EC%84%B8%ED%94%84%EB%A1%AC%ED%94%84%ED%8A%B8%EB%8A%94-%EC%BD%94%EB%93%9C%EC%99%80-%EA%B5%AC%EB%B3%84%EB%90%98%EC%A7%80-%EC%95%8A%EB%8A%94%EB%8B%A4/" />
+  <meta property="og:type" content="article" />
+  <meta property="og:site_name" content="xhae123&#39;s notes" />
+  <meta property="og:title" content="극도로 발전된 명세(프롬프트)는 코드와 구별되지 않는다 · xhae123&#39;s notes" />
+  <meta property="og:description" content="Karpathy가 &quot;가장 핫한 새 프로그래밍 언어는 영어&quot;라고 했을 때 많은 사람이 고개를 끄덕였다. 나도 그랬다. 근데 직접 자연어로 에이전트를 제어하는 문서를 쓰고, 그게 깨지는 걸 반복해서 겪고 나니까 좀 다른 생각이 들었다. 영어가 프로그래밍 언어가 된 게 아니라, 프로그래밍 언" />
+  <meta property="og:url" content="https://xhae123.github.io/posts/%EA%B7%B9%EB%8F%84%EB%A1%9C-%EB%B0%9C%EC%A0%84%EB%90%9C-%EB%AA%85%EC%84%B8%ED%94%84%EB%A1%AC%ED%94%84%ED%8A%B8%EB%8A%94-%EC%BD%94%EB%93%9C%EC%99%80-%EA%B5%AC%EB%B3%84%EB%90%98%EC%A7%80-%EC%95%8A%EB%8A%94%EB%8B%A4/" />
+  <meta property="og:locale" content="ko_KR" />
+  <meta name="twitter:card" content="summary" />
+  <meta name="twitter:title" content="극도로 발전된 명세(프롬프트)는 코드와 구별되지 않는다 · xhae123&#39;s notes" />
+  <meta name="twitter:description" content="Karpathy가 &quot;가장 핫한 새 프로그래밍 언어는 영어&quot;라고 했을 때 많은 사람이 고개를 끄덕였다. 나도 그랬다. 근데 직접 자연어로 에이전트를 제어하는 문서를 쓰고, 그게 깨지는 걸 반복해서 겪고 나니까 좀 다른 생각이 들었다. 영어가 프로그래밍 언어가 된 게 아니라, 프로그래밍 언" />
+  <link rel="preconnect" href="https://cdn.jsdelivr.net" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable.css" />
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500&display=swap" />
+  <link rel="stylesheet" href="/styles.css" />
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/github-dark.min.css" />
+  <meta property="article:published_time" content="2026-03-23T04:47:16.000Z" />
+  <meta property="article:author" content="김우진" />
+  <script type="application/ld+json">{"@context":"https://schema.org","@type":"BlogPosting","headline":"극도로 발전된 명세(프롬프트)는 코드와 구별되지 않는다","description":"Karpathy가 \"가장 핫한 새 프로그래밍 언어는 영어\"라고 했을 때 많은 사람이 고개를 끄덕였다. 나도 그랬다. 근데 직접 자연어로 에이전트를 제어하는 문서를 쓰고, 그게 깨지는 걸 반복해서 겪고 나니까 좀 다른 생각이 들었다. 영어가 프로그래밍 언어가 된 게 아니라, 프로그래밍 언","datePublished":"2026-03-23T04:47:16.000Z","dateModified":"2026-03-23T04:47:16.000Z","author":{"@type":"Person","name":"김우진"},"url":"https://xhae123.github.io/posts/%EA%B7%B9%EB%8F%84%EB%A1%9C-%EB%B0%9C%EC%A0%84%EB%90%9C-%EB%AA%85%EC%84%B8%ED%94%84%EB%A1%AC%ED%94%84%ED%8A%B8%EB%8A%94-%EC%BD%94%EB%93%9C%EC%99%80-%EA%B5%AC%EB%B3%84%EB%90%98%EC%A7%80-%EC%95%8A%EB%8A%94%EB%8B%A4/","mainEntityOfPage":"https://xhae123.github.io/posts/%EA%B7%B9%EB%8F%84%EB%A1%9C-%EB%B0%9C%EC%A0%84%EB%90%9C-%EB%AA%85%EC%84%B8%ED%94%84%EB%A1%AC%ED%94%84%ED%8A%B8%EB%8A%94-%EC%BD%94%EB%93%9C%EC%99%80-%EA%B5%AC%EB%B3%84%EB%90%98%EC%A7%80-%EC%95%8A%EB%8A%94%EB%8B%A4/"}</script>
+</head>
+<body>
+  <header class="site-header" id="site-header">
+    <div class="container">
+      <a class="site-label" href="/">xhae123&#39;s notes</a>
+      <a class="gh-link" href="https://github.com/xhae123" target="_blank" rel="noopener noreferrer" aria-label="GitHub @xhae123">
+        <svg class="gh-icon" width="14" height="14" viewBox="0 0 16 16" fill="currentColor" aria-hidden="true">
+          <path fill-rule="evenodd" d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.012 8.012 0 0 0 16 8c0-4.42-3.58-8-8-8z"/>
+        </svg>
+        xhae123
+      </a>
+    </div>
+  </header>
+  <main class="post-layout">
+    <div class="post-main">
+      <article class="post" id="post">
+        <header class="post-header">
+          <p class="post-meta">MAR 23, 2026</p>
+          <h1 class="post-title">극도로 발전된 명세(프롬프트)는 코드와 구별되지 않는다</h1>
+        </header>
+        <div class="post-body" id="post-body">
+<html><head></head><body><p>Karpathy가 "가장 핫한 새 프로그래밍 언어는 영어"라고 했을 때 많은 사람이 고개를 끄덕였다. 나도 그랬다. 근데 직접 자연어로 에이전트를 제어하는 문서를 쓰고, 그게 깨지는 걸 반복해서 겪고 나니까 좀 다른 생각이 들었다. 영어가 프로그래밍 언어가 된 게 아니라, 프로그래밍 언어처럼 써야만 동작하는 거 아닌가.</p>
+<hr>
+<h2 id="배경">배경</h2>
+<p>Claude Code에는 SKILL이라는 시스템이 있다. <code>.claude/skills/</code> 디렉토리에 마크다운 문서를 두면 AI가 그걸 읽고 특정 작업을 수행한다. Slack에 메시지를 보내거나, DB 변경을 승인하거나, 코드를 검증하거나.</p>
+<p>한동안 이걸 만들고 부수는 걸 반복했다. 문제는 같은 문서가 어떤 날은 되고 어떤 날은 안 된다는 거였다. 대화 맥락이 달라지면 AI가 같은 문장을 다르게 해석했다. 그래서 SKILL 문서의 품질을 검증하는 프레임워크를 만들었다. 이 과정에서 느낀 것들을 정리해본다.</p>
+<hr>
+<h2 id="코드는-허용-목록이고-프롬프트는-차단-목록이다">코드는 허용 목록이고, 프롬프트는 차단 목록이다</h2>
+<p>DB 변경을 승인하는 SKILL을 만들었다. 처음 버전은 이랬다.</p>
+<pre data-lang="markdown"><code class="language-markdown hljs"><span class="hljs-section">## 프로세스</span>
+<span class="hljs-bullet">1.</span> SQL 검증을 수행한다
+<span class="hljs-bullet">2.</span> Jira 티켓을 확인한다
+<span class="hljs-bullet">3.</span> 승인 처리를 한다</code></pre>
+<p>대부분의 경우 잘 됐다. 근데 가끔 AI가 SQL 검증 단계에서 "이 쿼리 성능 이슈가 있어서 수정해드리겠습니다"라고 하면서 쿼리를 고쳐버렸다. 시킨 적 없다. 근데 "고치지 마라"고 쓴 적도 없었다.</p>
+<p>이게 코드와의 결정적 차이다. <code>validateSQL(query)</code>라는 함수를 짜면, 그 함수는 validation 로직 안에 있는 것만 한다. 쿼리를 수정하는 코드를 안 넣었으면 수정을 못 한다. 당연한 얘기다. 근데 자연어로 "SQL 검증을 수행한다"라고 쓰면, AI는 "검증" 안에 수정도 포함될 수 있다고 판단한다.</p>
+<p>코드는 쓴 것만 할 수 있다. 안 쓴 건 불가능하다. 자연어는 막은 것만 안 한다. 안 막은 건 해버린다. 기본값이 반대다.</p>
+<p>방화벽으로 치면, 코드는 화이트리스트 방화벽이다. 허용 규칙에 있는 트래픽만 통과한다. 프롬프트는 블랙리스트 방화벽이다. 차단 규칙에 없는 건 전부 통과한다.</p>
+<hr>
+<h2 id="실제로-어떻게-닫아갔는가">실제로 어떻게 닫아갔는가</h2>
+<p>위의 SQL 수정 문제를 고치고 나면 또 다른 구멍이 나왔다.</p>
+<p>금지 사항을 추가했더니 이번엔 Slack 링크가 아닌 입력이 들어왔을 때 AI가 알아서 URL을 추측해서 처리했다. 그걸 막았더니 이번엔 Jira 티켓이 이미 승인된 상태인데 또 승인 요청을 날렸다. 한 구멍을 막으면 다른 구멍이 터진다. 블랙리스트 방화벽의 숙명이다. 안 막은 건 뚫린다.</p>
+<p>검증 프레임워크를 만든 건 이 삽질을 체계화하고 싶어서였다. SKILL이 깨지는 패턴을 모았더니 분류가 됐다.</p>
+<p>AI가 지시 범위를 넘어서 자기 판단으로 행동하는 문제가 있었다(Intent Drift). <code>as needed</code>, <code>if appropriate</code>, <code>consider</code> 같은 표현이 있으면 거의 확실히 터졌다. 이런 위임 표현은 코드로 치면 타입이 <code>any</code>인 변수다. 뭐든 들어갈 수 있으니까 뭐든 한다. 체크리스트를 만들었다. 금지 항목이 최소 2개 이상 명시돼 있는지, 위임 표현이 포함돼 있지 않은지, AI가 재량으로 분기할 수 있는 지점에 명시적 기준이 있는지.</p>
+<p>대화 맥락에 오염되는 문제도 있었다(Context Contamination). 직전에 "공격적으로 리팩토링해"라는 대화가 있었으면, 바로 다음에 호출한 SKILL도 공격적으로 동작했다. 함수로 치면 말이 안 되는 일이다. <code>calculateDiscount(price, rate)</code>를 호출하는데, 직전에 호출한 함수가 뭐였는지에 따라 결과가 달라진다? 전역 변수를 안 썼는데? 근데 LLM에서는 이게 일상이다. 전체 대화가 하나의 거대한 전역 상태인 셈이다.</p>
+<p>이 문제는 격리 선언("이전 맥락을 무시하라")으로 못 막는다는 걸 빨리 알았다. 그래서 방향을 바꿨다. 오염을 막는 대신, 오염됐을 때 피해 범위를 측정하는 쪽으로. 읽기 전용 SKILL이면 오염돼도 큰 문제가 아니다. 근데 DB를 바꾸거나 Jira를 승인하는 SKILL이 오염되면 프로덕션에 영향이 간다. 그래서 blast radius를 Local/Team/Production 3단계로 나누고, Production 단계에서 사전 확인 게이트가 없으면 FAIL 판정을 내렸다.</p>
+<p>이런 식으로 총 7개 차원이 만들어졌고, SKILL 하나를 검증하면 이런 결과가 나온다.</p>
+<pre data-lang="stylus"><code class="hljs">/validate-skill approve-db-changes
+
+<span class="hljs-selector-attr">[1]</span> Intent Drift Prevention       WARN — 금지 섹션 없음. 금지 항목 <span class="hljs-number">0</span>개
+<span class="hljs-selector-attr">[2]</span> Intent Corruption Prevention  FAIL — 불변 조건 섹션 없음. 입출력 예시 없음
+<span class="hljs-selector-attr">[3]</span> Intent Completeness           FAIL — 미정의: 비정상 입력, 누락된 티켓, API 실패
+<span class="hljs-selector-attr">[4]</span> Trigger Clarity               PASS — 트리거 <span class="hljs-number">3</span>개 명확. 충돌 없음
+<span class="hljs-selector-attr">[5]</span> Environment Dependencies      WARN — 토큰 명시됐으나 획득 경로 미기술
+<span class="hljs-selector-attr">[6]</span> Context Contamination Risk    WARN — Jira 승인(Production) + <span class="hljs-built_in">Slack</span>(Team). 확인 게이트 모호
+<span class="hljs-selector-attr">[7]</span> Testability                   FAIL — 책임 분리 없음. 실패 원인 구분 불가</code></pre>
+<p>FAIL이 나오면 고치고 다시 돌린다. 이 루프를 통과한 최종 문서는 이렇게 생겼다.</p>
+<pre data-lang="markdown"><code class="language-markdown hljs"><span class="hljs-section">## execute@approve-db-changes</span>
+
+<span class="hljs-strong">**Input**</span>: Slack 메시지 링크 (https://team.slack.com/archives/... 형식)
+<span class="hljs-strong">**Output**</span>: Jira 티켓 승인 완료 메시지 또는 에러
+
+<span class="hljs-section">### 프로세스</span>
+<span class="hljs-bullet">1.</span> Slack 링크에서 SQL 쿼리 본문을 추출한다
+<span class="hljs-bullet">2.</span> SQL 문법 검증을 수행한다 (구문 오류 여부만 판단)
+<span class="hljs-bullet">3.</span> Jira 티켓 상태를 조회한다
+<span class="hljs-bullet">4.</span> 사용자에게 승인 내역을 보여주고 Y/N 확인을 받는다
+<span class="hljs-bullet">5.</span> Y인 경우에만 Jira 티켓을 승인 처리한다
+
+<span class="hljs-section">### 불변 조건</span>
+<span class="hljs-bullet">-</span> 실행 순서: SQL 추출 → 문법 검증 → Jira 조회 → 사용자 확인 → 승인. 변경 불가.
+<span class="hljs-bullet">-</span> SQL 검증이 실패하면 이후 단계를 진행하지 않는다.
+<span class="hljs-bullet">-</span> 사용자가 Y를 입력하기 전까지 Jira API를 호출하지 않는다.
+
+<span class="hljs-section">### 금지 사항</span>
+<span class="hljs-bullet">-</span> SQL 쿼리를 수정하거나 대안을 제안하지 마라
+<span class="hljs-bullet">-</span> SQL 성능 분석, 실행 계획 확인, 인덱스 제안을 하지 마라
+<span class="hljs-bullet">-</span> Jira 티켓 상태를 검증 없이 변경하지 마라
+<span class="hljs-bullet">-</span> 승인 사유를 AI가 자체 작성하지 마라
+<span class="hljs-bullet">-</span> 사용자 확인 없이 승인을 진행하지 마라
+<span class="hljs-bullet">-</span> 에러 발생 시 재시도하지 마라
+
+<span class="hljs-section">### 엣지 케이스</span>
+<span class="hljs-bullet">-</span> Slack 링크가 아닌 입력 → "Slack 메시지 링크를 입력해주세요" 반환
+<span class="hljs-bullet">-</span> Slack 링크이나 SQL이 없는 메시지 → "SQL 쿼리를 찾을 수 없습니다" 반환
+<span class="hljs-bullet">-</span> Jira 티켓이 이미 승인된 상태 → "이미 처리된 티켓입니다" 반환
+<span class="hljs-bullet">-</span> Jira 티켓이 존재하지 않음 → "티켓을 찾을 수 없습니다" 반환
+<span class="hljs-bullet">-</span> API 응답 실패 → 재시도 없이 에러 메시지 반환
+<span class="hljs-bullet">-</span> 사용자가 N 입력 → "승인이 취소되었습니다" 반환
+
+<span class="hljs-section">### Requires</span>
+<span class="hljs-bullet">-</span> JIRA<span class="hljs-emphasis">_API_</span>TOKEN
+<span class="hljs-bullet">-</span> SLACK<span class="hljs-emphasis">_USER_</span>TOKEN</code></pre>
+<p>처음 3줄이었던 문서가 이렇게 됐다. 입력 타입, 출력 타입, 실행 순서 강제, 금지 6개, 분기 조건, 에러 핸들링, 의존성 선언. 한국어를 걷어내고 기호로 바꾸면 코드다.</p>
+<hr>
+<h2 id="근데-이러면-llm-쓸-이유가-있나">근데 이러면 LLM 쓸 이유가 있나</h2>
+<p>해석의 여지가 남아 있다는 건 문제이기도 하지만, 그게 LLM이 강력한 이유이기도 하다. 빈 곳을 자기 판단으로 채운다. "SQL 검증을 수행한다"라고만 써도 맥락 보고 알아서 문법 검사를 하기도 하고 성능 분석을 하기도 한다. 코드로 이걸 하려면 분기를 다 짜야 한다.</p>
+<p>내가 한 건 이 유연함을 체계적으로 없애는 작업이었다. 극단적으로 밀면 완벽하게 제약된 프롬프트는 그냥 코드다. LLM 쓸 이유가 없다.</p>
+<p>프레임워크를 만들면서 찾은 나름의 기준은, 되돌릴 수 없는 행위일수록 닫아야 한다는 거다. DB를 바꾸는 SKILL, Jira 티켓을 승인하는 SKILL, 프로덕션 배포. 이런 데서 AI의 재량은 리스크다. 반대로 코드 리뷰, 리서치, 초안 작성 같은 건 열어둘 가치가 있다. 내가 못 본 관점을 채워주는 게 LLM의 가치니까.</p>
+<p><strong>AI가 틀렸을 때, 그 비용을 감당할 수 있는가?</strong> 감당할 수 있으면 열어둔다. 없으면 닫는다.</p>
+<hr>
+<h2 id="테스트에-대해서">테스트에 대해서</h2>
+<p>닫아야 하는 이유가 하나 더 있다. 테스트다.</p>
+<p>코드 테스트는 단순하다. 입력 넣고 출력 비교한다. <code>assertEquals(expected, actual)</code>. 같은 입력이면 같은 출력이 나오니까 성립하는 거다.</p>
+<p>에이전트는 이 전제가 안 통한다. 같은 SKILL, 같은 입력인데 대화 맥락에 따라 결과가 달라진다. 어제 통과한 테스트가 오늘 깨진다. 모델 버전 바뀌면 전부 깨진다.</p>
+<p>고민하다 내린 결론은, 출력 값을 검증하는 게 아니라 행위의 경계를 검증하는 거였다. "Slack 메시지 보내기 전에 사용자 확인을 거쳤는가?" "SQL 검증 단계를 건너뛰지 않았는가?" "입력이 비었을 때 임의의 값을 넣지 않았는가?"</p>
+<p>기본값의 반전이 여기서도 나타난다. 코드 테스트는 "맞는 걸 했는가?"를 묻는다. 에이전트 테스트는 "틀린 걸 안 했는가?"를 묻는다. 단위 테스트보다 보안 테스트에 가까운 사고방식.</p>
+<p>물론 음성 검증만으로는 "아무것도 안 하는 에이전트"가 만점이다. 금지 사항을 전부 지켰는가? 네, 아무것도 안 했으니까요. 양성 검증도 당연히 필요하다. 다만 우선순위의 문제라고 본다. DB를 날리지 않는 게 먼저고, 최적의 쿼리를 짜는 건 그다음이다. 안전이 깔린 위에서 성능을 논해야지, 반대는 안 된다.</p>
+<p>그리고 경계를 검증하려면 경계를 먼저 정의해야 한다. 금지 항목, 불변 조건, 확인 게이트. 이게 없으면 테스트 자체가 안 된다. 결국 에이전트를 테스트 가능하게 만드는 행위가 해석의 여지를 줄이는 행위다. 테스트하려면 제약이 필요하고, 제약을 걸면 유연함이 줄어든다. 근데 테스트 없이 프로덕션에 올릴 수는 없다.</p>
+<hr>
+<h2 id="정리">정리</h2>
+<p>전통적 코드는 "무엇을 하라"를 쓰는 일이었다. 프롬프트는 "무엇을 하지 마라"를 쓰는 일이다. 허용 목록에서 차단 목록으로. 양성 검증에서 음성 검증으로. 자연어에 제약을 충분히 걸면 코드와 구별되지 않는다. 그 제약을 정의하고 검증하고 강화하는 과정은 문법을 만드는 과정이랑 다를 게 없다.</p>
+<p>다만 전부 닫을 필요는 없다. 전부 닫으면 LLM 쓸 이유가 없고, 전부 열면 의도를 벗어난다. <strong>닫는 법을 아는 것만큼 열어두는 법을 아는 것. 아마 그게 이 시대에 필요한 새로운 감각일 거다.</strong></p>
+</body></html>
+        </div>
+      </article>
+    <nav class="post-nav" aria-label="이전/다음 글">
+      <a class="post-nav-item post-nav-item--prev" href="/posts/%EB%B3%B8%EC%A7%88%EC%A0%81-%EB%B3%B5%EC%9E%A1%EC%84%B1%EA%B3%BC-%EC%9A%B0%EC%97%B0%EC%A0%81-%EB%B3%B5%EC%9E%A1%EC%84%B1-%EC%8A%A4%ED%94%84%EB%A7%81%EC%97%90%EC%84%9C-FP%EB%8A%94-%EC%96%B4%EB%94%94%EA%B9%8C%EC%A7%80-%EB%B0%80%EC%96%B4%EB%84%A3%EC%9D%84-%EC%88%98-%EC%9E%88%EB%8A%94%EA%B0%80/">
+        <span class="post-nav-label">이전 글</span>
+        <span class="post-nav-title">본질적 복잡성과 우연적 복잡성 — 스프링에서 FP는 어디까지 밀어넣을 수 있는가</span>
+      </a>
+      <span></span>
+    </nav>
+      <nav class="post-back">
+        <a href="/">← 목록으로</a>
+      </nav>
+    </div>
+    <aside class="toc" id="toc" aria-label="목차">
+      <p class="toc-title">목차</p>
+      <ul class="toc-list">
+        <li class="toc-item toc-item--h2"><a href="#배경" data-target="배경">배경</a></li>
+        <li class="toc-item toc-item--h2"><a href="#코드는-허용-목록이고-프롬프트는-차단-목록이다" data-target="코드는-허용-목록이고-프롬프트는-차단-목록이다">코드는 허용 목록이고, 프롬프트는 차단 목록이다</a></li>
+        <li class="toc-item toc-item--h2"><a href="#실제로-어떻게-닫아갔는가" data-target="실제로-어떻게-닫아갔는가">실제로 어떻게 닫아갔는가</a></li>
+        <li class="toc-item toc-item--h2"><a href="#근데-이러면-llm-쓸-이유가-있나" data-target="근데-이러면-llm-쓸-이유가-있나">근데 이러면 LLM 쓸 이유가 있나</a></li>
+        <li class="toc-item toc-item--h2"><a href="#테스트에-대해서" data-target="테스트에-대해서">테스트에 대해서</a></li>
+        <li class="toc-item toc-item--h2"><a href="#정리" data-target="정리">정리</a></li>
+      </ul>
+    </aside>
+  </main>
+  <footer class="site-footer">
+    <div class="container">
+      <div class="footer-links">
+        <a class="footer-link" href="https://github.com/xhae123" target="_blank" rel="noopener noreferrer">
+          <svg width="13" height="13" viewBox="0 0 16 16" fill="currentColor" aria-hidden="true">
+            <path fill-rule="evenodd" d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.012 8.012 0 0 0 16 8c0-4.42-3.58-8-8-8z"/>
+          </svg>
+          github
+        </a>
+        <a class="footer-link" href="mailto:xhae000@gmail.com">contact me</a>
+      </div>
+      <p class="footer-meta">© <span id="year"></span> xhae123</p>
+    </div>
+  </footer>
+  <script src="/app.js"></script>
+</body>
+</html>

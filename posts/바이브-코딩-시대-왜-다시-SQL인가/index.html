@@ -1,0 +1,213 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>바이브 코딩 시대, 왜 다시 SQL인가? · xhae123&#39;s notes</title>
+  <meta name="description" content="AI가 생성한 JPA 코드를 리뷰하다가, &quot;이 쿼리는 언제 나가지?&quot;라는 생각을 여러 번 했습니다." />
+  <link rel="canonical" href="https://xhae123.github.io/posts/%EB%B0%94%EC%9D%B4%EB%B8%8C-%EC%BD%94%EB%94%A9-%EC%8B%9C%EB%8C%80-%EC%99%9C-%EB%8B%A4%EC%8B%9C-SQL%EC%9D%B8%EA%B0%80/" />
+  <meta property="og:type" content="article" />
+  <meta property="og:site_name" content="xhae123&#39;s notes" />
+  <meta property="og:title" content="바이브 코딩 시대, 왜 다시 SQL인가? · xhae123&#39;s notes" />
+  <meta property="og:description" content="AI가 생성한 JPA 코드를 리뷰하다가, &quot;이 쿼리는 언제 나가지?&quot;라는 생각을 여러 번 했습니다." />
+  <meta property="og:url" content="https://xhae123.github.io/posts/%EB%B0%94%EC%9D%B4%EB%B8%8C-%EC%BD%94%EB%94%A9-%EC%8B%9C%EB%8C%80-%EC%99%9C-%EB%8B%A4%EC%8B%9C-SQL%EC%9D%B8%EA%B0%80/" />
+  <meta property="og:locale" content="ko_KR" />
+  <meta property="og:image" content="https://velog.velcdn.com/images/xe0/post/dacbcbb5-877d-413b-8143-6b28e4352c0f/image.png" />
+  <meta name="twitter:card" content="summary_large_image" />
+  <meta name="twitter:title" content="바이브 코딩 시대, 왜 다시 SQL인가? · xhae123&#39;s notes" />
+  <meta name="twitter:description" content="AI가 생성한 JPA 코드를 리뷰하다가, &quot;이 쿼리는 언제 나가지?&quot;라는 생각을 여러 번 했습니다." />
+  <meta name="twitter:image" content="https://velog.velcdn.com/images/xe0/post/dacbcbb5-877d-413b-8143-6b28e4352c0f/image.png" />
+  <link rel="preconnect" href="https://cdn.jsdelivr.net" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable.css" />
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500&display=swap" />
+  <link rel="stylesheet" href="/styles.css" />
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/github-dark.min.css" />
+  <meta property="article:published_time" content="2026-01-23T00:08:47.000Z" />
+  <meta property="article:author" content="김우진" />
+  <script type="application/ld+json">{"@context":"https://schema.org","@type":"BlogPosting","headline":"바이브 코딩 시대, 왜 다시 SQL인가?","description":"AI가 생성한 JPA 코드를 리뷰하다가, \"이 쿼리는 언제 나가지?\"라는 생각을 여러 번 했습니다.","datePublished":"2026-01-23T00:08:47.000Z","dateModified":"2026-01-23T00:08:47.000Z","author":{"@type":"Person","name":"김우진"},"url":"https://xhae123.github.io/posts/%EB%B0%94%EC%9D%B4%EB%B8%8C-%EC%BD%94%EB%94%A9-%EC%8B%9C%EB%8C%80-%EC%99%9C-%EB%8B%A4%EC%8B%9C-SQL%EC%9D%B8%EA%B0%80/","mainEntityOfPage":"https://xhae123.github.io/posts/%EB%B0%94%EC%9D%B4%EB%B8%8C-%EC%BD%94%EB%94%A9-%EC%8B%9C%EB%8C%80-%EC%99%9C-%EB%8B%A4%EC%8B%9C-SQL%EC%9D%B8%EA%B0%80/","image":"https://velog.velcdn.com/images/xe0/post/dacbcbb5-877d-413b-8143-6b28e4352c0f/image.png"}</script>
+</head>
+<body>
+  <header class="site-header" id="site-header">
+    <div class="container">
+      <a class="site-label" href="/">xhae123&#39;s notes</a>
+      <a class="gh-link" href="https://github.com/xhae123" target="_blank" rel="noopener noreferrer" aria-label="GitHub @xhae123">
+        <svg class="gh-icon" width="14" height="14" viewBox="0 0 16 16" fill="currentColor" aria-hidden="true">
+          <path fill-rule="evenodd" d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.012 8.012 0 0 0 16 8c0-4.42-3.58-8-8-8z"/>
+        </svg>
+        xhae123
+      </a>
+    </div>
+  </header>
+  <main class="post-layout">
+    <div class="post-main">
+      <article class="post" id="post">
+        <header class="post-header">
+          <p class="post-meta">JAN 23, 2026</p>
+          <h1 class="post-title">바이브 코딩 시대, 왜 다시 SQL인가?</h1>
+        </header>
+        <div class="post-body" id="post-body">
+<html><head></head><body><h2 id="0-들어가며">0. 들어가며</h2>
+<p>AI가 생성한 JPA 코드를 리뷰하다가, "이 쿼리는 언제 나가지?"라는 생각을 여러 번 했습니다.</p>
+<p>JPA는 사람이 직접 코드를 짤 때 생산성이 높았습니다. 하지만 AI가 문맥 없이 생성한 코드를 리뷰할 때, 암시적 동작은 검증 비용을 높입니다.</p>
+<p>이 글은 <strong>I/O 예측 가능성, 메모리 사용, 타입 시스템</strong> 세 가지 관점에서 Exposed가 합리적인 선택지가 될 수 있는 이유를 정리합니다.</p>
+<hr>
+<h2 id="1-io-예측-가능성">1. I/O 예측 가능성</h2>
+<p>대부분의 레이턴시는 I/O에서 갈립니다. CPU가 병목인 경우는 생각보다 많지 않습니다.</p>
+<h3 id="11-jpa의-lazy-loading">1.1. JPA의 Lazy Loading</h3>
+<p>Lazy Loading은 편합니다. 엔티티 그래프를 따라가면 알아서 쿼리가 나가니까요. 다만 개발자가 연관 관계를 머릿속에 완벽히 그리고 있을 때 얘기입니다.</p>
+<p>AI는 문맥을 모릅니다. <code>List&lt;Order&gt;</code>를 순회하며 <code>order.getMember().getName()</code>을 호출하는 코드는 AI에게 자연스러운 문법입니다. 하지만 실행되는 순간 DB와 수백 번의 핑퐁이 시작됩니다. (N+1)</p>
+<p>문제:</p>
+<ul>
+<li>
+<strong>RTT 누적:</strong> DB가 빨라도 네트워크 비용은 0이 아님 → 레이턴시 증가</li>
+</ul>
+<p><img src="https://velog.velcdn.com/images/xe0/post/dacbcbb5-877d-413b-8143-6b28e4352c0f/image.png" alt=""></p>
+<ul>
+<li>
+<strong>커넥션 풀 고갈:</strong> OSIV 환경에서 트랜잭션이 열려 있는 동안 비즈니스 로직 수행 → 커넥션이 오래 점유됨 → 요청 많아지면 CPU는 놀고 커넥션 풀만 바닥남</li>
+</ul>
+<p><code>Fetch Join</code>, <code>BatchSize</code>, <code>EntityGraph</code>로 해결할 수 있습니다. 하지만 어떤 엔티티에 적용할지 AI가 판단하기 어렵고, AI가 작성한 코드에서 이 암시적 비용을 찾아내는 건 피로도 높은 작업입니다.</p>
+<h3 id="12-exposed의-명시적-join">1.2. Exposed의 명시적 Join</h3>
+<p>Exposed는 프록시를 통한 암시적 로딩을 지원하지 않습니다. 연관 데이터를 가져오려면 DSL에서 Join을 명시해야 합니다.</p>
+<pre data-lang="kotlin"><code class="language-kotlin hljs"><span class="hljs-comment">// Exposed: 코드만 봐도 I/O 비용이 보임</span>
+(Orders innerJoin Members)
+    .slice(Orders.id, Members.name)
+    .select { Orders.date greaterEq today }
+    .map { ... }</code></pre>
+<ul>
+<li>
+<p><strong>비용의 시각화:</strong> 코드는 길어집니다. 하지만 <code>innerJoin</code> 키워드가 보인다는 건 "여기서 조인 쿼리가 나간다"는 신호입니다.</p>
+</li>
+<li>
+<p><strong>리뷰 효율:</strong> yml 설정이나 엔티티 어노테이션을 뒤질 필요 없습니다. 코드만 보고 "조인이 너무 많으니 분리합시다" 피드백이 가능합니다.</p>
+</li>
+</ul>
+<hr>
+<h2 id="2-메모리-사용">2. 메모리 사용</h2>
+<p><img src="https://velog.velcdn.com/images/xe0/post/d001538d-5144-4b92-bb3a-3a598584ff0d/image.png" alt=""></p>
+<p>데이터를 메모리에 어떻게 올리느냐에 따라 서버 리소스 사용량이 달라집니다.</p>
+<h3 id="21-jpa의-persistence-context">2.1. JPA의 Persistence Context</h3>
+<p>JPA는 1차 캐시를 둡니다. 자바 컬렉션 다루듯 DB를 다룰 수 있습니다. 하지만 비용이 있습니다.</p>
+<ol>
+<li>
+<p><strong>스냅샷 오버헤드:</strong> Dirty Checking을 위해 데이터 로딩 시 원본 복사본(스냅샷)을 힙에 저장합니다. 1GB 조회하면 실제로 2GB 이상 점유. 대용량 배치에서 <code>OutOfMemoryError</code>나 잦은 Full GC의 원인입니다.</p>
+</li>
+<li>
+<p><strong>플러시 비용:</strong> 트랜잭션 끝날 때 관리 중인 모든 객체의 현재 상태와 스냅샷을 필드 단위로 비교합니다. 데이터 많아지면 이 비교 연산(O(N)) 때문에 CPU 사용량이 올라갑니다.</p>
+</li>
+</ol>
+<h3 id="22-exposed의-dsl-방식">2.2. Exposed의 DSL 방식</h3>
+<p>Exposed도 DAO와 EntityCache를 제공합니다. 하지만 DSL 방식에서는 이 오버헤드가 없습니다.</p>
+<ul>
+<li>
+<p><strong>직접 매핑:</strong> <code>Table.select { ... }</code> 결과는 JDBC <code>ResultSet</code>에서 바로 DTO나 Data Class로 매핑됩니다. 스냅샷도, 더티 체킹도 없습니다.</p>
+</li>
+<li>
+<p><strong>예측 가능한 리소스:</strong> 조회한 데이터만큼만 메모리를 씁니다. 클라우드 환경에서 메모리 사용량을 정확히 예측하고 통제할 수 있습니다.</p>
+</li>
+</ul>
+<hr>
+<h2 id="3-타입-시스템">3. 타입 시스템</h2>
+<p>AI가 생성한 코드의 오류를 런타임에 발견하면 늦습니다. 컴파일 타임에 잡을 수 있으면 좋겠죠.</p>
+<h3 id="31-jpa의-런타임-검증">3.1. JPA의 런타임 검증</h3>
+<p>JPA(JPQL, QueryDSL 포함)는 코드 문법만 맞다고 되는 게 아닙니다. 엔티티의 상태와 설정까지 맞아야 합니다.</p>
+<ul>
+<li>AI가 <code>FetchType.LAZY</code>로 설정된 연관 관계를 고려하지 않고 트랜잭션 밖에서 접근하는 코드를 짰다고 가정합니다.</li>
+<li>컴파일 성공, 빌드 성공.</li>
+<li>배포 후 트래픽 들어오면 <code>LazyInitializationException</code>.</li>
+</ul>
+<p>이걸 막으려면 JPA의 생명주기를 머릿속으로 시뮬레이션하며 리뷰해야 합니다.</p>
+<h3 id="32-exposed의-컴파일-타임-검증">3.2. Exposed의 컴파일 타임 검증</h3>
+<p>Exposed는 코틀린의 타입 시스템을 SQL 생성에 씁니다.</p>
+<ul>
+<li>
+<p><strong>구조적 강제:</strong> <code>UserTable.name</code>(String)과 <code>TeamTable.id</code>(Long)를 비교하는 조인 조건을 AI가 작성하면 컴파일 에러. 타입이 다르기 때문입니다.</p>
+</li>
+<li>
+<p><strong>1차 필터링:</strong> Exposed 코드가 컴파일되면, SQL 문법, 컬럼 참조, 타입 매칭은 유효합니다. 리뷰어는 "이 쿼리가 문법적으로 맞나?"를 고민할 필요 없이 "비즈니스 로직이 올바른가?"에 집중할 수 있습니다.</p>
+</li>
+</ul>
+<hr>
+<h2 id="4-trade-off">4. Trade-off</h2>
+<p>Exposed가 모든 상황의 정답은 아닙니다.</p>
+<ol>
+<li>
+<p><strong>Dynamic Query:</strong> JPA 진영에는 QueryDSL이 있습니다. Exposed로 복잡한 동적 쿼리를 짜면 코드가 복잡해집니다. 가독성 확보하려면 확장 함수나 DSL 래퍼를 직접 구현해야 합니다.</p>
+</li>
+<li>
+<p><strong>테이블 중심 사고:</strong> JPA는 객체 지향적 도메인 모델링(DDD)이 가능합니다. Exposed는 DB 테이블 중심 사고를 강제합니다. 비즈니스 로직이 복잡하고 엔티티 간 협력이 중요한 도메인이면 JPA가 나을 수 있습니다.</p>
+</li>
+<li>
+<p><strong>jOOQ와 비교:</strong> Type-safe SQL을 원하면 jOOQ도 있습니다. 다만 유료 라이선스 이슈와 Java 기반 코드 제너레이션 설정이 번거롭습니다. 코틀린 환경이면 Exposed가 더 가볍습니다.</p>
+</li>
+<li>
+<p><strong>AI 학습 데이터 편향:</strong> LLM은 JPA를 잘 압니다. GitHub의 자바 프로젝트 대부분이 JPA를 쓰기 때문입니다. Exposed는 학습 데이터가 적어서 복잡한 윈도우 함수나 GroupConcat 같은 특수 구문 요청하면 AI가 존재하지 않는 DSL 문법을 만들어낼 수 있습니다. 초기에 AI에게 문법을 가르치는 비용이 필요합니다.</p>
+</li>
+</ol>
+<hr>
+<h2 id="5-결론">5. 결론</h2>
+<p>JPA는 복잡성을 추상화 뒤로 잘 숨겨왔습니다. 근데 AI가 코드를 생성하는 환경에서는, 숨겨진 복잡성이 리스크가 됩니다.</p>
+<p>Exposed를 선택한다는 건, 이 리스크를 눈에 보이는 곳으로 꺼내겠다는 겁니다.</p>
+<ol>
+<li>
+<strong>I/O 예측:</strong> 쿼리가 언제 나가는지 코드에서 보임</li>
+<li>
+<strong>비용 투명성:</strong> 메모리와 네트워크 비용이 코드에 드러남</li>
+<li>
+<strong>타입 안전성:</strong> 컴파일러가 정합성을 1차로 검증</li>
+</ol>
+<p>AI랑 협업하는 환경이라면, Exposed 한번 고려해볼 만합니다.</p>
+</body></html>
+        </div>
+      </article>
+    <nav class="post-nav" aria-label="이전/다음 글">
+      <a class="post-nav-item post-nav-item--prev" href="/posts/2222/">
+        <span class="post-nav-label">이전 글</span>
+        <span class="post-nav-title">배포 후에야 알게 되는 gRPC 스키마 불일치, Kubernetes에서 자동으로 잡기</span>
+      </a>
+      <a class="post-nav-item post-nav-item--next" href="/posts/%ED%8A%B8%EB%9E%9C%EC%9E%AD%EC%85%98%EC%9D%98-%EA%B2%BD%EA%B3%84%EB%8A%94-%EC%96%B4%EB%96%BB%EA%B2%8C-%EC%A0%95%ED%95%B4%EC%95%BC%ED%95%A0%EA%B9%8C-Outbox-pattern%EC%9C%BC%EB%A1%9C-%EA%B2%BD%EA%B3%84-%EC%A4%84%EC%9D%B4%EA%B8%B0/">
+        <span class="post-nav-label">다음 글</span>
+        <span class="post-nav-title">트랜잭션의 경계는 어떻게 정해야할까: Outbox pattern으로 경계 줄이기</span>
+      </a>
+    </nav>
+      <nav class="post-back">
+        <a href="/">← 목록으로</a>
+      </nav>
+    </div>
+    <aside class="toc" id="toc" aria-label="목차">
+      <p class="toc-title">목차</p>
+      <ul class="toc-list">
+        <li class="toc-item toc-item--h2"><a href="#0-들어가며" data-target="0-들어가며">0. 들어가며</a></li>
+        <li class="toc-item toc-item--h2"><a href="#1-io-예측-가능성" data-target="1-io-예측-가능성">1. I/O 예측 가능성</a></li>
+        <li class="toc-item toc-item--h3"><a href="#11-jpa의-lazy-loading" data-target="11-jpa의-lazy-loading">1.1. JPA의 Lazy Loading</a></li>
+        <li class="toc-item toc-item--h3"><a href="#12-exposed의-명시적-join" data-target="12-exposed의-명시적-join">1.2. Exposed의 명시적 Join</a></li>
+        <li class="toc-item toc-item--h2"><a href="#2-메모리-사용" data-target="2-메모리-사용">2. 메모리 사용</a></li>
+        <li class="toc-item toc-item--h3"><a href="#21-jpa의-persistence-context" data-target="21-jpa의-persistence-context">2.1. JPA의 Persistence Context</a></li>
+        <li class="toc-item toc-item--h3"><a href="#22-exposed의-dsl-방식" data-target="22-exposed의-dsl-방식">2.2. Exposed의 DSL 방식</a></li>
+        <li class="toc-item toc-item--h2"><a href="#3-타입-시스템" data-target="3-타입-시스템">3. 타입 시스템</a></li>
+        <li class="toc-item toc-item--h3"><a href="#31-jpa의-런타임-검증" data-target="31-jpa의-런타임-검증">3.1. JPA의 런타임 검증</a></li>
+        <li class="toc-item toc-item--h3"><a href="#32-exposed의-컴파일-타임-검증" data-target="32-exposed의-컴파일-타임-검증">3.2. Exposed의 컴파일 타임 검증</a></li>
+        <li class="toc-item toc-item--h2"><a href="#4-trade-off" data-target="4-trade-off">4. Trade-off</a></li>
+        <li class="toc-item toc-item--h2"><a href="#5-결론" data-target="5-결론">5. 결론</a></li>
+      </ul>
+    </aside>
+  </main>
+  <footer class="site-footer">
+    <div class="container">
+      <div class="footer-links">
+        <a class="footer-link" href="https://github.com/xhae123" target="_blank" rel="noopener noreferrer">
+          <svg width="13" height="13" viewBox="0 0 16 16" fill="currentColor" aria-hidden="true">
+            <path fill-rule="evenodd" d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.012 8.012 0 0 0 16 8c0-4.42-3.58-8-8-8z"/>
+          </svg>
+          github
+        </a>
+        <a class="footer-link" href="mailto:xhae000@gmail.com">contact me</a>
+      </div>
+      <p class="footer-meta">© <span id="year"></span> xhae123</p>
+    </div>
+  </footer>
+  <script src="/app.js"></script>
+</body>
+</html>

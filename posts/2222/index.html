@@ -1,0 +1,429 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>배포 후에야 알게 되는 gRPC 스키마 불일치, Kubernetes에서 자동으로 잡기 · xhae123&#39;s notes</title>
+  <meta name="description" content="Kubernetes 환경에서 gRPC 마이크로서비스를 여러 개 운영하고 있었다. Buf Schema Registry(BSR)로 proto 파일을 중앙 관리했는데, 실제 배포된 서비스와 BSR 스키마가 안 맞는 문제가 자꾸 생겼다. 이걸 자동으로 감지하는 도구를 Go로 만들어서 오픈소스로" />
+  <link rel="canonical" href="https://xhae123.github.io/posts/2222/" />
+  <meta property="og:type" content="article" />
+  <meta property="og:site_name" content="xhae123&#39;s notes" />
+  <meta property="og:title" content="배포 후에야 알게 되는 gRPC 스키마 불일치, Kubernetes에서 자동으로 잡기 · xhae123&#39;s notes" />
+  <meta property="og:description" content="Kubernetes 환경에서 gRPC 마이크로서비스를 여러 개 운영하고 있었다. Buf Schema Registry(BSR)로 proto 파일을 중앙 관리했는데, 실제 배포된 서비스와 BSR 스키마가 안 맞는 문제가 자꾸 생겼다. 이걸 자동으로 감지하는 도구를 Go로 만들어서 오픈소스로" />
+  <meta property="og:url" content="https://xhae123.github.io/posts/2222/" />
+  <meta property="og:locale" content="ko_KR" />
+  <meta property="og:image" content="https://velog.velcdn.com/images/xe0/post/36a5f808-5f61-46bd-910b-c3198e7287b7/image.png" />
+  <meta name="twitter:card" content="summary_large_image" />
+  <meta name="twitter:title" content="배포 후에야 알게 되는 gRPC 스키마 불일치, Kubernetes에서 자동으로 잡기 · xhae123&#39;s notes" />
+  <meta name="twitter:description" content="Kubernetes 환경에서 gRPC 마이크로서비스를 여러 개 운영하고 있었다. Buf Schema Registry(BSR)로 proto 파일을 중앙 관리했는데, 실제 배포된 서비스와 BSR 스키마가 안 맞는 문제가 자꾸 생겼다. 이걸 자동으로 감지하는 도구를 Go로 만들어서 오픈소스로" />
+  <meta name="twitter:image" content="https://velog.velcdn.com/images/xe0/post/36a5f808-5f61-46bd-910b-c3198e7287b7/image.png" />
+  <link rel="preconnect" href="https://cdn.jsdelivr.net" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable.css" />
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500&display=swap" />
+  <link rel="stylesheet" href="/styles.css" />
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/github-dark.min.css" />
+  <meta property="article:published_time" content="2025-12-03T19:31:24.000Z" />
+  <meta property="article:author" content="김우진" />
+  <script type="application/ld+json">{"@context":"https://schema.org","@type":"BlogPosting","headline":"배포 후에야 알게 되는 gRPC 스키마 불일치, Kubernetes에서 자동으로 잡기","description":"Kubernetes 환경에서 gRPC 마이크로서비스를 여러 개 운영하고 있었다. Buf Schema Registry(BSR)로 proto 파일을 중앙 관리했는데, 실제 배포된 서비스와 BSR 스키마가 안 맞는 문제가 자꾸 생겼다. 이걸 자동으로 감지하는 도구를 Go로 만들어서 오픈소스로","datePublished":"2025-12-03T19:31:24.000Z","dateModified":"2025-12-03T19:31:24.000Z","author":{"@type":"Person","name":"김우진"},"url":"https://xhae123.github.io/posts/2222/","mainEntityOfPage":"https://xhae123.github.io/posts/2222/","image":"https://velog.velcdn.com/images/xe0/post/36a5f808-5f61-46bd-910b-c3198e7287b7/image.png"}</script>
+</head>
+<body>
+  <header class="site-header" id="site-header">
+    <div class="container">
+      <a class="site-label" href="/">xhae123&#39;s notes</a>
+      <a class="gh-link" href="https://github.com/xhae123" target="_blank" rel="noopener noreferrer" aria-label="GitHub @xhae123">
+        <svg class="gh-icon" width="14" height="14" viewBox="0 0 16 16" fill="currentColor" aria-hidden="true">
+          <path fill-rule="evenodd" d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.012 8.012 0 0 0 16 8c0-4.42-3.58-8-8-8z"/>
+        </svg>
+        xhae123
+      </a>
+    </div>
+  </header>
+  <main class="post-layout">
+    <div class="post-main">
+      <article class="post" id="post">
+        <header class="post-header">
+          <p class="post-meta">DEC 04, 2025</p>
+          <h1 class="post-title">배포 후에야 알게 되는 gRPC 스키마 불일치, Kubernetes에서 자동으로 잡기</h1>
+        </header>
+        <div class="post-body" id="post-body">
+<html><head></head><body><h2 id="개요">개요</h2>
+<p>Kubernetes 환경에서 gRPC 마이크로서비스를 여러 개 운영하고 있었다. Buf Schema Registry(BSR)로 proto 파일을 중앙 관리했는데, 실제 배포된 서비스와 BSR 스키마가 안 맞는 문제가 자꾸 생겼다. 이걸 자동으로 감지하는 도구를 Go로 만들어서 오픈소스로 공개했다.</p>
+<h2 id="문제">문제</h2>
+<p>BSR로 proto를 관리하면 끝일 줄 알았는데, 현실은 달랐다.</p>
+<p><strong>자주 겪은 시나리오:</strong></p>
+<ol>
+<li>개발자가 proto 수정</li>
+<li>BSR 업데이트 없이 Kubernetes에 배포</li>
+<li>BSR 기준으로 개발한 클라이언트가 런타임 에러</li>
+<li>원인 찾는 데 수 시간</li>
+</ol>
+<p><strong>Kubernetes라서 더 귀찮았던 점:</strong></p>
+<ul>
+<li>Pod이 여러 네임스페이스에 흩어져 있음</li>
+<li>서비스마다 proto 파일 경로가 다름</li>
+<li>Rolling update 중이면 버전이 섞여 있음</li>
+<li>일일이 Pod 들어가서 확인하기 번거로움</li>
+</ul>
+<p>수동으로 하기엔 너무 귀찮았다. 자동화가 필요했다.</p>
+<h2 id="해결">해결</h2>
+<p><img src="https://velog.velcdn.com/images/xe0/post/36a5f808-5f61-46bd-910b-c3198e7287b7/image.png" alt=""></p>
+<p>Kubernetes 클러스터 안에서 도는 모니터링 도구를 Go로 만들었다. client-go로 Kubernetes API랑 직접 통신하면서 Pod을 자동으로 찾고 스키마를 검증한다.</p>
+<h3 id="핵심-아이디어">핵심 아이디어</h3>
+<ol>
+<li><strong>Kubernetes API로 gRPC Pod 자동 발견</strong></li>
+<li><strong>gRPC Reflection으로 실시간 스키마 추출</strong></li>
+<li><strong>Buf CLI로 BSR 스키마 가져오기</strong></li>
+<li><strong>양쪽 비교해서 불일치 감지</strong></li>
+<li><strong>웹 대시보드로 시각화</strong></li>
+</ol>
+<h3 id="기술-스택">기술 스택</h3>
+<pre data-lang="nestedtext"><code class="hljs"><span class="hljs-attribute">언어</span><span class="hljs-punctuation">:</span> <span class="hljs-string">Go 1.21</span>
+<span class="hljs-attribute">핵심 라이브러리</span><span class="hljs-punctuation">:</span>
+  <span class="hljs-bullet">-</span> <span class="hljs-string">client-go (Kubernetes API)</span>
+  <span class="hljs-bullet">-</span> <span class="hljs-string">grpcreflect (gRPC Reflection)</span>
+  <span class="hljs-bullet">-</span> <span class="hljs-string">protoreflect (Proto 파싱)</span>
+<span class="hljs-attribute">아키텍처</span><span class="hljs-punctuation">:</span> <span class="hljs-string">Hexagonal Architecture</span>
+<span class="hljs-attribute">배포</span><span class="hljs-punctuation">:</span> <span class="hljs-string">Kubernetes In-cluster Pod</span>
+<span class="hljs-attribute">저장소</span><span class="hljs-punctuation">:</span> <span class="hljs-string">In-memory (sync.RWMutex)</span>
+<span class="hljs-attribute">설정</span><span class="hljs-punctuation">:</span> <span class="hljs-string">ConfigMap + Secret</span>
+<span class="hljs-attribute">보안</span><span class="hljs-punctuation">:</span> <span class="hljs-string">RBAC, Non-root, Read-only FS</span>
+<span class="hljs-attribute">주기</span><span class="hljs-punctuation">:</span> <span class="hljs-string">30분마다 스캔 (환경변수로 조절)</span></code></pre>
+<h2 id="구현">구현</h2>
+<h3 id="1-pod-자동-발견">1. Pod 자동 발견</h3>
+<p>client-go로 Kubernetes API Server와 통신한다. In-cluster에서 돌기 때문에 ServiceAccount 토큰으로 인증한다.</p>
+<pre data-lang="go"><code class="language-go hljs"><span class="hljs-comment">// In-cluster config로 Kubernetes client 생성</span>
+config, err := rest.InClusterConfig()
+clientset, err := kubernetes.NewForConfig(config)
+
+<span class="hljs-comment">// ConfigMap에서 서비스 매핑 로드</span>
+configMap, err := clientset.CoreV1().
+    ConfigMaps(namespace).
+    Get(ctx, configMapName, metav1.GetOptions{})
+
+<span class="hljs-comment">// app 레이블로 Pod 검색</span>
+labelSelector := fmt.Sprintf(<span class="hljs-string">"app=%s"</span>, serviceName)
+pods, err := clientset.CoreV1().Pods(<span class="hljs-string">""</span>).
+    List(ctx, metav1.ListOptions{
+        LabelSelector: labelSelector,
+    })</code></pre>
+<p><strong>포트 자동 감지 우선순위:</strong></p>
+<ol>
+<li>
+<code>grpc</code> 이름을 가진 containerPort</li>
+<li>TCP 프로토콜 포트</li>
+<li>기본값 9090</li>
+</ol>
+<h3 id="2-라이브-스키마-추출">2. 라이브 스키마 추출</h3>
+<p>gRPC Reflection으로 실행 중인 서비스에서 스키마를 가져온다. proto 파일 없이도 런타임에 스키마를 읽을 수 있다.</p>
+<pre data-lang="go"><code class="language-go hljs"><span class="hljs-comment">// Pod IP:포트로 연결</span>
+conn, err := grpc.Dial(address, grpc.WithTransportCredentials(insecure.NewCredentials()))
+
+<span class="hljs-comment">// Reflection client 생성</span>
+refClient := grpcreflect.NewClientV1Alpha(ctx, reflectpb.NewServerReflectionClient(conn))
+
+<span class="hljs-comment">// 서비스 목록 조회</span>
+services, err := refClient.ListServices()
+
+<span class="hljs-comment">// 각 서비스의 메서드 정보 추출</span>
+<span class="hljs-keyword">for</span> _, serviceName := <span class="hljs-keyword">range</span> services {
+    serviceDesc, _ := refClient.ResolveService(serviceName)
+}</code></pre>
+<h3 id="3-bsr-스키마-가져오기">3. BSR 스키마 가져오기</h3>
+<p>처음엔 HTTP API를 썼는데 문제가 있었다:</p>
+<ul>
+<li>FileDescriptorSet만 줘서 타입 참조 해석이 복잡함</li>
+<li>에러 처리가 불안정함</li>
+</ul>
+<p><strong>Buf CLI로 바꿨다:</strong></p>
+<pre data-lang="go"><code class="language-go hljs"><span class="hljs-comment">// buf export로 proto 파일 전체를 내려받음</span>
+cmd := exec.CommandContext(ctx, <span class="hljs-string">"buf"</span>, <span class="hljs-string">"export"</span>, module, <span class="hljs-string">"-o"</span>, tmpDir)
+output, err := cmd.CombinedOutput()
+
+<span class="hljs-comment">// protoparse로 파싱</span>
+parser := protoparse.Parser{
+    ImportPaths: []<span class="hljs-type">string</span>{tmpDir},
+}
+fileDescs, err := parser.ParseFiles(relPaths...)</code></pre>
+<p>완전한 proto 파일을 받아서 타입 참조도 자동으로 해석된다. 에러율도 줄었다.</p>
+<h3 id="4-intersection-기반-비교">4. Intersection 기반 비교</h3>
+<p>처음엔 모든 서비스를 비교했다. 문제가 있었다:</p>
+<ul>
+<li>Live에만 있는 서비스 → MISMATCH</li>
+<li>BSR에만 있는 서비스 → MISMATCH</li>
+<li>테스트 서비스나 deprecated 서비스 때문에 오탐이 많았다</li>
+</ul>
+<p><strong>개선:</strong></p>
+<pre data-lang="go"><code class="language-go hljs"><span class="hljs-comment">// 양쪽에 모두 있는 서비스만 비교</span>
+<span class="hljs-keyword">for</span> liveSvcName, liveMethods := <span class="hljs-keyword">range</span> liveServicesMap {
+    <span class="hljs-keyword">if</span> truthMethods, exists := truthServicesMap[liveSvcName]; exists {
+        <span class="hljs-keyword">if</span> !methodsMatch(liveMethods, truthMethods) {
+            match = <span class="hljs-literal">false</span>
+        }
+    }
+}
+<span class="hljs-comment">// Live에만 있는 서비스 → 정보성 표시, 상태에 영향 X</span>
+<span class="hljs-comment">// BSR에만 있는 서비스 → 정보성 표시, 상태에 영향 X</span></code></pre>
+<p>오탐이 대폭 줄었다. 의미 있는 불일치만 잡는다.</p>
+<h3 id="5-동시성-처리">5. 동시성 처리</h3>
+<p>goroutine 두 개가 돈다:</p>
+<pre data-lang="go"><code class="language-go hljs"><span class="hljs-comment">// 1. Scanner goroutine (30분마다)</span>
+<span class="hljs-function"><span class="hljs-keyword">func</span> <span class="hljs-params">(s *Scanner)</span></span> Start(ctx context.Context) {
+    ticker := time.NewTicker(scanInterval)
+    <span class="hljs-keyword">for</span> {
+        <span class="hljs-keyword">select</span> {
+        <span class="hljs-keyword">case</span> &lt;-ticker.C:
+            runScan(ctx)  <span class="hljs-comment">// Store에 쓰기</span>
+        }
+    }
+}
+
+<span class="hljs-comment">// 2. Web server goroutine (요청마다)</span>
+<span class="hljs-function"><span class="hljs-keyword">func</span> <span class="hljs-params">(s *Server)</span></span> handleDashboard(w http.ResponseWriter, r *http.Request) {
+    results := s.store.GetAll()  <span class="hljs-comment">// Store에서 읽기</span>
+}</code></pre>
+<p><strong>Thread-safe 구현:</strong></p>
+<pre data-lang="go"><code class="language-go hljs"><span class="hljs-keyword">type</span> Store <span class="hljs-keyword">struct</span> {
+    mu      sync.RWMutex
+    results <span class="hljs-keyword">map</span>[<span class="hljs-type">string</span>]*domain.ScanResult
+}
+
+<span class="hljs-function"><span class="hljs-keyword">func</span> <span class="hljs-params">(s *Store)</span></span> GetAll() []*ScanResult {
+    s.mu.RLock()
+    <span class="hljs-keyword">defer</span> s.mu.RUnlock()
+    <span class="hljs-comment">// ...</span>
+}
+
+<span class="hljs-function"><span class="hljs-keyword">func</span> <span class="hljs-params">(s *Store)</span></span> Set(result *ScanResult) {
+    s.mu.Lock()
+    <span class="hljs-keyword">defer</span> s.mu.Unlock()
+    <span class="hljs-comment">// ...</span>
+}</code></pre>
+<h2 id="아키텍처">아키텍처</h2>
+<p>Hexagonal Architecture를 썼다. Go interface로 외부 의존성을 추상화했다.</p>
+<h3 id="디렉토리-구조">디렉토리 구조</h3>
+<pre data-lang="nix"><code class="hljs">protodiff<span class="hljs-symbol">/</span>
+├── cmd<span class="hljs-operator">/</span>protodiff<span class="hljs-symbol">/</span>              <span class="hljs-comment"># 엔트리포인트</span>
+├── internal<span class="hljs-symbol">/</span>
+│   ├── core<span class="hljs-symbol">/</span>
+│   │   ├── domain<span class="hljs-symbol">/</span>             <span class="hljs-comment"># 비즈니스 모델</span>
+│   │   └── store<span class="hljs-symbol">/</span>              <span class="hljs-comment"># Thread-safe 저장소</span>
+│   ├── adapters<span class="hljs-symbol">/</span>
+│   │   ├── k8s<span class="hljs-symbol">/</span>                <span class="hljs-comment"># Kubernetes client</span>
+│   │   ├── grpc<span class="hljs-symbol">/</span>               <span class="hljs-comment"># gRPC reflection client</span>
+│   │   ├── bsr<span class="hljs-symbol">/</span>                <span class="hljs-comment"># BSR client (Buf CLI wrapper)</span>
+│   │   └── web<span class="hljs-symbol">/</span>                <span class="hljs-comment"># HTTP 서버</span>
+│   ├── scanner<span class="hljs-symbol">/</span>                <span class="hljs-comment"># 오케스트레이터</span>
+│   └── config<span class="hljs-symbol">/</span>                 <span class="hljs-comment"># 설정 관리</span>
+└── deploy<span class="hljs-operator">/</span>k8s<span class="hljs-symbol">/</span>                 <span class="hljs-comment"># Kubernetes manifests</span></code></pre>
+<h3 id="interface-활용">Interface 활용</h3>
+<pre data-lang="go"><code class="language-go hljs"><span class="hljs-comment">// BSR 클라이언트 인터페이스</span>
+<span class="hljs-keyword">type</span> Client <span class="hljs-keyword">interface</span> {
+    FetchSchema(ctx context.Context, module <span class="hljs-type">string</span>) (*domain.SchemaDescriptor, <span class="hljs-type">error</span>)
+}
+
+<span class="hljs-comment">// 구현체는 갈아끼울 수 있음</span>
+<span class="hljs-keyword">type</span> BufClient <span class="hljs-keyword">struct</span> { ... }
+
+<span class="hljs-comment">// 의존성 주입</span>
+scanner := scanner.NewScanner(
+    k8sClient,
+    grpcClient,
+    bsrClient,  <span class="hljs-comment">// interface로 주입</span>
+    store,
+    cfg,
+)</code></pre>
+<h2 id="배포">배포</h2>
+<p>단일 Pod로 클러스터 안에 배포한다. Kubernetes 리소스만 쓰기 때문에 별도 인프라가 필요없다.</p>
+<h3 id="설정">설정</h3>
+<pre data-lang="yaml"><code class="language-yaml hljs"><span class="hljs-comment"># ConfigMap으로 서비스 매핑</span>
+<span class="hljs-attr">apiVersion:</span> <span class="hljs-string">v1</span>
+<span class="hljs-attr">kind:</span> <span class="hljs-string">ConfigMap</span>
+<span class="hljs-attr">metadata:</span>
+  <span class="hljs-attr">name:</span> <span class="hljs-string">protodiff-mapping</span>
+  <span class="hljs-attr">namespace:</span> <span class="hljs-string">protodiff-system</span>
+<span class="hljs-attr">data:</span>
+  <span class="hljs-attr">user-service:</span> <span class="hljs-string">"buf.build/acme/user"</span>
+  <span class="hljs-attr">payment-service:</span> <span class="hljs-string">"buf.build/acme/payment"</span>
+
+<span class="hljs-meta">---</span>
+<span class="hljs-comment"># Secret으로 BSR 토큰</span>
+<span class="hljs-attr">apiVersion:</span> <span class="hljs-string">v1</span>
+<span class="hljs-attr">kind:</span> <span class="hljs-string">Secret</span>
+<span class="hljs-attr">metadata:</span>
+  <span class="hljs-attr">name:</span> <span class="hljs-string">bsr-token</span>
+<span class="hljs-attr">type:</span> <span class="hljs-string">Opaque</span>
+<span class="hljs-attr">data:</span>
+  <span class="hljs-attr">token:</span> <span class="hljs-string">&lt;base64-encoded-token&gt;</span>
+
+<span class="hljs-meta">---</span>
+<span class="hljs-comment"># RBAC: 최소 권한</span>
+<span class="hljs-attr">apiVersion:</span> <span class="hljs-string">rbac.authorization.k8s.io/v1</span>
+<span class="hljs-attr">kind:</span> <span class="hljs-string">ClusterRole</span>
+<span class="hljs-attr">metadata:</span>
+  <span class="hljs-attr">name:</span> <span class="hljs-string">protodiff</span>
+<span class="hljs-attr">rules:</span>
+<span class="hljs-bullet">-</span> <span class="hljs-attr">apiGroups:</span> [<span class="hljs-string">""</span>]
+  <span class="hljs-attr">resources:</span> [<span class="hljs-string">"pods"</span>]
+  <span class="hljs-attr">verbs:</span> [<span class="hljs-string">"get"</span>, <span class="hljs-string">"list"</span>, <span class="hljs-string">"watch"</span>]
+<span class="hljs-bullet">-</span> <span class="hljs-attr">apiGroups:</span> [<span class="hljs-string">""</span>]
+  <span class="hljs-attr">resources:</span> [<span class="hljs-string">"configmaps"</span>]
+  <span class="hljs-attr">verbs:</span> [<span class="hljs-string">"get"</span>, <span class="hljs-string">"list"</span>]</code></pre>
+<h3 id="설치">설치</h3>
+<pre data-lang="bash"><code class="language-bash hljs">kubectl apply -f https://raw.githubusercontent.com/uzdada/protodiff/main/deploy/k8s/install.yaml
+
+kubectl port-forward -n protodiff-system svc/protodiff 18080:80</code></pre>
+<h3 id="보안">보안</h3>
+<p>k8s 보안 모범 사례를 따랐다:</p>
+<ul>
+<li>Non-root 실행</li>
+<li>Read-only 파일시스템</li>
+<li>최소 권한 RBAC</li>
+<li>모든 Linux capability 제거</li>
+</ul>
+<h2 id="성능">성능</h2>
+<p><strong>리소스:</strong></p>
+<ul>
+<li>CPU: 0.1 core 미만 (I/O bound라서)</li>
+<li>Memory: ~10MB + Pod당 ~1KB</li>
+<li>네트워크: Pod당 수 KB</li>
+</ul>
+<p><strong>스캔:</strong></p>
+<ul>
+<li>체감상 거의 즉시</li>
+<li>BSR 조회는 캐시 가능 (향후 개선 예정)</li>
+</ul>
+<h2 id="결과">결과</h2>
+<p><strong>Before:</strong></p>
+<ul>
+<li>수동 확인</li>
+<li>불일치 발견: 런타임 에러 나고 나서</li>
+<li>원인 파악: 각 서비스 proto 비교해야 함</li>
+<li>대응: 수 시간</li>
+</ul>
+<p><strong>After:</strong></p>
+<ul>
+<li>자동 감지</li>
+<li>불일치 발견: 30분 이내</li>
+<li>원인 파악: 대시보드에서 바로</li>
+<li>대응: 수 분</li>
+</ul>
+<h2 id="대시보드">대시보드</h2>
+<p>웹 대시보드로 상태를 볼 수 있다.</p>
+<p><strong>표시 정보:</strong></p>
+<ul>
+<li>서비스 상태 (SYNC / MISMATCH / UNKNOWN)</li>
+<li>Live vs BSR 메서드 목록</li>
+<li>불일치 메서드 상세</li>
+<li>마지막 확인 시간</li>
+</ul>
+<p><strong>색상:</strong></p>
+<ul>
+<li>Green: 일치</li>
+<li>Red: 불일치</li>
+<li>Yellow: 확인 불가</li>
+</ul>
+<p>30분마다 자동 새로고침.</p>
+<h2 id="기술적-선택">기술적 선택</h2>
+<h3 id="in-memory-storage">In-memory Storage</h3>
+<p>외부 DB 없이 메모리에 저장한다.</p>
+<ul>
+<li>외부 의존성 없음</li>
+<li>빠름</li>
+<li>단일 바이너리 배포</li>
+<li>MVP엔 충분</li>
+</ul>
+<h3 id="buf-cli-vs-http-api">Buf CLI vs HTTP API</h3>
+<p>HTTP API는 FileDescriptorSet 파싱이 복잡하고 에러 처리가 불안정했다. Buf CLI는 완전한 proto 파일을 주고, 안정적이다. 컨테이너에 buf 설치해야 하는 건 트레이드오프지만, 안정성이 더 중요했다.</p>
+<h3 id="grpc-reflection-의존성">gRPC Reflection 의존성</h3>
+<p>서비스에서 reflection을 켜야 한다:</p>
+<ul>
+<li>Go: <code>reflection.Register(server)</code> 한 줄</li>
+<li>Java: <code>server.addService(ProtoReflectionService.newInstance())</code>
+</li>
+</ul>
+<p>코드 변경이 최소화돼서 도입 부담이 적다.</p>
+<h2 id="향후">향후</h2>
+<p>고려 중인 것들:</p>
+<ul>
+<li>슬랙 알림</li>
+<li>Prometheus 메트릭</li>
+<li>이력 저장 (PostgreSQL)</li>
+<li>BSR 캐시</li>
+<li>CRD 기반 설정</li>
+</ul>
+<h2 id="정리">정리</h2>
+<p>gRPC 스키마 불일치를 자동으로 잡는 도구를 만들었다. client-go로 Pod을 찾고, gRPC Reflection으로 라이브 스키마를 뽑고, BSR이랑 비교한다. Intersection 기반 비교로 오탐을 줄였고, 대시보드로 바로 확인할 수 있다.</p>
+<p>수동으로 수 시간 걸리던 걸 30분 이내로 줄였다.</p>
+<h2 id="오픈소스">오픈소스</h2>
+<p>Apache 2.0으로 공개했다. Kubernetes에서 gRPC 마이크로서비스 운영하는 팀이면 바로 쓸 수 있다.</p>
+<p><strong>GitHub:</strong> <a href="https://github.com/xhae123/protodiff" target="_blank" rel="noopener noreferrer">https://github.com/xhae123/protodiff</a></p>
+</body></html>
+        </div>
+      </article>
+    <nav class="post-nav" aria-label="이전/다음 글">
+      <a class="post-nav-item post-nav-item--prev" href="/posts/11111/">
+        <span class="post-nav-label">이전 글</span>
+        <span class="post-nav-title">익숙한 N+1 문제, 캐싱이 가져온 26배의 속도 차이</span>
+      </a>
+      <a class="post-nav-item post-nav-item--next" href="/posts/%EB%B0%94%EC%9D%B4%EB%B8%8C-%EC%BD%94%EB%94%A9-%EC%8B%9C%EB%8C%80-%EC%99%9C-%EB%8B%A4%EC%8B%9C-SQL%EC%9D%B8%EA%B0%80/">
+        <span class="post-nav-label">다음 글</span>
+        <span class="post-nav-title">바이브 코딩 시대, 왜 다시 SQL인가?</span>
+      </a>
+    </nav>
+      <nav class="post-back">
+        <a href="/">← 목록으로</a>
+      </nav>
+    </div>
+    <aside class="toc" id="toc" aria-label="목차">
+      <p class="toc-title">목차</p>
+      <ul class="toc-list">
+        <li class="toc-item toc-item--h2"><a href="#개요" data-target="개요">개요</a></li>
+        <li class="toc-item toc-item--h2"><a href="#문제" data-target="문제">문제</a></li>
+        <li class="toc-item toc-item--h2"><a href="#해결" data-target="해결">해결</a></li>
+        <li class="toc-item toc-item--h3"><a href="#핵심-아이디어" data-target="핵심-아이디어">핵심 아이디어</a></li>
+        <li class="toc-item toc-item--h3"><a href="#기술-스택" data-target="기술-스택">기술 스택</a></li>
+        <li class="toc-item toc-item--h2"><a href="#구현" data-target="구현">구현</a></li>
+        <li class="toc-item toc-item--h3"><a href="#1-pod-자동-발견" data-target="1-pod-자동-발견">1. Pod 자동 발견</a></li>
+        <li class="toc-item toc-item--h3"><a href="#2-라이브-스키마-추출" data-target="2-라이브-스키마-추출">2. 라이브 스키마 추출</a></li>
+        <li class="toc-item toc-item--h3"><a href="#3-bsr-스키마-가져오기" data-target="3-bsr-스키마-가져오기">3. BSR 스키마 가져오기</a></li>
+        <li class="toc-item toc-item--h3"><a href="#4-intersection-기반-비교" data-target="4-intersection-기반-비교">4. Intersection 기반 비교</a></li>
+        <li class="toc-item toc-item--h3"><a href="#5-동시성-처리" data-target="5-동시성-처리">5. 동시성 처리</a></li>
+        <li class="toc-item toc-item--h2"><a href="#아키텍처" data-target="아키텍처">아키텍처</a></li>
+        <li class="toc-item toc-item--h3"><a href="#디렉토리-구조" data-target="디렉토리-구조">디렉토리 구조</a></li>
+        <li class="toc-item toc-item--h3"><a href="#interface-활용" data-target="interface-활용">Interface 활용</a></li>
+        <li class="toc-item toc-item--h2"><a href="#배포" data-target="배포">배포</a></li>
+        <li class="toc-item toc-item--h3"><a href="#설정" data-target="설정">설정</a></li>
+        <li class="toc-item toc-item--h3"><a href="#설치" data-target="설치">설치</a></li>
+        <li class="toc-item toc-item--h3"><a href="#보안" data-target="보안">보안</a></li>
+        <li class="toc-item toc-item--h2"><a href="#성능" data-target="성능">성능</a></li>
+        <li class="toc-item toc-item--h2"><a href="#결과" data-target="결과">결과</a></li>
+        <li class="toc-item toc-item--h2"><a href="#대시보드" data-target="대시보드">대시보드</a></li>
+        <li class="toc-item toc-item--h2"><a href="#기술적-선택" data-target="기술적-선택">기술적 선택</a></li>
+        <li class="toc-item toc-item--h3"><a href="#in-memory-storage" data-target="in-memory-storage">In-memory Storage</a></li>
+        <li class="toc-item toc-item--h3"><a href="#buf-cli-vs-http-api" data-target="buf-cli-vs-http-api">Buf CLI vs HTTP API</a></li>
+        <li class="toc-item toc-item--h3"><a href="#grpc-reflection-의존성" data-target="grpc-reflection-의존성">gRPC Reflection 의존성</a></li>
+        <li class="toc-item toc-item--h2"><a href="#향후" data-target="향후">향후</a></li>
+        <li class="toc-item toc-item--h2"><a href="#정리" data-target="정리">정리</a></li>
+        <li class="toc-item toc-item--h2"><a href="#오픈소스" data-target="오픈소스">오픈소스</a></li>
+      </ul>
+    </aside>
+  </main>
+  <footer class="site-footer">
+    <div class="container">
+      <div class="footer-links">
+        <a class="footer-link" href="https://github.com/xhae123" target="_blank" rel="noopener noreferrer">
+          <svg width="13" height="13" viewBox="0 0 16 16" fill="currentColor" aria-hidden="true">
+            <path fill-rule="evenodd" d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.012 8.012 0 0 0 16 8c0-4.42-3.58-8-8-8z"/>
+          </svg>
+          github
+        </a>
+        <a class="footer-link" href="mailto:xhae000@gmail.com">contact me</a>
+      </div>
+      <p class="footer-meta">© <span id="year"></span> xhae123</p>
+    </div>
+  </footer>
+  <script src="/app.js"></script>
+</body>
+</html>

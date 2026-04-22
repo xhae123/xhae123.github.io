@@ -105,32 +105,28 @@
 <pre data-lang="makefile"><code class="hljs"><span class="hljs-section">평균: 820ms</span>
 <span class="hljs-section">중앙값: 780ms</span>
 <span class="hljs-section">P95: 1200ms</span>
-<span class="hljs-section">P99: 1800ms</span></code></pre>
-<p><strong>병목 지점</strong></p>
+<span class="hljs-section">P99: 1800ms</span></code></pre><p><strong>병목 지점</strong></p>
 <pre data-lang="erlang-repl"><code class="hljs">쿼리 실행: <span class="hljs-number">650</span>ms (<span class="hljs-number">79</span><span class="hljs-comment">%)</span>
 N+<span class="hljs-number">1</span> 쿼리: <span class="hljs-number">120</span>ms (<span class="hljs-number">15</span><span class="hljs-comment">%)</span>
 객체 매핑: <span class="hljs-number">30</span>ms (<span class="hljs-number">4</span><span class="hljs-comment">%)</span>
-기타: <span class="hljs-number">20</span>ms (<span class="hljs-number">2</span><span class="hljs-comment">%)</span></code></pre>
-<h4>문제 1: UNION ALL 다중 실행</h4>
+기타: <span class="hljs-number">20</span>ms (<span class="hljs-number">2</span><span class="hljs-comment">%)</span></code></pre><h4 id="문제-1-union-all-다중-실행">문제 1: UNION ALL 다중 실행</h4>
 <p>UNION ALL이 4개의 독립적인 쿼리를 실행 후 병합한다. MySQL이 이걸 최적화 못 해서 Full Table Scan이 중복으로 일어난다.</p>
 <pre data-lang="sql"><code class="language-sql hljs">EXPLAIN ANALYZE 결과:
 <span class="hljs-operator">-</span> game_records (<span class="hljs-number">500</span> <span class="hljs-keyword">rows</span>) × <span class="hljs-number">2</span>회 스캔
 <span class="hljs-operator">-</span> custom_game (<span class="hljs-number">500</span> <span class="hljs-keyword">rows</span>) × <span class="hljs-number">2</span>회 스캔
 <span class="hljs-operator">-</span> friend (<span class="hljs-number">250</span> <span class="hljs-keyword">rows</span>) × <span class="hljs-number">2</span>회 스캔</code></pre>
-<h4>문제 2: N+1 쿼리</h4>
+<h4 id="문제-2-n1-쿼리">문제 2: N+1 쿼리</h4>
 <p>DTO 변환하면서 Lazy Loading이랑 추가 조회가 발생한다.</p>
 <pre data-lang="kotlin"><code class="language-kotlin hljs">results.map { toFeedItemResponse(it) }</code></pre>
 <p>각 아이템당:</p>
 <ul>
-<li>
-<code>game.rule</code> (Lazy Loading)</li>
-<li>
-<code>game.participations</code> (Lazy Loading)</li>
+<li><code>game.rule</code> (Lazy Loading)</li>
+<li><code>game.participations</code> (Lazy Loading)</li>
 <li><code>reviewRepository.findByGameId()</code></li>
 <li><code>commentService.getCommentCount()</code></li>
 </ul>
 <p><strong>실제 쿼리 수</strong>: 1 (메인) + 20 × 4 = 81 queries</p>
-<h4>문제 3: 페이지네이션 비효율</h4>
+<h4 id="문제-3-페이지네이션-비효율">문제 3: 페이지네이션 비효율</h4>
 <p>OFFSET 방식이라 offset 값만큼 row를 스캔하고 버린다. 페이지 뒤로 갈수록 느려진다.</p>
 <hr>
 <h2 id="2-해결">2. 해결</h2>
@@ -156,22 +152,21 @@ N+<span class="hljs-number">1</span> 쿼리: <span class="hljs-number">120</span
     .recordStats()       <span class="hljs-comment">// 히트율, 제거 횟수 모니터링</span>
     .build()</code></pre>
 <ul>
-<li>
-<strong>maximumSize</strong>: Window TinyLFU 알고리즘으로 접근 빈도 낮은 항목 자동 제거</li>
-<li>
-<strong>recordStats</strong>: 캐시 히트율 모니터링 가능. 튜닝할 때 필요함</li>
+<li><strong>maximumSize</strong>: Window TinyLFU 알고리즘으로 접근 빈도 낮은 항목 자동 제거</li>
+<li><strong>recordStats</strong>: 캐시 히트율 모니터링 가능. 튜닝할 때 필요함</li>
 </ul>
 <p>직접 LRU 구현하는 것보다 검증된 라이브러리 쓰는 게 낫다.</p>
 <h3 id="23-redis-vs-caffeine">2.3 Redis vs Caffeine</h3>
 <p>Redis랑 Caffeine을 비교했다.</p>
 <table>
-<thead><tr>
+<thead>
+<tr>
 <th>항목</th>
 <th>Redis</th>
 <th>Caffeine</th>
-</tr></thead>
-<tbody>
-<tr>
+</tr>
+</thead>
+<tbody><tr>
 <td>지연 시간</td>
 <td>1-5ms (네트워크)</td>
 <td>&lt;0.1ms (인메모리)</td>
@@ -186,8 +181,7 @@ N+<span class="hljs-number">1</span> 쿼리: <span class="hljs-number">120</span
 <td>분산 환경</td>
 <td>단일 인스턴스</td>
 </tr>
-</tbody>
-</table>
+</tbody></table>
 <p>단일 인스턴스라서 네트워크 I/O가 필요 없다. Caffeine으로 갔다.</p>
 <h3 id="24-아키텍처">2.4 아키텍처</h3>
 <pre data-lang="stylus"><code class="hljs"><span class="hljs-selector-attr">[서버 시작]</span>
@@ -203,10 +197,9 @@ N+<span class="hljs-number">1</span> 쿼리: <span class="hljs-number">120</span
 <span class="hljs-number">3</span>. 메모리에서 정렬/필터링
 <span class="hljs-number">4</span>. 페이지네이션
     ↓
-<span class="hljs-selector-attr">[응답]</span></code></pre>
-<p>서버 시작할 때 DB에서 데이터 로딩하고, 이후 조회는 메모리에서만 한다.</p>
+<span class="hljs-selector-attr">[응답]</span></code></pre><p>서버 시작할 때 DB에서 데이터 로딩하고, 이후 조회는 메모리에서만 한다.</p>
 <h3 id="25-설계-결정">2.5 설계 결정</h3>
-<h4>TTL 안 씀</h4>
+<h4 id="ttl-안-씀">TTL 안 씀</h4>
 <p>처음에는 <code>expireAfterWrite(30, MINUTES)</code>로 TTL을 줬다. 근데 생각해보니까:</p>
 <ul>
 <li>워밍할 때 최근 6주 데이터만 로딩함</li>
@@ -218,7 +211,7 @@ N+<span class="hljs-number">1</span> 쿼리: <span class="hljs-number">120</span
     .maximumSize(<span class="hljs-number">5000</span>)
     .recordStats()
     .build()</code></pre>
-<h4>유저별 데이터 분리</h4>
+<h4 id="유저별-데이터-분리">유저별 데이터 분리</h4>
 <p>처음에는 유저별 데이터(<code>isFriend</code>, <code>isMyGame</code>)를 캐시에 저장했다. 버그 났다. 모든 유저가 같은 캐시를 공유하니까 다른 사람 정보가 보이는 문제.</p>
 <p><strong>수정 전 (버그)</strong></p>
 <pre data-lang="kotlin"><code class="language-kotlin hljs"><span class="hljs-keyword">val</span> feedItem = toFeedItemResponse(
@@ -366,14 +359,15 @@ cache.put(gameRecordId, feedItem)
 <h3 id="41-응답-시간">4.1 응답 시간</h3>
 <p><img src="https://velog.velcdn.com/images/xe0/post/b2a3366b-4082-4f9a-9d8b-869bf8b07ae5/image.png" alt=""></p>
 <table>
-<thead><tr>
+<thead>
+<tr>
 <th>지표</th>
 <th>Before</th>
 <th>After</th>
 <th>개선율</th>
-</tr></thead>
-<tbody>
-<tr>
+</tr>
+</thead>
+<tbody><tr>
 <td>평균</td>
 <td>820ms</td>
 <td>38ms</td>
@@ -397,8 +391,7 @@ cache.put(gameRecordId, feedItem)
 <td>95ms</td>
 <td>95%</td>
 </tr>
-</tbody>
-</table>
+</tbody></table>
 <h3 id="42-쿼리-수">4.2 쿼리 수</h3>
 <ul>
 <li>Before: 평균 81 queries</li>
@@ -410,27 +403,26 @@ cache.put(gameRecordId, feedItem)
 캐시 읽기: <span class="hljs-number">1</span>ms (<span class="hljs-number">3</span><span class="hljs-comment">%)</span>
 정렬/필터링: <span class="hljs-number">15</span>ms (<span class="hljs-number">39</span><span class="hljs-comment">%)</span>
 페이지네이션: <span class="hljs-number">2</span>ms (<span class="hljs-number">5</span><span class="hljs-comment">%)</span>
-기타: <span class="hljs-number">15</span>ms (<span class="hljs-number">40</span><span class="hljs-comment">%)</span></code></pre>
-<p>대부분 메모리 연산이다.</p>
+기타: <span class="hljs-number">15</span>ms (<span class="hljs-number">40</span><span class="hljs-comment">%)</span></code></pre><p>대부분 메모리 연산이다.</p>
 <h3 id="44-메모리-사용량">4.4 메모리 사용량</h3>
 <pre data-lang="nestedtext"><code class="hljs"><span class="hljs-attribute">완료 게임 250개</span><span class="hljs-punctuation">:</span> <span class="hljs-string">22MB</span>
 <span class="hljs-attribute">예정 게임 250개</span><span class="hljs-punctuation">:</span> <span class="hljs-string">23MB</span>
 <span class="hljs-attribute">총합</span><span class="hljs-punctuation">:</span> <span class="hljs-string">45MB</span>
 
-<span class="hljs-attribute">최대 (5000개)</span><span class="hljs-punctuation">:</span> <span class="hljs-string">450MB 예상</span></code></pre>
-<p>서버 메모리 2GB 대비 여유 있다.</p>
+<span class="hljs-attribute">최대 (5000개)</span><span class="hljs-punctuation">:</span> <span class="hljs-string">450MB 예상</span></code></pre><p>서버 메모리 2GB 대비 여유 있다.</p>
 <h3 id="45-동시성-테스트">4.5 동시성 테스트</h3>
 <p>Apache Bench로 부하 테스트:</p>
 <pre data-lang="bash"><code class="language-bash hljs">ab -n 10000 -c 100 http://localhost:8080/api/feed</code></pre>
 <table>
-<thead><tr>
+<thead>
+<tr>
 <th>지표</th>
 <th>Before</th>
 <th>After</th>
 <th>개선율</th>
-</tr></thead>
-<tbody>
-<tr>
+</tr>
+</thead>
+<tbody><tr>
 <td>Requests/sec</td>
 <td>3.8</td>
 <td>78.2</td>
@@ -442,8 +434,7 @@ cache.put(gameRecordId, feedItem)
 <td>38ms</td>
 <td>95%</td>
 </tr>
-</tbody>
-</table>
+</tbody></table>
 <hr>
 <h2 id="5-제약-사항">5. 제약 사항</h2>
 <h3 id="51-서버-재시작">5.1 서버 재시작</h3>

@@ -89,8 +89,7 @@
 <span class="hljs-attribute">저장소</span><span class="hljs-punctuation">:</span> <span class="hljs-string">In-memory (sync.RWMutex)</span>
 <span class="hljs-attribute">설정</span><span class="hljs-punctuation">:</span> <span class="hljs-string">ConfigMap + Secret</span>
 <span class="hljs-attribute">보안</span><span class="hljs-punctuation">:</span> <span class="hljs-string">RBAC, Non-root, Read-only FS</span>
-<span class="hljs-attribute">주기</span><span class="hljs-punctuation">:</span> <span class="hljs-string">30분마다 스캔 (환경변수로 조절)</span></code></pre>
-<h2 id="구현">구현</h2>
+<span class="hljs-attribute">주기</span><span class="hljs-punctuation">:</span> <span class="hljs-string">30분마다 스캔 (환경변수로 조절)</span></code></pre><h2 id="구현">구현</h2>
 <h3 id="1-pod-자동-발견">1. Pod 자동 발견</h3>
 <p>client-go로 Kubernetes API Server와 통신한다. In-cluster에서 돌기 때문에 ServiceAccount 토큰으로 인증한다.</p>
 <pre data-lang="go"><code class="language-go hljs"><span class="hljs-comment">// In-cluster config로 Kubernetes client 생성</span>
@@ -110,8 +109,7 @@ pods, err := clientset.CoreV1().Pods(<span class="hljs-string">""</span>).
     })</code></pre>
 <p><strong>포트 자동 감지 우선순위:</strong></p>
 <ol>
-<li>
-<code>grpc</code> 이름을 가진 containerPort</li>
+<li><code>grpc</code> 이름을 가진 containerPort</li>
 <li>TCP 프로토콜 포트</li>
 <li>기본값 9090</li>
 </ol>
@@ -216,8 +214,7 @@ fileDescs, err := parser.ParseFiles(relPaths...)</code></pre>
 │   │   └── web<span class="hljs-symbol">/</span>                <span class="hljs-comment"># HTTP 서버</span>
 │   ├── scanner<span class="hljs-symbol">/</span>                <span class="hljs-comment"># 오케스트레이터</span>
 │   └── config<span class="hljs-symbol">/</span>                 <span class="hljs-comment"># 설정 관리</span>
-└── deploy<span class="hljs-operator">/</span>k8s<span class="hljs-symbol">/</span>                 <span class="hljs-comment"># Kubernetes manifests</span></code></pre>
-<h3 id="interface-활용">Interface 활용</h3>
+└── deploy<span class="hljs-operator">/</span>k8s<span class="hljs-symbol">/</span>                 <span class="hljs-comment"># Kubernetes manifests</span></code></pre><h3 id="interface-활용">Interface 활용</h3>
 <pre data-lang="go"><code class="language-go hljs"><span class="hljs-comment">// BSR 클라이언트 인터페이스</span>
 <span class="hljs-keyword">type</span> Client <span class="hljs-keyword">interface</span> {
     FetchSchema(ctx context.Context, module <span class="hljs-type">string</span>) (*domain.SchemaDescriptor, <span class="hljs-type">error</span>)
@@ -340,8 +337,7 @@ kubectl port-forward -n protodiff-system svc/protodiff 18080:80</code></pre>
 <p>서비스에서 reflection을 켜야 한다:</p>
 <ul>
 <li>Go: <code>reflection.Register(server)</code> 한 줄</li>
-<li>Java: <code>server.addService(ProtoReflectionService.newInstance())</code>
-</li>
+<li>Java: <code>server.addService(ProtoReflectionService.newInstance())</code></li>
 </ul>
 <p>코드 변경이 최소화돼서 도입 부담이 적다.</p>
 <h2 id="향후">향후</h2>

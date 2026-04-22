@@ -2,9 +2,9 @@ import { writeFile, mkdir, rm } from 'node:fs/promises';
 import path from 'node:path';
 import * as cheerio from 'cheerio';
 import hljs from 'highlight.js';
+import { XMLParser } from 'fast-xml-parser';
 
 const RSS = 'https://v2.velog.io/rss/@xe0';
-const API = `https://api.rss2json.com/v1/api.json?rss_url=${encodeURIComponent(RSS)}`;
 const SITE_URL = 'https://xhae123.github.io';
 const SITE_NAME = "xhae123's notes";
 const SITE_DESC = '개발하면서 배운 것과 생각한 것을 기록합니다.';
@@ -12,14 +12,47 @@ const AUTHOR = '김우진';
 
 const MONTHS = ['JAN', 'FEB', 'MAR', 'APR', 'MAY', 'JUN', 'JUL', 'AUG', 'SEP', 'OCT', 'NOV', 'DEC'];
 
-async function main() {
-  console.log('Fetching RSS...');
-  const res = await fetch(API, { cache: 'no-store' });
+async function fetchFeed() {
+  const res = await fetch(RSS, {
+    cache: 'no-store',
+    headers: { 'Cache-Control': 'no-cache', 'User-Agent': 'xhae123-notes-builder' },
+  });
   if (!res.ok) throw new Error(`RSS HTTP ${res.status}`);
-  const data = await res.json();
-  if (data.status !== 'ok') throw new Error('RSS status not ok');
-  const items = data.items || [];
+  const xml = await res.text();
+  const parser = new XMLParser({
+    ignoreAttributes: false,
+    cdataPropName: '__cdata',
+  });
+  const parsed = parser.parse(xml);
+  const channelItems = parsed?.rss?.channel?.item || [];
+  const arr = Array.isArray(channelItems) ? channelItems : [channelItems];
+  return arr.map((it) => ({
+    title: unwrap(it.title),
+    link: unwrap(it.link),
+    pubDate: unwrap(it.pubDate),
+    description: unwrap(it.description),
+    content: unwrap(it['content:encoded']) || unwrap(it.description),
+  }));
+}
+
+function unwrap(v) {
+  if (v == null) return '';
+  if (typeof v === 'string') return v;
+  if (typeof v === 'object') {
+    if (v.__cdata) return String(v.__cdata);
+    if ('#text' in v) return String(v['#text']);
+    return String(v);
+  }
+  return String(v);
+}
+
+async function main() {
+  console.log('Fetching velog RSS...');
+  const items = await fetchFeed();
   console.log(`Found ${items.length} items`);
+  if (items.length === 0) {
+    throw new Error('RSS returned 0 items — aborting to prevent wiping content');
+  }
 
   await rm('posts', { recursive: true, force: true });
   await mkdir('posts', { recursive: true });

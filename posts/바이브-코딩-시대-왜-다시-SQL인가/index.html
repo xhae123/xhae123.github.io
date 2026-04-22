@@ -60,13 +60,11 @@
 <p>AI는 문맥을 모릅니다. <code>List&lt;Order&gt;</code>를 순회하며 <code>order.getMember().getName()</code>을 호출하는 코드는 AI에게 자연스러운 문법입니다. 하지만 실행되는 순간 DB와 수백 번의 핑퐁이 시작됩니다. (N+1)</p>
 <p>문제:</p>
 <ul>
-<li>
-<strong>RTT 누적:</strong> DB가 빨라도 네트워크 비용은 0이 아님 → 레이턴시 증가</li>
+<li><strong>RTT 누적:</strong> DB가 빨라도 네트워크 비용은 0이 아님 → 레이턴시 증가</li>
 </ul>
 <p><img src="https://velog.velcdn.com/images/xe0/post/dacbcbb5-877d-413b-8143-6b28e4352c0f/image.png" alt=""></p>
 <ul>
-<li>
-<strong>커넥션 풀 고갈:</strong> OSIV 환경에서 트랜잭션이 열려 있는 동안 비즈니스 로직 수행 → 커넥션이 오래 점유됨 → 요청 많아지면 CPU는 놀고 커넥션 풀만 바닥남</li>
+<li><strong>커넥션 풀 고갈:</strong> OSIV 환경에서 트랜잭션이 열려 있는 동안 비즈니스 로직 수행 → 커넥션이 오래 점유됨 → 요청 많아지면 CPU는 놀고 커넥션 풀만 바닥남</li>
 </ul>
 <p><code>Fetch Join</code>, <code>BatchSize</code>, <code>EntityGraph</code>로 해결할 수 있습니다. 하지만 어떤 엔티티에 적용할지 AI가 판단하기 어렵고, AI가 작성한 코드에서 이 암시적 비용을 찾아내는 건 피로도 높은 작업입니다.</p>
 <h3 id="12-exposed의-명시적-join">1.2. Exposed의 명시적 Join</h3>
@@ -77,11 +75,9 @@
     .select { Orders.date greaterEq today }
     .map { ... }</code></pre>
 <ul>
-<li>
-<p><strong>비용의 시각화:</strong> 코드는 길어집니다. 하지만 <code>innerJoin</code> 키워드가 보인다는 건 "여기서 조인 쿼리가 나간다"는 신호입니다.</p>
+<li><p><strong>비용의 시각화:</strong> 코드는 길어집니다. 하지만 <code>innerJoin</code> 키워드가 보인다는 건 "여기서 조인 쿼리가 나간다"는 신호입니다.</p>
 </li>
-<li>
-<p><strong>리뷰 효율:</strong> yml 설정이나 엔티티 어노테이션을 뒤질 필요 없습니다. 코드만 보고 "조인이 너무 많으니 분리합시다" 피드백이 가능합니다.</p>
+<li><p><strong>리뷰 효율:</strong> yml 설정이나 엔티티 어노테이션을 뒤질 필요 없습니다. 코드만 보고 "조인이 너무 많으니 분리합시다" 피드백이 가능합니다.</p>
 </li>
 </ul>
 <hr>
@@ -91,21 +87,17 @@
 <h3 id="21-jpa의-persistence-context">2.1. JPA의 Persistence Context</h3>
 <p>JPA는 1차 캐시를 둡니다. 자바 컬렉션 다루듯 DB를 다룰 수 있습니다. 하지만 비용이 있습니다.</p>
 <ol>
-<li>
-<p><strong>스냅샷 오버헤드:</strong> Dirty Checking을 위해 데이터 로딩 시 원본 복사본(스냅샷)을 힙에 저장합니다. 1GB 조회하면 실제로 2GB 이상 점유. 대용량 배치에서 <code>OutOfMemoryError</code>나 잦은 Full GC의 원인입니다.</p>
+<li><p><strong>스냅샷 오버헤드:</strong> Dirty Checking을 위해 데이터 로딩 시 원본 복사본(스냅샷)을 힙에 저장합니다. 1GB 조회하면 실제로 2GB 이상 점유. 대용량 배치에서 <code>OutOfMemoryError</code>나 잦은 Full GC의 원인입니다.</p>
 </li>
-<li>
-<p><strong>플러시 비용:</strong> 트랜잭션 끝날 때 관리 중인 모든 객체의 현재 상태와 스냅샷을 필드 단위로 비교합니다. 데이터 많아지면 이 비교 연산(O(N)) 때문에 CPU 사용량이 올라갑니다.</p>
+<li><p><strong>플러시 비용:</strong> 트랜잭션 끝날 때 관리 중인 모든 객체의 현재 상태와 스냅샷을 필드 단위로 비교합니다. 데이터 많아지면 이 비교 연산(O(N)) 때문에 CPU 사용량이 올라갑니다.</p>
 </li>
 </ol>
 <h3 id="22-exposed의-dsl-방식">2.2. Exposed의 DSL 방식</h3>
 <p>Exposed도 DAO와 EntityCache를 제공합니다. 하지만 DSL 방식에서는 이 오버헤드가 없습니다.</p>
 <ul>
-<li>
-<p><strong>직접 매핑:</strong> <code>Table.select { ... }</code> 결과는 JDBC <code>ResultSet</code>에서 바로 DTO나 Data Class로 매핑됩니다. 스냅샷도, 더티 체킹도 없습니다.</p>
+<li><p><strong>직접 매핑:</strong> <code>Table.select { ... }</code> 결과는 JDBC <code>ResultSet</code>에서 바로 DTO나 Data Class로 매핑됩니다. 스냅샷도, 더티 체킹도 없습니다.</p>
 </li>
-<li>
-<p><strong>예측 가능한 리소스:</strong> 조회한 데이터만큼만 메모리를 씁니다. 클라우드 환경에서 메모리 사용량을 정확히 예측하고 통제할 수 있습니다.</p>
+<li><p><strong>예측 가능한 리소스:</strong> 조회한 데이터만큼만 메모리를 씁니다. 클라우드 환경에서 메모리 사용량을 정확히 예측하고 통제할 수 있습니다.</p>
 </li>
 </ul>
 <hr>
@@ -122,28 +114,22 @@
 <h3 id="32-exposed의-컴파일-타임-검증">3.2. Exposed의 컴파일 타임 검증</h3>
 <p>Exposed는 코틀린의 타입 시스템을 SQL 생성에 씁니다.</p>
 <ul>
-<li>
-<p><strong>구조적 강제:</strong> <code>UserTable.name</code>(String)과 <code>TeamTable.id</code>(Long)를 비교하는 조인 조건을 AI가 작성하면 컴파일 에러. 타입이 다르기 때문입니다.</p>
+<li><p><strong>구조적 강제:</strong> <code>UserTable.name</code>(String)과 <code>TeamTable.id</code>(Long)를 비교하는 조인 조건을 AI가 작성하면 컴파일 에러. 타입이 다르기 때문입니다.</p>
 </li>
-<li>
-<p><strong>1차 필터링:</strong> Exposed 코드가 컴파일되면, SQL 문법, 컬럼 참조, 타입 매칭은 유효합니다. 리뷰어는 "이 쿼리가 문법적으로 맞나?"를 고민할 필요 없이 "비즈니스 로직이 올바른가?"에 집중할 수 있습니다.</p>
+<li><p><strong>1차 필터링:</strong> Exposed 코드가 컴파일되면, SQL 문법, 컬럼 참조, 타입 매칭은 유효합니다. 리뷰어는 "이 쿼리가 문법적으로 맞나?"를 고민할 필요 없이 "비즈니스 로직이 올바른가?"에 집중할 수 있습니다.</p>
 </li>
 </ul>
 <hr>
 <h2 id="4-trade-off">4. Trade-off</h2>
 <p>Exposed가 모든 상황의 정답은 아닙니다.</p>
 <ol>
-<li>
-<p><strong>Dynamic Query:</strong> JPA 진영에는 QueryDSL이 있습니다. Exposed로 복잡한 동적 쿼리를 짜면 코드가 복잡해집니다. 가독성 확보하려면 확장 함수나 DSL 래퍼를 직접 구현해야 합니다.</p>
+<li><p><strong>Dynamic Query:</strong> JPA 진영에는 QueryDSL이 있습니다. Exposed로 복잡한 동적 쿼리를 짜면 코드가 복잡해집니다. 가독성 확보하려면 확장 함수나 DSL 래퍼를 직접 구현해야 합니다.</p>
 </li>
-<li>
-<p><strong>테이블 중심 사고:</strong> JPA는 객체 지향적 도메인 모델링(DDD)이 가능합니다. Exposed는 DB 테이블 중심 사고를 강제합니다. 비즈니스 로직이 복잡하고 엔티티 간 협력이 중요한 도메인이면 JPA가 나을 수 있습니다.</p>
+<li><p><strong>테이블 중심 사고:</strong> JPA는 객체 지향적 도메인 모델링(DDD)이 가능합니다. Exposed는 DB 테이블 중심 사고를 강제합니다. 비즈니스 로직이 복잡하고 엔티티 간 협력이 중요한 도메인이면 JPA가 나을 수 있습니다.</p>
 </li>
-<li>
-<p><strong>jOOQ와 비교:</strong> Type-safe SQL을 원하면 jOOQ도 있습니다. 다만 유료 라이선스 이슈와 Java 기반 코드 제너레이션 설정이 번거롭습니다. 코틀린 환경이면 Exposed가 더 가볍습니다.</p>
+<li><p><strong>jOOQ와 비교:</strong> Type-safe SQL을 원하면 jOOQ도 있습니다. 다만 유료 라이선스 이슈와 Java 기반 코드 제너레이션 설정이 번거롭습니다. 코틀린 환경이면 Exposed가 더 가볍습니다.</p>
 </li>
-<li>
-<p><strong>AI 학습 데이터 편향:</strong> LLM은 JPA를 잘 압니다. GitHub의 자바 프로젝트 대부분이 JPA를 쓰기 때문입니다. Exposed는 학습 데이터가 적어서 복잡한 윈도우 함수나 GroupConcat 같은 특수 구문 요청하면 AI가 존재하지 않는 DSL 문법을 만들어낼 수 있습니다. 초기에 AI에게 문법을 가르치는 비용이 필요합니다.</p>
+<li><p><strong>AI 학습 데이터 편향:</strong> LLM은 JPA를 잘 압니다. GitHub의 자바 프로젝트 대부분이 JPA를 쓰기 때문입니다. Exposed는 학습 데이터가 적어서 복잡한 윈도우 함수나 GroupConcat 같은 특수 구문 요청하면 AI가 존재하지 않는 DSL 문법을 만들어낼 수 있습니다. 초기에 AI에게 문법을 가르치는 비용이 필요합니다.</p>
 </li>
 </ol>
 <hr>
@@ -151,12 +137,9 @@
 <p>JPA는 복잡성을 추상화 뒤로 잘 숨겨왔습니다. 근데 AI가 코드를 생성하는 환경에서는, 숨겨진 복잡성이 리스크가 됩니다.</p>
 <p>Exposed를 선택한다는 건, 이 리스크를 눈에 보이는 곳으로 꺼내겠다는 겁니다.</p>
 <ol>
-<li>
-<strong>I/O 예측:</strong> 쿼리가 언제 나가는지 코드에서 보임</li>
-<li>
-<strong>비용 투명성:</strong> 메모리와 네트워크 비용이 코드에 드러남</li>
-<li>
-<strong>타입 안전성:</strong> 컴파일러가 정합성을 1차로 검증</li>
+<li><strong>I/O 예측:</strong> 쿼리가 언제 나가는지 코드에서 보임</li>
+<li><strong>비용 투명성:</strong> 메모리와 네트워크 비용이 코드에 드러남</li>
+<li><strong>타입 안전성:</strong> 컴파일러가 정합성을 1차로 검증</li>
 </ol>
 <p>AI랑 협업하는 환경이라면, Exposed 한번 고려해볼 만합니다.</p>
 </body></html>

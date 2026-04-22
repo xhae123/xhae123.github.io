@@ -65,10 +65,13 @@
 <p><img src="https://velog.velcdn.com/images/xe0/post/8312cbb5-87b5-445d-babc-0add71b28fd8/image.png" alt=""></p>
 <p>리워드 적립 API(<code>POST /rewards/earn</code>)는 주문 완료 시 우리 서비스 DB에 기록하고, 로그를 남긴 뒤 파트너사에 API로 동기화하는 흐름입니다.</p>
 <p>부하 테스트에서 VU를 50까지 올리자 응답 시간이 급격히 치솟았습니다.</p>
-<p><img src="https://velog.velcdn.com/images/xe0/post/7b74dd7b-394e-4ac9-bac5-d655ccc95d73/image.png" alt=""><img src="https://velog.velcdn.com/images/xe0/post/22a855d4-b734-48bf-bb9b-3b69c0beb5eb/image.png" alt=""></p>
+<p><img src="https://velog.velcdn.com/images/xe0/post/7b74dd7b-394e-4ac9-bac5-d655ccc95d73/image.png" alt="">
+<img src="https://velog.velcdn.com/images/xe0/post/22a855d4-b734-48bf-bb9b-3b69c0beb5eb/image.png" alt=""></p>
 <p>평균 약 6.2초, 처리한 요청 수 3,510개.</p>
 <p align="center">
-  <img src="https://velog.velcdn.com/images/xe0/post/a51fb19e-600b-4cb5-a97c-39739b0a161e/image.png" width="340"><img src="https://velog.velcdn.com/images/xe0/post/b4af00f9-7adb-4a9b-b7bb-6851e0c7cc77/image.png" width="340"></p>
+  <img src="https://velog.velcdn.com/images/xe0/post/a51fb19e-600b-4cb5-a97c-39739b0a161e/image.png" width="340">
+  <img src="https://velog.velcdn.com/images/xe0/post/b4af00f9-7adb-4a9b-b7bb-6851e0c7cc77/image.png" width="340">
+</p>
 
 <p>활성 커넥션이 부하 시작 얼마 안 돼서 10개(최대치)에 도달했고, 그 직후부터 pending이 쌓이기 시작했습니다. pending은 35개까지 치솟았습니다.</p>
 <p>"DB가 느리다"가 아니라, 애플리케이션이 커넥션을 오래 물고 있다는 신호입니다.</p>
@@ -153,8 +156,7 @@
 <p>풀 사이즈 10, 외부 호출로 트랜잭션이 평균 100ms 늘어난다면:</p>
 <pre data-lang="abnf"><code class="hljs">최대 처리량 상한 ≈ poolSize / holdingTime
                 <span class="hljs-operator">=</span> <span class="hljs-number">10</span> / <span class="hljs-number">0.1</span>
-                <span class="hljs-operator">=</span> <span class="hljs-number">100</span> tx/s</code></pre>
-<p>단순한 계산이지만 시사점은 큽니다.</p>
+                <span class="hljs-operator">=</span> <span class="hljs-number">100</span> tx/s</code></pre><p>단순한 계산이지만 시사점은 큽니다.</p>
 <ul>
 <li>요청 몰리면 10개만 실행, 나머지는 커넥션 대기</li>
 <li>대기열(pending) 쌓이고, p95/p99 급등</li>
@@ -181,13 +183,14 @@
 <h2 id="7-원자성-경계를-잘못-잡았다">7. 원자성 경계를 잘못 잡았다</h2>
 <p>각 작업이 정말 "같이 커밋돼야 하는가?"로 분해하면 답이 보입니다.</p>
 <table>
-<thead><tr>
+<thead>
+<tr>
 <th>작업</th>
 <th>내부 정합성에 원자적으로 필요?</th>
 <th>트랜잭션에 묶을 실익</th>
-</tr></thead>
-<tbody>
-<tr>
+</tr>
+</thead>
+<tbody><tr>
 <td>summary UPDATE + ledger INSERT</td>
 <td>✅</td>
 <td>큼</td>
@@ -202,8 +205,7 @@
 <td>❌ (애초에 원자성 불가)</td>
 <td>없음</td>
 </tr>
-</tbody>
-</table>
+</tbody></table>
 <p>파트너 동기화는 트랜잭션에 넣는다고 원자성이 생기지 않습니다.</p>
 <ul>
 <li>외부 호출 성공 → 내부 DB 롤백: "외부는 적립, 내부는 미적립"</li>
@@ -215,8 +217,7 @@
 <hr>
 <h2 id="8-왜-async가-아니라-outbox인가">8. 왜 <code>@Async</code>가 아니라 Outbox인가</h2>
 <p>외부 호출을 트랜잭션 밖으로 빼는 방법은 여럿 있습니다. 가장 쉬운 건 <code>@Async</code>입니다.</p>
-<h3 id="옵션-a-async">옵션 A: <code>@Async</code>
-</h3>
+<h3 id="옵션-a-async">옵션 A: <code>@Async</code></h3>
 <p>장점:</p>
 <ul>
 <li>구현 쉽고 latency 즉각 개선</li>
@@ -297,8 +298,7 @@
 <h3 id="102-exactly-once는-자동으로-생기지-않는다">10.2 Exactly-once는 자동으로 생기지 않는다</h3>
 <p>Outbox는 대개 at-least-once 전송입니다. 중복 전송 가능성을 전제로 하므로 파트너 API에 멱등성 키가 필요합니다.</p>
 <ul>
-<li>
-<code>ledgerId</code>를 idempotency key로 사용</li>
+<li><code>ledgerId</code>를 idempotency key로 사용</li>
 <li>동일 key 재요청 시 중복 적립 방지</li>
 </ul>
 <h3 id="103-outbox는-새로운-운영-대상이다">10.3 Outbox는 새로운 운영 대상이다</h3>
@@ -314,14 +314,15 @@
 <p><img src="https://velog.velcdn.com/images/xe0/post/65db9b86-86f0-4993-83cb-8b0fd5748dc1/image.png" alt=""></p>
 <p><img src="https://velog.velcdn.com/images/xe0/post/806e223c-feca-489a-bfdf-ab00361926e8/image.png" alt=""></p>
 <table>
-<thead><tr>
+<thead>
+<tr>
 <th>지표</th>
 <th>Before</th>
 <th>After</th>
 <th>개선율</th>
-</tr></thead>
-<tbody>
-<tr>
+</tr>
+</thead>
+<tbody><tr>
 <td>avg</td>
 <td>624.1ms</td>
 <td>15.9ms</td>
@@ -357,11 +358,12 @@
 <td>21,725건</td>
 <td>+6.2배</td>
 </tr>
-</tbody>
-</table>
+</tbody></table>
 <p>평균 응답 속도가 대폭 줄었고, 시간당 처리량이 6배 늘었습니다.</p>
 <p align="center">
-  <img src="https://velog.velcdn.com/images/xe0/post/ed3d57d9-a7f8-4aa1-9d9e-2bf101bdae6e/image.png" width="340"><img src="https://velog.velcdn.com/images/xe0/post/a57f0d82-abce-4aa6-8d2d-c0b89e0e23cd/image.png" width="340"></p>
+  <img src="https://velog.velcdn.com/images/xe0/post/ed3d57d9-a7f8-4aa1-9d9e-2bf101bdae6e/image.png" width="340">
+  <img src="https://velog.velcdn.com/images/xe0/post/a57f0d82-abce-4aa6-8d2d-c0b89e0e23cd/image.png" width="340">
+</p>
 
 <ul>
 <li>활성 커넥션이 최대치에 도달한 시점이 훨씬 늦어지고, 지속 시간도 짧아졌습니다.</li>

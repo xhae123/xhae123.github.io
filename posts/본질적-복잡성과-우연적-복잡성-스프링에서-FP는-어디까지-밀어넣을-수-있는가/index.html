@@ -450,8 +450,7 @@ assertEquals(<span class="hljs-number">18000</span>, (result <span class="hljs-k
       <span class="hljs-keyword">extends</span> RaiseCancellationException
           <span class="hljs-keyword">extends</span> CancellationException
               <span class="hljs-keyword">extends</span> IllegalStateException
-                  <span class="hljs-keyword">extends</span> RuntimeException</code></pre>
-<p><code>RuntimeException</code>의 자식이다. 스프링의 <code>@Transactional</code>은 <code>RuntimeException</code>이면 롤백한다. 그러면 롤백되어야 하지 않은가?</p>
+                  <span class="hljs-keyword">extends</span> RuntimeException</code></pre><p><code>RuntimeException</code>의 자식이다. 스프링의 <code>@Transactional</code>은 <code>RuntimeException</code>이면 롤백한다. 그러면 롤백되어야 하지 않은가?</p>
 <h3 id="실행-순서가-답이다">실행 순서가 답이다</h3>
 <p><code>either { }</code>는 코틀린의 <code>inline fun</code>이다. 메서드의 바이트코드 안에 인라인된다. 내부적으로는 평범한 <code>try-catch</code>다.</p>
 <pre data-lang="aspectj"><code class="hljs"><span class="hljs-meta">@Transactional</span> AOP 프록시 (바깥)
@@ -461,8 +460,7 @@ assertEquals(<span class="hljs-number">18000</span>, (result <span class="hljs-k
           └─ → <span class="hljs-keyword">throw</span> NoTrace
           └─ <span class="hljs-keyword">catch</span> (e: RaiseCancellationException) → Either.Left(<span class="hljs-keyword">error</span>) 반환
       └─ 메서드가 Either.Left를 정상 반환
-  └─ 프록시가 보는 것: 예외 없이 정상 반환됨 → commit</code></pre>
-<p><code>either { }</code>의 <code>try-catch</code>가 <code>@Transactional</code> 프록시보다 <strong>안쪽</strong>에 있다. <code>raise()</code>가 던진 예외는 <code>either</code>가 먼저 잡아서 <code>Either.Left</code>로 변환한다. 프록시는 예외를 볼 기회가 없다. 정상 반환으로 인식하고 커밋한다.</p>
+  └─ 프록시가 보는 것: 예외 없이 정상 반환됨 → commit</code></pre><p><code>either { }</code>의 <code>try-catch</code>가 <code>@Transactional</code> 프록시보다 <strong>안쪽</strong>에 있다. <code>raise()</code>가 던진 예외는 <code>either</code>가 먼저 잡아서 <code>Either.Left</code>로 변환한다. 프록시는 예외를 볼 기회가 없다. 정상 반환으로 인식하고 커밋한다.</p>
 <h3 id="왜-이게-위험한가">왜 이게 위험한가</h3>
 <p>현재 코드는 안전하다. FC/IS 원칙에 따라 Core 호출(pure computation)이 IO(재고 차감) <strong>이전에</strong> 실행되기 때문이다. 계산이 실패하면 IO에 도달하지 않고 <code>Either.Left</code>로 빠져나간다.</p>
 <p>하지만 순서가 바뀌면?</p>
@@ -492,13 +490,14 @@ assertEquals(<span class="hljs-number">18000</span>, (result <span class="hljs-k
 <p>여정을 정리한다.</p>
 <h3 id="판별-결과-종합">판별 결과 종합</h3>
 <table>
-<thead><tr>
+<thead>
+<tr>
 <th>전환</th>
 <th>벽의 종류</th>
 <th>대응</th>
-</tr></thead>
-<tbody>
-<tr>
+</tr>
+</thead>
+<tbody><tr>
 <td>JPA 엔티티 불변화 (섹션 1)</td>
 <td>우연적</td>
 <td>돌아감 — 도메인 모델 분리</td>
@@ -533,8 +532,7 @@ assertEquals(<span class="hljs-number">18000</span>, (result <span class="hljs-k
 <td>우연적</td>
 <td>돌아감 — 안전망 상실 위험</td>
 </tr>
-</tbody>
-</table>
+</tbody></table>
 <p>여기서 패턴이 보인다.</p>
 <p><strong>pure computation 영역</strong>(할인 정책, 재고 검증, 주문 가격 계산)에서는 FP 전환이 자연스럽고 이득이 컸다. accidental wall은 쉽게 넘거나 돌아갔고, essential wall은 타협 가능한 수준이었다.</p>
 <p><strong>프레임워크 infrastructure 영역</strong>(@Transactional, @ControllerAdvice, ResponseEntity)에서는 accidental wall이 한꺼번에 터졌다. 개별로는 넘을 수 있었지만, 전부 "예외 기반"이라는 하나의 세계관에 묶여있어서, 하나를 바꾸면 전체가 흔들렸다.</p>
@@ -583,12 +581,9 @@ pure computation 영역까지는 밀어도 괜찮다. 그 너머는 프레임워
 }</code></pre>
 <p>이 구조가 하는 것을 정리하면 이렇다.</p>
 <ul>
-<li>
-<strong>Core</strong>: FP를 자유롭게 쓴다. <code>Either</code>, <code>sealed class</code>, pure function — 벽이 없으니 마음껏.</li>
-<li>
-<strong>Shell</strong>: 스프링 관례를 존중한다. <code>@Service</code>, <code>@Transactional</code>, 예외 기반 에러 — 프레임워크와 싸우지 않는다.</li>
-<li>
-<strong>경계</strong>: <code>Either</code>를 예외로 변환한다. <code>getOrElse { throw it.toException() }</code> — 이 한 줄이 두 세계를 연결한다.</li>
+<li><strong>Core</strong>: FP를 자유롭게 쓴다. <code>Either</code>, <code>sealed class</code>, pure function — 벽이 없으니 마음껏.</li>
+<li><strong>Shell</strong>: 스프링 관례를 존중한다. <code>@Service</code>, <code>@Transactional</code>, 예외 기반 에러 — 프레임워크와 싸우지 않는다.</li>
+<li><strong>경계</strong>: <code>Either</code>를 예외로 변환한다. <code>getOrElse { throw it.toException() }</code> — 이 한 줄이 두 세계를 연결한다.</li>
 </ul>
 <p><code>@Transactional</code>이 롤백을 보장하고, <code>@ControllerAdvice</code>가 에러를 글로벌하게 처리하고, 컨트롤러는 한 줄로 남는다. 프레임워크가 제공하는 안전망을 그대로 활용하면서, Core의 테스트 용이성은 확보된다.</p>
 <h2 id="7-결론">7. 결론</h2>

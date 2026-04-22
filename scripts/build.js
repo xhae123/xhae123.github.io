@@ -209,7 +209,6 @@ function siteFooter() {
           <span class="footer-value">xhae000@gmail.com</span>
         </a>
       </div>
-      <p class="footer-meta">© <span id="year"></span> xhae123</p>
     </div>
   </footer>`;
 }

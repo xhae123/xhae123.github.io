@@ -24,9 +24,9 @@
   <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500&display=swap" />
   <link rel="stylesheet" href="/styles.css" />
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/github-dark.min.css" />
-  <meta property="article:published_time" content="2026-02-19T09:39:12.000Z" />
+  <meta property="article:published_time" content="2026-02-19T00:39:12.000Z" />
   <meta property="article:author" content="김우진" />
-  <script type="application/ld+json">{"@context":"https://schema.org","@type":"BlogPosting","headline":"트랜잭션의 경계는 어떻게 정해야할까: Outbox pattern으로 경계 줄이기","description":"리워드 적립 API(POST /rewards/earn)는 주문 완료 시 우리 서비스 DB에 기록하고, 로그를 남긴 뒤 파트너사에 API로 동기화하는 흐름입니다.","datePublished":"2026-02-19T09:39:12.000Z","dateModified":"2026-02-19T09:39:12.000Z","author":{"@type":"Person","name":"김우진"},"url":"https://xhae123.github.io/posts/%ED%8A%B8%EB%9E%9C%EC%9E%AD%EC%85%98%EC%9D%98-%EA%B2%BD%EA%B3%84%EB%8A%94-%EC%96%B4%EB%96%BB%EA%B2%8C-%EC%A0%95%ED%95%B4%EC%95%BC%ED%95%A0%EA%B9%8C-Outbox-pattern%EC%9C%BC%EB%A1%9C-%EA%B2%BD%EA%B3%84-%EC%A4%84%EC%9D%B4%EA%B8%B0/","mainEntityOfPage":"https://xhae123.github.io/posts/%ED%8A%B8%EB%9E%9C%EC%9E%AD%EC%85%98%EC%9D%98-%EA%B2%BD%EA%B3%84%EB%8A%94-%EC%96%B4%EB%96%BB%EA%B2%8C-%EC%A0%95%ED%95%B4%EC%95%BC%ED%95%A0%EA%B9%8C-Outbox-pattern%EC%9C%BC%EB%A1%9C-%EA%B2%BD%EA%B3%84-%EC%A4%84%EC%9D%B4%EA%B8%B0/","image":"https://velog.velcdn.com/images/xe0/post/8312cbb5-87b5-445d-babc-0add71b28fd8/image.png"}</script>
+  <script type="application/ld+json">{"@context":"https://schema.org","@type":"BlogPosting","headline":"트랜잭션의 경계는 어떻게 정해야할까: Outbox pattern으로 경계 줄이기","description":"리워드 적립 API(POST /rewards/earn)는 주문 완료 시 우리 서비스 DB에 기록하고, 로그를 남긴 뒤 파트너사에 API로 동기화하는 흐름입니다.","datePublished":"2026-02-19T00:39:12.000Z","dateModified":"2026-02-19T00:39:12.000Z","author":{"@type":"Person","name":"김우진"},"url":"https://xhae123.github.io/posts/%ED%8A%B8%EB%9E%9C%EC%9E%AD%EC%85%98%EC%9D%98-%EA%B2%BD%EA%B3%84%EB%8A%94-%EC%96%B4%EB%96%BB%EA%B2%8C-%EC%A0%95%ED%95%B4%EC%95%BC%ED%95%A0%EA%B9%8C-Outbox-pattern%EC%9C%BC%EB%A1%9C-%EA%B2%BD%EA%B3%84-%EC%A4%84%EC%9D%B4%EA%B8%B0/","mainEntityOfPage":"https://xhae123.github.io/posts/%ED%8A%B8%EB%9E%9C%EC%9E%AD%EC%85%98%EC%9D%98-%EA%B2%BD%EA%B3%84%EB%8A%94-%EC%96%B4%EB%96%BB%EA%B2%8C-%EC%A0%95%ED%95%B4%EC%95%BC%ED%95%A0%EA%B9%8C-Outbox-pattern%EC%9C%BC%EB%A1%9C-%EA%B2%BD%EA%B3%84-%EC%A4%84%EC%9D%B4%EA%B8%B0/","image":"https://velog.velcdn.com/images/xe0/post/8312cbb5-87b5-445d-babc-0add71b28fd8/image.png"}</script>
 </head>
 <body>
   <header class="site-header" id="site-header">
@@ -437,7 +437,6 @@
           <span class="footer-value">xhae000@gmail.com</span>
         </a>
       </div>
-      <p class="footer-meta">© <span id="year"></span> xhae123</p>
     </div>
   </footer>
   <script src="/app.js"></script>

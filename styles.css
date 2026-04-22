@@ -373,14 +373,24 @@ a:focus-visible,
 .post-body li { margin: 0.4em 0; }
 
 .post-body blockquote {
-  border-left: 3px solid var(--color-text);
-  padding: 0.2em 0 0.2em 1.4em;
-  margin: 1.6em 0;
-  color: var(--color-text);
+  border-left: 2px solid var(--color-border);
+  padding: 0.1em 0 0.1em 1.25em;
+  margin: 2em 0;
+  color: var(--color-text-sub);
   font-size: 1.02em;
+  line-height: 1.75;
 }
 
 .post-body blockquote p { margin: 0.6em 0; }
+
+.post-body blockquote em,
+.post-body blockquote strong {
+  color: var(--color-text);
+}
+
+.post-body blockquote code {
+  color: var(--color-accent);
+}
 
 .post-body code {
   font-family: var(--font-mono);

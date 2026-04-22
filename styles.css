@@ -568,6 +568,63 @@ a:focus-visible,
 }
 
 /* ============================================
+   Footer
+   ============================================ */
+.site-footer {
+  border-top: 1px solid var(--color-border);
+  padding: 40px 0 48px;
+  margin-top: 96px;
+}
+
+.site-footer .container {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 24px;
+  flex-wrap: wrap;
+}
+
+.footer-links {
+  display: flex;
+  align-items: center;
+  gap: 20px;
+}
+
+.footer-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-family: var(--font-mono);
+  font-size: 12px;
+  font-weight: 400;
+  letter-spacing: 0.01em;
+  color: var(--color-text-mute);
+  transition: color 0.15s;
+}
+
+.footer-link:hover {
+  color: var(--color-text);
+}
+
+.footer-link svg {
+  opacity: 0.7;
+  transition: opacity 0.15s;
+}
+
+.footer-link:hover svg {
+  opacity: 1;
+}
+
+.footer-meta {
+  font-family: var(--font-mono);
+  font-size: 11.5px;
+  font-weight: 400;
+  letter-spacing: 0.02em;
+  color: var(--color-text-mute);
+  margin: 0;
+}
+
+/* ============================================
    Animations (subtle)
    ============================================ */
 @keyframes fade-up {

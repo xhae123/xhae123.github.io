@@ -2,7 +2,7 @@ name: Rebuild from RSS
 
 on:
   schedule:
-    - cron: '0 15 * * *'  # Daily at 15:00 UTC (00:00 KST)
+    - cron: '0 21 * * *'  # Daily at 21:00 UTC (06:00 KST)
   push:
     branches: [main]
     paths-ignore:

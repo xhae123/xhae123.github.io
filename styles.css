@@ -580,38 +580,49 @@ a:focus-visible,
   display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: 24px;
+  gap: 32px;
   flex-wrap: wrap;
 }
 
 .footer-links {
   display: flex;
-  align-items: center;
-  gap: 20px;
+  flex-direction: column;
+  gap: 6px;
 }
 
-.footer-link {
-  display: inline-flex;
+.footer-row {
+  display: grid;
+  grid-template-columns: 92px auto;
+  gap: 16px;
   align-items: center;
-  gap: 6px;
   font-family: var(--font-mono);
   font-size: 12px;
-  font-weight: 400;
   letter-spacing: 0.01em;
-  color: var(--color-text-mute);
   transition: color 0.15s;
 }
 
-.footer-link:hover {
+.footer-label {
+  color: var(--color-text-mute);
+}
+
+.footer-value {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  color: var(--color-text-sub);
+  transition: color 0.15s;
+}
+
+.footer-row:hover .footer-value {
   color: var(--color-text);
 }
 
-.footer-link svg {
+.footer-row svg {
   opacity: 0.7;
   transition: opacity 0.15s;
 }
 
-.footer-link:hover svg {
+.footer-row:hover svg {
   opacity: 1;
 }
 

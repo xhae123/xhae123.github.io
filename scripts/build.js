@@ -25,7 +25,11 @@ marked.setOptions({ gfm: true, breaks: true });
 // publish dates on migration); new posts fall back to the issue's creation time.
 function parseDate(body) {
   const m = body.match(/<!--\s*date:\s*([^>]+?)\s*-->/i);
-  return m ? m[1].trim() : null;
+  if (!m) return null;
+  const v = m[1].trim();
+  // Unparseable (e.g. the template's untouched YYYY-MM-DD placeholder) → fall
+  // back to the issue's creation date instead of rendering an Invalid Date.
+  return isNaN(new Date(v).getTime()) ? null : v;
 }
 function stripMeta(body) {
   return body.replace(/<!--\s*date:[^>]*-->/i, '').trim();

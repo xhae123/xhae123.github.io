@@ -1,0 +1,2 @@
+# Only the post template — no blank issues, so "New issue" always starts a post.
+blank_issues_enabled: false

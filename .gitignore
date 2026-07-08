@@ -1,0 +1,7 @@
+DESIGN.md
+.DS_Store
+node_modules/
+.vscode/
+.idea/
+package-lock.json
+.gstack/

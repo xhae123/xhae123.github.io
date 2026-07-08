@@ -100,12 +100,32 @@ async function localizeImages(html) {
   return out;
 }
 
+// Basename without extension — matches loadAssetIndex()'s key convention.
+function assetKey(name) {
+  const b = name.split('/').pop();
+  const d = b.indexOf('.');
+  return d === -1 ? b : b.slice(0, d);
+}
+
+// Which assets does this issue body reference? Used for GC. Covers both
+// migrated /assets/<uuid> links and attachment URLs (keyed by their sha1 name).
+function collectAssetRefs(body, set) {
+  const re = new RegExp(`(?:${SITE_URL})?/assets/([^\\s"')]+)`, 'g');
+  let m;
+  while ((m = re.exec(body))) set.add(assetKey(m[1]));
+  for (const url of body.match(ATTACHMENT_RE) || []) {
+    set.add(createHash('sha1').update(url).digest('hex').slice(0, 16));
+  }
+}
+
 async function fetchIssues() {
   const items = [];
+  const referenced = new Set(); // asset keys referenced by ANY owner issue (any state)
   const seenSlugs = new Set();
   let page = 1;
   while (true) {
-    const url = `https://api.github.com/repos/${OWNER}/${REPO}/issues?state=closed&per_page=100&page=${page}`;
+    // state=all so drafts/reopened issues still protect their images from GC.
+    const url = `https://api.github.com/repos/${OWNER}/${REPO}/issues?state=all&per_page=100&page=${page}`;
     const res = await fetch(url, {
       headers: {
         Accept: 'application/vnd.github+json',
@@ -118,10 +138,15 @@ async function fetchIssues() {
     if (batch.length === 0) break;
     for (const iss of batch) {
       if (iss.pull_request) continue; // list endpoint returns PRs too
-      if (iss.user?.login !== OWNER) continue; // security gate: only the owner publishes
-      if ((iss.labels || []).some((l) => (l.name || l) === 'excluded')) continue;
+      if (iss.user?.login !== OWNER) continue; // only the owner's issues count
 
       const body = iss.body || '';
+      collectAssetRefs(body, referenced); // keep images of every owner issue, incl. drafts
+
+      // Publish only closed, non-excluded issues.
+      if (iss.state !== 'closed') continue;
+      if ((iss.labels || []).some((l) => (l.name || l) === 'excluded')) continue;
+
       let slug = slugify(iss.title);
       while (seenSlugs.has(slug)) slug = `${slug}-${iss.number}`;
       seenSlugs.add(slug);
@@ -137,12 +162,34 @@ async function fetchIssues() {
     page++;
   }
   items.sort((a, b) => new Date(b.date) - new Date(a.date));
-  return items;
+  return { items, referenced };
+}
+
+// Delete asset files no owner issue references anymore (image removed from a body,
+// or its issue deleted). Skips pruning if the referenced set is empty — a safety
+// net against wiping /assets/ on a bad build.
+async function pruneAssets(referenced) {
+  if (referenced.size === 0) return;
+  let files;
+  try {
+    files = await readdir('assets');
+  } catch {
+    return;
+  }
+  let removed = 0;
+  for (const f of files) {
+    if (!referenced.has(assetKey(f))) {
+      await rm(path.join('assets', f));
+      console.log(`  pruned orphan asset: assets/${f}`);
+      removed++;
+    }
+  }
+  if (removed) console.log(`Pruned ${removed} orphan asset(s).`);
 }
 
 async function main() {
   console.log(`Fetching issues from ${OWNER}/${REPO}...`);
-  const items = await fetchIssues();
+  const { items, referenced } = await fetchIssues();
   console.log(`Found ${items.length} published posts`);
   if (items.length === 0) {
     throw new Error('0 published issues — aborting to prevent wiping content');
@@ -161,6 +208,7 @@ async function main() {
   await writeFile('index.html', renderIndex(items));
   await writeFile('sitemap.xml', renderSitemap(items));
   await writeFile('robots.txt', renderRobots());
+  await pruneAssets(referenced);
   console.log('Done.');
 }
 

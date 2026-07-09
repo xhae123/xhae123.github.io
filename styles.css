@@ -148,6 +148,27 @@ a:focus-visible,
 .site-nav-link:hover { color: var(--color-text); }
 .site-nav-link.is-active { color: var(--color-text); }
 
+.site-links {
+  display: flex;
+  align-items: center;
+  gap: 18px;
+}
+
+.site-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-family: var(--font-mono);
+  font-size: 12.5px;
+  color: var(--color-text-mute);
+  transition: color 0.15s;
+}
+
+.site-link:hover { color: var(--color-text); }
+
+.site-link svg { opacity: 0.72; transition: opacity 0.15s; }
+.site-link:hover svg { opacity: 1; }
+
 /* ============================================
    Home intro
    ============================================ */
@@ -961,6 +982,9 @@ a:focus-visible,
   .post-layout { padding: 0 20px; }
   .site-header .container { height: 56px; }
   :root { --header-h: 56px; }
+
+  .site-links { gap: 14px; }
+  .site-link-txt { display: none; } /* icons only on mobile */
 
   .post-list {
     grid-template-columns: 1fr;

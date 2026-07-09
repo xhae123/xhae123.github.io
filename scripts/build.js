@@ -381,34 +381,27 @@ function head({ title, description, canonical, ogImage, ogType, extraHead = '' }
   <link rel="icon" type="image/svg+xml" href="/favicon.svg" />${extraHead}`;
 }
 
-function siteHeader(active = '') {
+function siteHeader() {
   return `  <header class="site-header" id="site-header">
     <div class="container">
       <a class="site-label" href="/">xhae123&#39;s notes</a>
+      <nav class="site-links" aria-label="바로가기">
+        <a class="site-link" href="https://github.com/xhae123" target="_blank" rel="noopener noreferrer" aria-label="GitHub">
+          <svg width="15" height="15" viewBox="0 0 16 16" fill="currentColor" aria-hidden="true">
+            <path fill-rule="evenodd" d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.012 8.012 0 0 0 16 8c0-4.42-3.58-8-8-8z"/>
+          </svg>
+          <span class="site-link-txt">xhae123</span>
+        </a>
+        <a class="site-link" href="mailto:xhae000@gmail.com" aria-label="이메일">
+          <svg width="15" height="15" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.4" aria-hidden="true">
+            <rect x="1.5" y="3" width="13" height="10" rx="1.6"/>
+            <path d="M2 4.2l6 4.3 6-4.3"/>
+          </svg>
+          <span class="site-link-txt">xhae000@gmail.com</span>
+        </a>
+      </nav>
     </div>
   </header>`;
-}
-
-function siteFooter() {
-  return `  <footer class="site-footer">
-    <div class="container">
-      <div class="footer-links">
-        <a class="footer-row" href="https://github.com/xhae123" target="_blank" rel="noopener noreferrer">
-          <span class="footer-label">github</span>
-          <span class="footer-value">
-            <svg width="13" height="13" viewBox="0 0 16 16" fill="currentColor" aria-hidden="true">
-              <path fill-rule="evenodd" d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.012 8.012 0 0 0 16 8c0-4.42-3.58-8-8-8z"/>
-            </svg>
-            xhae123
-          </span>
-        </a>
-        <a class="footer-row" href="mailto:xhae000@gmail.com">
-          <span class="footer-label">contact me</span>
-          <span class="footer-value">xhae000@gmail.com</span>
-        </a>
-      </div>
-    </div>
-  </footer>`;
 }
 
 function renderIndex(items) {
@@ -460,7 +453,6 @@ ${siteHeader('home')}
 ${entries}
     </section>
   </main>
-${siteFooter()}
   <script src="/app.js?v=${APP_VER}"></script>
 </body>
 </html>
@@ -572,7 +564,6 @@ ${body}
     <aside class="toc" id="toc" aria-label="목차">${tocHtml}
     </aside>
   </main>
-${siteFooter()}
   <script src="/app.js?v=${APP_VER}"></script>
 </body>
 </html>

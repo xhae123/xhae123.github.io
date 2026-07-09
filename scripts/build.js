@@ -1,4 +1,4 @@
-import { writeFile, mkdir, rm, readdir } from 'node:fs/promises';
+import { writeFile, mkdir, rm, readdir, readFile } from 'node:fs/promises';
 import path from 'node:path';
 import { createHash } from 'node:crypto';
 import * as cheerio from 'cheerio';
@@ -16,6 +16,11 @@ const SITE_NAME = "xhae123's notes";
 const SITE_DESC = '개발하면서 배운 것과 생각한 것을 기록합니다.';
 const AUTHOR = '김우진';
 const GOOGLE_SITE_VERIFICATION = 'sNrpo16A0vUj7vHmVNEmAGZj85cGykaOeHO44krbqDU';
+
+// Cache-busting versions for local static assets. Set in main() from file hashes
+// so a CSS/JS change can never be served stale alongside freshly-built HTML.
+let STYLES_VER = '';
+let APP_VER = '';
 
 const MONTHS = ['JAN', 'FEB', 'MAR', 'APR', 'MAY', 'JUN', 'JUL', 'AUG', 'SEP', 'OCT', 'NOV', 'DEC'];
 
@@ -212,6 +217,10 @@ async function pruneAssets(referenced) {
 }
 
 async function main() {
+  const ver = async (f) => createHash('sha1').update(await readFile(f)).digest('hex').slice(0, 8);
+  STYLES_VER = await ver('styles.css');
+  APP_VER = await ver('app.js');
+
   console.log(`Fetching issues from ${OWNER}/${REPO}...`);
   const { items, referenced } = await fetchIssues();
   console.log(`Found ${items.length} published posts`);
@@ -368,7 +377,7 @@ function head({ title, description, canonical, ogImage, ogType, extraHead = '' }
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable.css" />
   <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500&display=swap" />
-  <link rel="stylesheet" href="/styles.css" />
+  <link rel="stylesheet" href="/styles.css?v=${STYLES_VER}" />
   <link rel="icon" type="image/svg+xml" href="/favicon.svg" />${extraHead}`;
 }
 
@@ -452,7 +461,7 @@ ${entries}
     </section>
   </main>
 ${siteFooter()}
-  <script src="/app.js"></script>
+  <script src="/app.js?v=${APP_VER}"></script>
 </body>
 </html>
 `;
@@ -564,7 +573,7 @@ ${body}
     </aside>
   </main>
 ${siteFooter()}
-  <script src="/app.js"></script>
+  <script src="/app.js?v=${APP_VER}"></script>
 </body>
 </html>
 `;

@@ -514,7 +514,7 @@ ${head({
   ogImage,
   ogType: 'article',
   extraHead: `
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/github-dark.min.css" />
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/github.min.css" />
   <meta property="article:published_time" content="${pubISO}" />
   <meta property="article:author" content="${esc(AUTHOR)}" />
   <script type="application/ld+json">${JSON.stringify(jsonLd)}</script>`,

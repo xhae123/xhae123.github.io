@@ -113,7 +113,7 @@ async function localizeImages(html) {
 // Every post gets a cover: its own first image if it has one, otherwise a
 // generated Toss-style SVG picked deterministically from slug (stable across
 // builds). Placeholder covers are shown as a hero at the top of the post.
-const COVER_COUNT = 20;
+const COVER_COUNT = 50;
 function normalizeSrc(src) {
   return src.startsWith(SITE_URL) ? src.slice(SITE_URL.length) || '/' : src;
 }

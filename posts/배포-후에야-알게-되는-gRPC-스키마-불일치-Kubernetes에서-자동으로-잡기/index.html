@@ -4,18 +4,18 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>배포 후에야 알게 되는 gRPC 스키마 불일치, Kubernetes에서 자동으로 잡기 · xhae123&#39;s notes</title>
-  <meta name="description" content="Kubernetes 환경에서 gRPC 마이크로서비스를 여러 개 운영하고 있었다. Buf Schema Registry(BSR)로 proto 파일을 중앙 관리했는데, 실제 배포된 서비스와 BSR 스키마가 안 맞는 문제가 자꾸 생겼다. 이걸 자동으로 감지하는 도구를 Go로 만들어서 오픈소스로" />
+  <meta name="description" content="Kubernetes 환경에서 gRPC 마이크로서비스를 여러 개 운영하고 있었습니다. Buf Schema Registry(BSR)로 proto 파일을 중앙 관리했는데, 실제 배포된 서비스와 BSR 스키마가 맞지 않는 문제가 자꾸 생겼습니다. 이걸 자동으로 감지하는 도구를 Go로 만들어서 " />
   <link rel="canonical" href="https://xhae123.github.io/posts/%EB%B0%B0%ED%8F%AC-%ED%9B%84%EC%97%90%EC%95%BC-%EC%95%8C%EA%B2%8C-%EB%90%98%EB%8A%94-gRPC-%EC%8A%A4%ED%82%A4%EB%A7%88-%EB%B6%88%EC%9D%BC%EC%B9%98-Kubernetes%EC%97%90%EC%84%9C-%EC%9E%90%EB%8F%99%EC%9C%BC%EB%A1%9C-%EC%9E%A1%EA%B8%B0/" />
   <meta property="og:type" content="article" />
   <meta property="og:site_name" content="xhae123&#39;s notes" />
   <meta property="og:title" content="배포 후에야 알게 되는 gRPC 스키마 불일치, Kubernetes에서 자동으로 잡기 · xhae123&#39;s notes" />
-  <meta property="og:description" content="Kubernetes 환경에서 gRPC 마이크로서비스를 여러 개 운영하고 있었다. Buf Schema Registry(BSR)로 proto 파일을 중앙 관리했는데, 실제 배포된 서비스와 BSR 스키마가 안 맞는 문제가 자꾸 생겼다. 이걸 자동으로 감지하는 도구를 Go로 만들어서 오픈소스로" />
+  <meta property="og:description" content="Kubernetes 환경에서 gRPC 마이크로서비스를 여러 개 운영하고 있었습니다. Buf Schema Registry(BSR)로 proto 파일을 중앙 관리했는데, 실제 배포된 서비스와 BSR 스키마가 맞지 않는 문제가 자꾸 생겼습니다. 이걸 자동으로 감지하는 도구를 Go로 만들어서 " />
   <meta property="og:url" content="https://xhae123.github.io/posts/%EB%B0%B0%ED%8F%AC-%ED%9B%84%EC%97%90%EC%95%BC-%EC%95%8C%EA%B2%8C-%EB%90%98%EB%8A%94-gRPC-%EC%8A%A4%ED%82%A4%EB%A7%88-%EB%B6%88%EC%9D%BC%EC%B9%98-Kubernetes%EC%97%90%EC%84%9C-%EC%9E%90%EB%8F%99%EC%9C%BC%EB%A1%9C-%EC%9E%A1%EA%B8%B0/" />
   <meta property="og:locale" content="ko_KR" />
   <meta property="og:image" content="https://xhae123.github.io/assets/36a5f808-5f61-46bd-910b-c3198e7287b7.png" />
   <meta name="twitter:card" content="summary_large_image" />
   <meta name="twitter:title" content="배포 후에야 알게 되는 gRPC 스키마 불일치, Kubernetes에서 자동으로 잡기 · xhae123&#39;s notes" />
-  <meta name="twitter:description" content="Kubernetes 환경에서 gRPC 마이크로서비스를 여러 개 운영하고 있었다. Buf Schema Registry(BSR)로 proto 파일을 중앙 관리했는데, 실제 배포된 서비스와 BSR 스키마가 안 맞는 문제가 자꾸 생겼다. 이걸 자동으로 감지하는 도구를 Go로 만들어서 오픈소스로" />
+  <meta name="twitter:description" content="Kubernetes 환경에서 gRPC 마이크로서비스를 여러 개 운영하고 있었습니다. Buf Schema Registry(BSR)로 proto 파일을 중앙 관리했는데, 실제 배포된 서비스와 BSR 스키마가 맞지 않는 문제가 자꾸 생겼습니다. 이걸 자동으로 감지하는 도구를 Go로 만들어서 " />
   <meta name="twitter:image" content="https://xhae123.github.io/assets/36a5f808-5f61-46bd-910b-c3198e7287b7.png" />
   <link rel="preconnect" href="https://cdn.jsdelivr.net" />
   <link rel="preconnect" href="https://fonts.googleapis.com" />
@@ -27,7 +27,7 @@
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/github-dark.min.css" />
   <meta property="article:published_time" content="2025-12-04T04:31:24.000Z" />
   <meta property="article:author" content="김우진" />
-  <script type="application/ld+json">{"@context":"https://schema.org","@type":"BlogPosting","headline":"배포 후에야 알게 되는 gRPC 스키마 불일치, Kubernetes에서 자동으로 잡기","description":"Kubernetes 환경에서 gRPC 마이크로서비스를 여러 개 운영하고 있었다. Buf Schema Registry(BSR)로 proto 파일을 중앙 관리했는데, 실제 배포된 서비스와 BSR 스키마가 안 맞는 문제가 자꾸 생겼다. 이걸 자동으로 감지하는 도구를 Go로 만들어서 오픈소스로","datePublished":"2025-12-04T04:31:24.000Z","dateModified":"2025-12-04T04:31:24.000Z","author":{"@type":"Person","name":"김우진"},"url":"https://xhae123.github.io/posts/%EB%B0%B0%ED%8F%AC-%ED%9B%84%EC%97%90%EC%95%BC-%EC%95%8C%EA%B2%8C-%EB%90%98%EB%8A%94-gRPC-%EC%8A%A4%ED%82%A4%EB%A7%88-%EB%B6%88%EC%9D%BC%EC%B9%98-Kubernetes%EC%97%90%EC%84%9C-%EC%9E%90%EB%8F%99%EC%9C%BC%EB%A1%9C-%EC%9E%A1%EA%B8%B0/","mainEntityOfPage":"https://xhae123.github.io/posts/%EB%B0%B0%ED%8F%AC-%ED%9B%84%EC%97%90%EC%95%BC-%EC%95%8C%EA%B2%8C-%EB%90%98%EB%8A%94-gRPC-%EC%8A%A4%ED%82%A4%EB%A7%88-%EB%B6%88%EC%9D%BC%EC%B9%98-Kubernetes%EC%97%90%EC%84%9C-%EC%9E%90%EB%8F%99%EC%9C%BC%EB%A1%9C-%EC%9E%A1%EA%B8%B0/","image":"https://xhae123.github.io/assets/36a5f808-5f61-46bd-910b-c3198e7287b7.png"}</script>
+  <script type="application/ld+json">{"@context":"https://schema.org","@type":"BlogPosting","headline":"배포 후에야 알게 되는 gRPC 스키마 불일치, Kubernetes에서 자동으로 잡기","description":"Kubernetes 환경에서 gRPC 마이크로서비스를 여러 개 운영하고 있었습니다. Buf Schema Registry(BSR)로 proto 파일을 중앙 관리했는데, 실제 배포된 서비스와 BSR 스키마가 맞지 않는 문제가 자꾸 생겼습니다. 이걸 자동으로 감지하는 도구를 Go로 만들어서 ","datePublished":"2025-12-04T04:31:24.000Z","dateModified":"2025-12-04T04:31:24.000Z","author":{"@type":"Person","name":"김우진"},"url":"https://xhae123.github.io/posts/%EB%B0%B0%ED%8F%AC-%ED%9B%84%EC%97%90%EC%95%BC-%EC%95%8C%EA%B2%8C-%EB%90%98%EB%8A%94-gRPC-%EC%8A%A4%ED%82%A4%EB%A7%88-%EB%B6%88%EC%9D%BC%EC%B9%98-Kubernetes%EC%97%90%EC%84%9C-%EC%9E%90%EB%8F%99%EC%9C%BC%EB%A1%9C-%EC%9E%A1%EA%B8%B0/","mainEntityOfPage":"https://xhae123.github.io/posts/%EB%B0%B0%ED%8F%AC-%ED%9B%84%EC%97%90%EC%95%BC-%EC%95%8C%EA%B2%8C-%EB%90%98%EB%8A%94-gRPC-%EC%8A%A4%ED%82%A4%EB%A7%88-%EB%B6%88%EC%9D%BC%EC%B9%98-Kubernetes%EC%97%90%EC%84%9C-%EC%9E%90%EB%8F%99%EC%9C%BC%EB%A1%9C-%EC%9E%A1%EA%B8%B0/","image":"https://xhae123.github.io/assets/36a5f808-5f61-46bd-910b-c3198e7287b7.png"}</script>
 </head>
 <body>
   <header class="site-header" id="site-header">
@@ -44,9 +44,9 @@
         </header>
         <div class="post-body" id="post-body">
 <html><head></head><body><h2 id="개요">개요</h2>
-<p>Kubernetes 환경에서 gRPC 마이크로서비스를 여러 개 운영하고 있었다. Buf Schema Registry(BSR)로 proto 파일을 중앙 관리했는데, 실제 배포된 서비스와 BSR 스키마가 안 맞는 문제가 자꾸 생겼다. 이걸 자동으로 감지하는 도구를 Go로 만들어서 오픈소스로 공개했다.</p>
+<p>Kubernetes 환경에서 gRPC 마이크로서비스를 여러 개 운영하고 있었습니다. Buf Schema Registry(BSR)로 proto 파일을 중앙 관리했는데, 실제 배포된 서비스와 BSR 스키마가 맞지 않는 문제가 자꾸 생겼습니다. 이걸 자동으로 감지하는 도구를 Go로 만들어서 오픈소스로 공개했습니다.</p>
 <h2 id="문제">문제</h2>
-<p>BSR로 proto를 관리하면 끝일 줄 알았는데, 현실은 달랐다.</p>
+<p>BSR로 proto를 관리하면 끝일 줄 알았는데, 현실은 달랐습니다.</p>
 <p><strong>자주 겪은 시나리오:</strong></p>
 <ol>
 <li>개발자가 proto 수정</li>
@@ -54,17 +54,17 @@
 <li>BSR 기준으로 개발한 클라이언트가 런타임 에러</li>
 <li>원인 찾는 데 수 시간</li>
 </ol>
-<p><strong>Kubernetes라서 더 귀찮았던 점:</strong></p>
+<p><strong>Kubernetes라서 더 번거로웠던 점:</strong></p>
 <ul>
 <li>Pod이 여러 네임스페이스에 흩어져 있음</li>
 <li>서비스마다 proto 파일 경로가 다름</li>
 <li>Rolling update 중이면 버전이 섞여 있음</li>
 <li>일일이 Pod 들어가서 확인하기 번거로움</li>
 </ul>
-<p>수동으로 하기엔 너무 귀찮았다. 자동화가 필요했다.</p>
+<p>수동으로 하기엔 부담이 컸습니다. 자동화가 필요했습니다.</p>
 <h2 id="해결">해결</h2>
 <p><img src="/assets/36a5f808-5f61-46bd-910b-c3198e7287b7.png" alt="" loading="lazy"></p>
-<p>Kubernetes 클러스터 안에서 도는 모니터링 도구를 Go로 만들었다. client-go로 Kubernetes API랑 직접 통신하면서 Pod을 자동으로 찾고 스키마를 검증한다.</p>
+<p>Kubernetes 클러스터 안에서 도는 모니터링 도구를 Go로 만들었습니다. client-go로 Kubernetes API와 직접 통신하면서 Pod을 자동으로 찾고 스키마를 검증합니다.</p>
 <h3 id="핵심-아이디어">핵심 아이디어</h3>
 <ol>
 <li><strong>Kubernetes API로 gRPC Pod 자동 발견</strong></li>
@@ -88,7 +88,7 @@
 </code></pre>
 <h2 id="구현">구현</h2>
 <h3 id="1-pod-자동-발견">1. Pod 자동 발견</h3>
-<p>client-go로 Kubernetes API Server와 통신한다. In-cluster에서 돌기 때문에 ServiceAccount 토큰으로 인증한다.</p>
+<p>client-go로 Kubernetes API Server와 통신합니다. In-cluster에서 돌기 때문에 ServiceAccount 토큰으로 인증합니다.</p>
 <pre data-lang="go"><code class="language-go hljs"><span class="hljs-comment">// In-cluster config로 Kubernetes client 생성</span>
 config, err := rest.InClusterConfig()
 clientset, err := kubernetes.NewForConfig(config)
@@ -112,7 +112,7 @@ pods, err := clientset.CoreV1().Pods(<span class="hljs-string">""</span>).
 <li>기본값 9090</li>
 </ol>
 <h3 id="2-라이브-스키마-추출">2. 라이브 스키마 추출</h3>
-<p>gRPC Reflection으로 실행 중인 서비스에서 스키마를 가져온다. proto 파일 없이도 런타임에 스키마를 읽을 수 있다.</p>
+<p>gRPC Reflection으로 실행 중인 서비스에서 스키마를 가져옵니다. proto 파일 없이도 런타임에 스키마를 읽을 수 있습니다.</p>
 <pre data-lang="go"><code class="language-go hljs"><span class="hljs-comment">// Pod IP:포트로 연결</span>
 conn, err := grpc.Dial(address, grpc.WithTransportCredentials(insecure.NewCredentials()))
 
@@ -128,12 +128,12 @@ services, err := refClient.ListServices()
 }
 </code></pre>
 <h3 id="3-bsr-스키마-가져오기">3. BSR 스키마 가져오기</h3>
-<p>처음엔 HTTP API를 썼는데 문제가 있었다:</p>
+<p>처음엔 HTTP API를 썼는데 문제가 있었습니다.</p>
 <ul>
 <li>FileDescriptorSet만 줘서 타입 참조 해석이 복잡함</li>
 <li>에러 처리가 불안정함</li>
 </ul>
-<p><strong>Buf CLI로 바꿨다:</strong></p>
+<p><strong>Buf CLI로 바꿨습니다.</strong></p>
 <pre data-lang="go"><code class="language-go hljs"><span class="hljs-comment">// buf export로 proto 파일 전체를 내려받음</span>
 cmd := exec.CommandContext(ctx, <span class="hljs-string">"buf"</span>, <span class="hljs-string">"export"</span>, module, <span class="hljs-string">"-o"</span>, tmpDir)
 output, err := cmd.CombinedOutput()
@@ -144,13 +144,13 @@ parser := protoparse.Parser{
 }
 fileDescs, err := parser.ParseFiles(relPaths...)
 </code></pre>
-<p>완전한 proto 파일을 받아서 타입 참조도 자동으로 해석된다. 에러율도 줄었다.</p>
+<p>완전한 proto 파일을 받아서 타입 참조도 자동으로 해석됩니다. 에러율도 줄었습니다.</p>
 <h3 id="4-intersection-기반-비교">4. Intersection 기반 비교</h3>
-<p>처음엔 모든 서비스를 비교했다. 문제가 있었다:</p>
+<p>처음엔 모든 서비스를 비교했습니다. 그러자 문제가 생겼습니다.</p>
 <ul>
 <li>Live에만 있는 서비스 → MISMATCH</li>
 <li>BSR에만 있는 서비스 → MISMATCH</li>
-<li>테스트 서비스나 deprecated 서비스 때문에 오탐이 많았다</li>
+<li>테스트 서비스나 deprecated 서비스 때문에 오탐이 많았습니다</li>
 </ul>
 <p><strong>개선:</strong></p>
 <pre data-lang="go"><code class="language-go hljs"><span class="hljs-comment">// 양쪽에 모두 있는 서비스만 비교</span>
@@ -164,9 +164,9 @@ fileDescs, err := parser.ParseFiles(relPaths...)
 <span class="hljs-comment">// Live에만 있는 서비스 → 정보성 표시, 상태에 영향 X</span>
 <span class="hljs-comment">// BSR에만 있는 서비스 → 정보성 표시, 상태에 영향 X</span>
 </code></pre>
-<p>오탐이 대폭 줄었다. 의미 있는 불일치만 잡는다.</p>
+<p>오탐이 대폭 줄었습니다. 의미 있는 불일치만 잡습니다.</p>
 <h3 id="5-동시성-처리">5. 동시성 처리</h3>
-<p>goroutine 두 개가 돈다:</p>
+<p>goroutine 두 개가 돕니다.</p>
 <pre data-lang="go"><code class="language-go hljs"><span class="hljs-comment">// 1. Scanner goroutine (30분마다)</span>
 <span class="hljs-function"><span class="hljs-keyword">func</span> <span class="hljs-params">(s *Scanner)</span></span> Start(ctx context.Context) {
     ticker := time.NewTicker(scanInterval)
@@ -202,7 +202,7 @@ fileDescs, err := parser.ParseFiles(relPaths...)
 }
 </code></pre>
 <h2 id="아키텍처">아키텍처</h2>
-<p>Hexagonal Architecture를 썼다. Go interface로 외부 의존성을 추상화했다.</p>
+<p>Hexagonal Architecture를 썼습니다. Go interface로 외부 의존성을 추상화했습니다.</p>
 <h3 id="디렉토리-구조">디렉토리 구조</h3>
 <pre data-lang="nix"><code class="hljs">protodiff<span class="hljs-symbol">/</span>
 ├── cmd<span class="hljs-operator">/</span>protodiff<span class="hljs-symbol">/</span>              <span class="hljs-comment"># 엔트리포인트</span>
@@ -238,7 +238,7 @@ scanner := scanner.NewScanner(
 )
 </code></pre>
 <h2 id="배포">배포</h2>
-<p>단일 Pod로 클러스터 안에 배포한다. Kubernetes 리소스만 쓰기 때문에 별도 인프라가 필요없다.</p>
+<p>단일 Pod로 클러스터 안에 배포합니다. Kubernetes 리소스만 쓰기 때문에 별도 인프라가 필요 없습니다.</p>
 <h3 id="설정">설정</h3>
 <pre data-lang="yaml"><code class="language-yaml hljs"><span class="hljs-comment"># ConfigMap으로 서비스 매핑</span>
 <span class="hljs-attr">apiVersion:</span> <span class="hljs-string">v1</span>
@@ -280,7 +280,7 @@ scanner := scanner.NewScanner(
 kubectl port-forward -n protodiff-system svc/protodiff 18080:80
 </code></pre>
 <h3 id="보안">보안</h3>
-<p>k8s 보안 모범 사례를 따랐다:</p>
+<p>k8s 보안 모범 사례를 따랐습니다.</p>
 <ul>
 <li>Non-root 실행</li>
 <li>Read-only 파일시스템</li>
@@ -296,8 +296,8 @@ kubectl port-forward -n protodiff-system svc/protodiff 18080:80
 </ul>
 <p><strong>스캔:</strong></p>
 <ul>
-<li>체감상 거의 즉시</li>
-<li>BSR 조회는 캐시 가능 (향후 개선 예정)</li>
+<li>체감상 거의 즉시 처리됩니다</li>
+<li>BSR 조회는 캐시 가능합니다 (향후 개선 예정)</li>
 </ul>
 <h2 id="결과">결과</h2>
 <p><strong>Before:</strong></p>
@@ -315,7 +315,7 @@ kubectl port-forward -n protodiff-system svc/protodiff 18080:80
 <li>대응: 수 분</li>
 </ul>
 <h2 id="대시보드">대시보드</h2>
-<p>웹 대시보드로 상태를 볼 수 있다.</p>
+<p>웹 대시보드로 상태를 볼 수 있습니다.</p>
 <p><strong>표시 정보:</strong></p>
 <ul>
 <li>서비스 상태 (SYNC / MISMATCH / UNKNOWN)</li>
@@ -329,10 +329,10 @@ kubectl port-forward -n protodiff-system svc/protodiff 18080:80
 <li>Red: 불일치</li>
 <li>Yellow: 확인 불가</li>
 </ul>
-<p>30분마다 자동 새로고침.</p>
+<p>30분마다 자동 새로고침됩니다.</p>
 <h2 id="기술적-선택">기술적 선택</h2>
 <h3 id="in-memory-storage">In-memory Storage</h3>
-<p>외부 DB 없이 메모리에 저장한다.</p>
+<p>외부 DB 없이 메모리에 저장합니다.</p>
 <ul>
 <li>외부 의존성 없음</li>
 <li>빠름</li>
@@ -340,16 +340,16 @@ kubectl port-forward -n protodiff-system svc/protodiff 18080:80
 <li>MVP엔 충분</li>
 </ul>
 <h3 id="buf-cli-vs-http-api">Buf CLI vs HTTP API</h3>
-<p>HTTP API는 FileDescriptorSet 파싱이 복잡하고 에러 처리가 불안정했다. Buf CLI는 완전한 proto 파일을 주고, 안정적이다. 컨테이너에 buf 설치해야 하는 건 트레이드오프지만, 안정성이 더 중요했다.</p>
+<p>HTTP API는 FileDescriptorSet 파싱이 복잡하고 에러 처리가 불안정했습니다. Buf CLI는 완전한 proto 파일을 주고, 안정적입니다. 컨테이너에 buf를 설치해야 하는 건 트레이드오프지만, 안정성이 더 중요하다고 판단했습니다.</p>
 <h3 id="grpc-reflection-의존성">gRPC Reflection 의존성</h3>
-<p>서비스에서 reflection을 켜야 한다:</p>
+<p>서비스에서 reflection을 켜야 합니다.</p>
 <ul>
 <li>Go: <code>reflection.Register(server)</code> 한 줄</li>
 <li>Java: <code>server.addService(ProtoReflectionService.newInstance())</code></li>
 </ul>
-<p>코드 변경이 최소화돼서 도입 부담이 적다.</p>
+<p>코드 변경이 최소화돼서 도입 부담이 적습니다.</p>
 <h2 id="향후">향후</h2>
-<p>고려 중인 것들:</p>
+<p>고려 중인 것들입니다.</p>
 <ul>
 <li>슬랙 알림</li>
 <li>Prometheus 메트릭</li>
@@ -358,10 +358,10 @@ kubectl port-forward -n protodiff-system svc/protodiff 18080:80
 <li>CRD 기반 설정</li>
 </ul>
 <h2 id="정리">정리</h2>
-<p>gRPC 스키마 불일치를 자동으로 잡는 도구를 만들었다. client-go로 Pod을 찾고, gRPC Reflection으로 라이브 스키마를 뽑고, BSR이랑 비교한다. Intersection 기반 비교로 오탐을 줄였고, 대시보드로 바로 확인할 수 있다.</p>
-<p>수동으로 수 시간 걸리던 걸 30분 이내로 줄였다.</p>
+<p>gRPC 스키마 불일치를 자동으로 잡는 도구를 만들었습니다. client-go로 Pod을 찾고, gRPC Reflection으로 라이브 스키마를 뽑고, BSR과 비교합니다. Intersection 기반 비교로 오탐을 줄였고, 대시보드로 바로 확인할 수 있습니다.</p>
+<p>수동으로 수 시간 걸리던 작업을 30분 이내로 줄였습니다.</p>
 <h2 id="오픈소스">오픈소스</h2>
-<p>Apache 2.0으로 공개했다. Kubernetes에서 gRPC 마이크로서비스 운영하는 팀이면 바로 쓸 수 있다.</p>
+<p>Apache 2.0으로 공개했습니다. Kubernetes에서 gRPC 마이크로서비스를 운영하는 팀이면 바로 쓸 수 있습니다.</p>
 <p><strong>GitHub:</strong> <a href="https://github.com/xhae123/protodiff" target="_blank" rel="noopener noreferrer">https://github.com/xhae123/protodiff</a></p>
 </body></html>
         </div>

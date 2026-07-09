@@ -105,6 +105,22 @@ async function localizeImages(html) {
   return out;
 }
 
+// Every post gets a cover: its own first image if it has one, otherwise a
+// generated Toss-style SVG picked deterministically from slug (stable across
+// builds). Placeholder covers are shown as a hero at the top of the post.
+const COVER_COUNT = 20;
+function normalizeSrc(src) {
+  return src.startsWith(SITE_URL) ? src.slice(SITE_URL.length) || '/' : src;
+}
+function pickCover(slug) {
+  const n = parseInt(createHash('sha1').update(slug).digest('hex').slice(0, 8), 16) % COVER_COUNT;
+  return `/assets/covers/cover-${String(n + 1).padStart(2, '0')}.svg`;
+}
+function coverFor(slug, html) {
+  const img = firstImage(html);
+  return img ? { src: normalizeSrc(img), placeholder: false } : { src: pickCover(slug), placeholder: true };
+}
+
 // Basename without extension — matches loadAssetIndex()'s key convention.
 function assetKey(name) {
   const b = name.split('/').pop();
@@ -155,12 +171,14 @@ async function fetchIssues() {
       let slug = slugify(iss.title);
       while (seenSlugs.has(slug)) slug = `${slug}-${iss.number}`;
       seenSlugs.add(slug);
+      const html = await localizeImages(marked.parse(stripMeta(body)));
       items.push({
         number: iss.number,
         title: iss.title.trim(),
         slug,
         date: parseDate(body) || iss.created_at,
-        html: await localizeImages(marked.parse(stripMeta(body))),
+        html,
+        cover: coverFor(slug, html),
       });
     }
     if (batch.length < 100) break;
@@ -175,17 +193,18 @@ async function fetchIssues() {
 // net against wiping /assets/ on a bad build.
 async function pruneAssets(referenced) {
   if (referenced.size === 0) return;
-  let files;
+  let entries;
   try {
-    files = await readdir('assets');
+    entries = await readdir('assets', { withFileTypes: true });
   } catch {
     return;
   }
   let removed = 0;
-  for (const f of files) {
-    if (!referenced.has(assetKey(f))) {
-      await rm(path.join('assets', f));
-      console.log(`  pruned orphan asset: assets/${f}`);
+  for (const d of entries) {
+    if (!d.isFile()) continue; // skip subdirs like assets/covers/
+    if (!referenced.has(assetKey(d.name))) {
+      await rm(path.join('assets', d.name));
+      console.log(`  pruned orphan asset: assets/${d.name}`);
       removed++;
     }
   }
@@ -392,11 +411,11 @@ function renderIndex(items) {
       const lead = firstParagraph(item.html);
       return `      <article class="entry" style="--i:${i}">
         <a class="entry-link" href="/posts/${encodeURIComponent(slug)}/">
-          <p class="entry-date">${esc(date)}</p>
+          <div class="entry-cover"><img src="${esc(item.cover.src)}" alt="" loading="lazy" /></div>
           <div class="entry-body">
+            <p class="entry-date">${esc(date)}</p>
             <h2 class="entry-title">${esc(title)}</h2>
             <p class="entry-lead">${esc(lead)}</p>
-            <span class="entry-more">계속 읽기 →</span>
           </div>
         </a>
       </article>`;
@@ -450,7 +469,7 @@ function renderPost(item, items) {
   const raw = item.html || '';
   const { body, tocItems } = processContent(raw);
   const excerpt = firstParagraph(raw).slice(0, 160);
-  const ogImage = firstImage(raw);
+  const ogImage = item.cover.src.startsWith('/') ? `${SITE_URL}${item.cover.src}` : item.cover.src;
   const canonical = `${SITE_URL}/posts/${encodeURIComponent(slug)}/`;
   const pubISO = new Date(item.date).toISOString();
 
@@ -524,7 +543,11 @@ ${head({
 ${siteHeader()}
   <main class="post-layout">
     <div class="post-main">
-      <article class="post" id="post">
+      <article class="post" id="post">${
+        item.cover.placeholder
+          ? `\n        <div class="post-cover"><img src="${esc(item.cover.src)}" alt="" /></div>`
+          : ''
+      }
         <header class="post-header">
           <p class="post-meta">${esc(date)}</p>
           <h1 class="post-title">${esc(title)}</h1>

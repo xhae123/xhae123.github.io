@@ -15,6 +15,7 @@ const SITE_URL = 'https://xhae123.github.io';
 const SITE_NAME = "xhae123's notes";
 const SITE_DESC = '개발하면서 배운 것과 생각한 것을 기록합니다.';
 const AUTHOR = '김우진';
+const GOOGLE_SITE_VERIFICATION = 'sNrpo16A0vUj7vHmVNEmAGZj85cGykaOeHO44krbqDU';
 
 const MONTHS = ['JAN', 'FEB', 'MAR', 'APR', 'MAY', 'JUN', 'JUL', 'AUG', 'SEP', 'OCT', 'NOV', 'DEC'];
 
@@ -326,6 +327,7 @@ function processContent(html) {
 function head({ title, description, canonical, ogImage, ogType, extraHead = '' }) {
   return `  <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="google-site-verification" content="${GOOGLE_SITE_VERIFICATION}" />
   <title>${esc(title)}</title>
   <meta name="description" content="${esc(description)}" />
   <link rel="canonical" href="${esc(canonical)}" />

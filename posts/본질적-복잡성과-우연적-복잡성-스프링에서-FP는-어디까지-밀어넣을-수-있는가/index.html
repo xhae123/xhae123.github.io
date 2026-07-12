@@ -105,10 +105,11 @@ whenever(orderRepository.save(any())).thenAnswer { it.arguments[<span class="hlj
 </code></pre>
 <p>mock 3개를 세팅하고 나서야 테스트를 시작할 수 있습니다. 검증하고 싶었던 건 "10,000원짜리 상품 2개 주문하면 20,000원인가?" 이 한 가지뿐인데 말입니다.</p>
 <p>마지막으로, <code>decreaseStock()</code>이 재고 부족 시 예외를 던집니다. 그런데 재고 부족이 정말 "예외적 상황"일까요. 주문 서비스에서 재고 부족은 충분히 예상 가능한 비즈니스 결과입니다.</p>
-<p>이 문제들이 실무에서 왜 중요한지 짚어 보겠습니다. 숨겨진 side effect는 코드 리뷰에서 잡기 어렵고, 새 팀원이 <code>cancel()</code>을 호출하면서 재고가 바뀌는 걸 모르면 버그로 이어집니다. IO와 계산의 혼합은 테스트 작성 비용을 높이고, mock 세팅에 쏟는 시간이 쌓이면 "테스트를 안 쓰는 게 빠르다"는 유혹으로 연결됩니다. 예외 기반 에러 처리는 시그니처에 실패 가능성이 드러나지 않아서, 호출자가 예외를 핸들링하지 않은 채 프로덕션에 나가고 나서야 장애로 발견되는 경우가 생깁니다. 개별로 보면 사소하지만, 서비스가 커지면서 이런 것들이 누적되면 개발 속도와 안정성 모두에 영향을 줍니다.</p>
+<p>이 문제들이 실무에서 왜 중요한지 짚어 보겠습니다. 숨겨진 side effect는 코드 리뷰에서 잡기 어렵고, 새 팀원이 <code>cancel()</code>을 호출하면서 재고가 바뀌는 걸 모르면 버그로 이어집니다. IO와 계산의 혼합은 테스트 작성 비용을 높이고, mock 세팅에 쏟는 시간이 쌓이면 "테스트를 안 쓰는 게 빠르다"는 유혹으로 연결됩니다.</p>
+<p>예외 기반 에러 처리는 시그니처에 실패 가능성이 드러나지 않아서, 호출자가 예외를 핸들링하지 않은 채 프로덕션에 나가고 나서야 장애로 발견되는 경우가 생깁니다. 개별로 보면 사소하지만, 서비스가 커지면서 이런 것들이 누적되면 개발 속도와 안정성 모두에 영향을 줍니다.</p>
 <hr>
 <p>이런 불편함이 쌓이면 결국 FP를 검토하게 됩니다. immutable data, pure function, typed error handling. 위의 문제들을 정확히 겨냥하는 도구처럼 보입니다.</p>
-<p>직접 해봤습니다. 코틀린/스프링 주문 서비스에 FP를 극한까지 밀어넣었습니다. JPA 엔티티를 <code>data class</code>로 바꿨고, 예외를 <code>sealed class</code>로 대체했고, 할인 정책을 고차 함수로 전환했고, Arrow의 <code>Either</code>까지 도입했습니다.</p>
+<p>직접 해봤습니다. 코틀린/스프링 주문 서비스에 FP를 극한까지 밀어넣었습니다. JPA 엔티티를 <code>data class</code>로 바꿨고, 예외를 <code>sealed class</code>로 대체했고, 할인 정책을 고차 함수로 전환했고, Arrow의 <code>Either</code>까지 도입했습니다. 이 글에서는 위에서 본 관례적인 코드를 <strong>1회차</strong>, FP를 밀어넣은 코드를 <strong>2회차</strong>라고 부르겠습니다.</p>
 <p>결론부터 말하면 되는 것과 안 되는 것이 있었습니다. 흥미로운 건, "안 되는 것"의 이유가 두 종류였다는 점입니다.</p>
 <p>하나는 도구의 한계입니다. JPA가 <code>val</code>을 거부하는 것, <code>@Transactional</code>이 <code>Either</code>를 모르는 것. 이건 다른 도구를 쓰면 사라집니다.</p>
 <p>다른 하나는 문제 자체의 본성입니다. 변경을 추적하려면 상태가 필요하다는 것, encapsulation을 풀면 안전망이 약해진다는 것. 이건 어떤 도구를 써도 남습니다.</p>
@@ -122,14 +123,14 @@ whenever(orderRepository.save(any())).thenAnswer { it.arguments[<span class="hlj
 <span class="hljs-keyword">class</span> <span class="hljs-title class_">GoodsOrder</span>(
     <span class="hljs-meta">@OneToMany(mappedBy = <span class="hljs-string">"order"</span>, cascade = [CascadeType.ALL])</span>
     <span class="hljs-keyword">var</span> items: MutableList&lt;OrderItem&gt; = mutableListOf(),
-
+ 
     <span class="hljs-meta">@Enumerated(EnumType.STRING)</span>
     <span class="hljs-keyword">var</span> status: OrderStatus = OrderStatus.PENDING,
-
+ 
     <span class="hljs-keyword">var</span> totalPrice: <span class="hljs-built_in">Int</span> = <span class="hljs-number">0</span>,
     <span class="hljs-keyword">var</span> totalDiscount: <span class="hljs-built_in">Int</span> = <span class="hljs-number">0</span>,
     <span class="hljs-keyword">var</span> finalPrice: <span class="hljs-built_in">Int</span> = <span class="hljs-number">0</span>,
-
+ 
     <span class="hljs-meta">@Id</span> <span class="hljs-meta">@GeneratedValue(strategy = GenerationType.IDENTITY)</span>
     <span class="hljs-keyword">var</span> id: <span class="hljs-built_in">Long</span> = <span class="hljs-number">0</span>
 ) {
@@ -137,7 +138,7 @@ whenever(orderRepository.save(any())).thenAnswer { it.arguments[<span class="hlj
         items.add(item)
         item.order = <span class="hljs-keyword">this</span>
     }
-
+ 
     <span class="hljs-function"><span class="hljs-keyword">fun</span> <span class="hljs-title">changeStatus</span><span class="hljs-params">(newStatus: <span class="hljs-type">OrderStatus</span>)</span></span> {
         <span class="hljs-keyword">if</span> (!status.canTransitionTo(newStatus)) <span class="hljs-keyword">throw</span> InvalidStatusException(...)
         <span class="hljs-keyword">this</span>.status = newStatus
@@ -149,22 +150,22 @@ whenever(orderRepository.save(any())).thenAnswer { it.arguments[<span class="hlj
 <span class="hljs-keyword">data</span> <span class="hljs-keyword">class</span> <span class="hljs-title class_">GoodsOrder</span>(
     <span class="hljs-meta">@OneToMany(mappedBy = <span class="hljs-string">"order"</span>, cascade = [CascadeType.ALL])</span>
     <span class="hljs-keyword">val</span> items: List&lt;OrderItem&gt; = emptyList(),
-
+ 
     <span class="hljs-meta">@Enumerated(EnumType.STRING)</span>
     <span class="hljs-keyword">val</span> status: OrderStatus = OrderStatus.PENDING,
-
+ 
     <span class="hljs-keyword">val</span> totalPrice: <span class="hljs-built_in">Int</span> = <span class="hljs-number">0</span>,
     <span class="hljs-keyword">val</span> totalDiscount: <span class="hljs-built_in">Int</span> = <span class="hljs-number">0</span>,
     <span class="hljs-keyword">val</span> finalPrice: <span class="hljs-built_in">Int</span> = <span class="hljs-number">0</span>,
-
+ 
     <span class="hljs-meta">@Id</span> <span class="hljs-meta">@GeneratedValue(strategy = GenerationType.IDENTITY)</span>
     <span class="hljs-keyword">val</span> id: <span class="hljs-built_in">Long</span> = <span class="hljs-number">0</span>
 )
-
+ 
 <span class="hljs-comment">// 상태 변경은 copy()로 새 객체 반환</span>
 <span class="hljs-function"><span class="hljs-keyword">fun</span> GoodsOrder.<span class="hljs-title">withItem</span><span class="hljs-params">(item: <span class="hljs-type">OrderItem</span>)</span></span>: GoodsOrder =
     copy(items = items + item)
-
+ 
 <span class="hljs-function"><span class="hljs-keyword">fun</span> GoodsOrder.<span class="hljs-title">withStatus</span><span class="hljs-params">(newStatus: <span class="hljs-type">OrderStatus</span>)</span></span>: GoodsOrder =
     copy(status = newStatus)
 </code></pre>
@@ -217,14 +218,14 @@ println(order.items.size)
     )</span></span>: OrderResult {
         <span class="hljs-keyword">val</span> aggregated = inputs.groupBy { it.goodsId }
             .map { (goodsId, group) -&gt; OrderItemInput(goodsId, group.sumOf { it.quantity }) }
-
+ 
         <span class="hljs-keyword">for</span> (input <span class="hljs-keyword">in</span> aggregated) {
             <span class="hljs-keyword">val</span> goods = goodsMap[input.goodsId]
                 ?: <span class="hljs-keyword">return</span> OrderResult.Failed(listOf(OrderError.GoodsNotFound(input.goodsId)))
-
+ 
             <span class="hljs-keyword">if</span> (goods.stock &lt; input.quantity)
                 <span class="hljs-keyword">return</span> OrderResult.Failed(listOf(OrderError.OutOfStock(goods.id, goods.stock, input.quantity)))
-
+ 
             <span class="hljs-keyword">val</span> subtotal = goods.price * input.quantity
             <span class="hljs-keyword">val</span> discount = discountPolicy(goods, input.quantity, subtotal)
             <span class="hljs-comment">// ... 결과 조립</span>
@@ -239,7 +240,7 @@ println(order.items.size)
     <span class="hljs-keyword">data</span> <span class="hljs-keyword">class</span> <span class="hljs-title class_">OutOfStock</span>(<span class="hljs-keyword">val</span> goodsId: <span class="hljs-built_in">Long</span>, <span class="hljs-keyword">val</span> available: <span class="hljs-built_in">Int</span>, <span class="hljs-keyword">val</span> requested: <span class="hljs-built_in">Int</span>) : OrderError()
     <span class="hljs-keyword">data</span> <span class="hljs-keyword">class</span> <span class="hljs-title class_">GoodsNotFound</span>(<span class="hljs-keyword">val</span> goodsId: <span class="hljs-built_in">Long</span>) : OrderError()
 }
-
+ 
 <span class="hljs-keyword">sealed</span> <span class="hljs-keyword">class</span> <span class="hljs-title class_">OrderResult</span> {
     <span class="hljs-keyword">data</span> <span class="hljs-keyword">class</span> <span class="hljs-title class_">Success</span>(<span class="hljs-keyword">val</span> calculation: OrderCalculation) : OrderResult()
     <span class="hljs-keyword">data</span> <span class="hljs-keyword">class</span> <span class="hljs-title class_">Failed</span>(<span class="hljs-keyword">val</span> errors: List&lt;OrderError&gt;) : OrderResult()
@@ -252,14 +253,14 @@ println(order.items.size)
     <span class="hljs-comment">// 1. IO: DB에서 상품 조회</span>
     <span class="hljs-keyword">val</span> goodsEntities = request.items.map { it.goodsId }.distinct()
         .associateWith { goodsService.getGoods(it) }
-
+ 
     <span class="hljs-comment">// 2. 변환: JPA 엔티티 → 불변 스냅샷</span>
     <span class="hljs-keyword">val</span> snapshots = goodsEntities.mapValues { (_, g) -&gt; g.toSnapshot() }
-
+ 
     <span class="hljs-comment">// 3. Core 호출: pure computation (DB 모름, 예외 안 던짐)</span>
     <span class="hljs-keyword">val</span> inputs = request.items.map { OrderItemInput(it.goodsId, it.quantity) }
     <span class="hljs-keyword">val</span> result = OrderCalculator.calculate(inputs, snapshots, discountPolicy)
-
+ 
     <span class="hljs-comment">// 4. 결과 처리: 실패면 예외, 성공이면 엔티티 조립 + 저장</span>
     <span class="hljs-keyword">return</span> <span class="hljs-keyword">when</span> (result) {
         <span class="hljs-keyword">is</span> OrderResult.Failed -&gt; <span class="hljs-keyword">throw</span> result.errors.first().toException()
@@ -299,8 +300,8 @@ whenever(discountService.calculateDiscount(any(), any(), any())).thenReturn(<spa
 whenever(orderRepository.save(any())).thenAnswer { it.arguments[<span class="hljs-number">0</span>] }
 <span class="hljs-keyword">val</span> service = OrderService(orderRepository, goodsService, discountService)
 <span class="hljs-comment">// 이제야 테스트를 시작할 수 있다</span>
-
-
+ 
+ 
 <span class="hljs-comment">// After: mock 0개</span>
 <span class="hljs-keyword">val</span> result = OrderCalculator.calculate(
     inputs = listOf(OrderItemInput(<span class="hljs-number">1L</span>, <span class="hljs-number">2</span>)),
@@ -337,7 +338,7 @@ assertEquals(<span class="hljs-number">18000</span>, (result <span class="hljs-k
 <span class="hljs-function"><span class="hljs-keyword">fun</span> <span class="hljs-title">validateStock</span><span class="hljs-params">(stock: <span class="hljs-type">Int</span>, quantity: <span class="hljs-type">Int</span>)</span></span>: StockValidation =
     <span class="hljs-keyword">if</span> (stock &gt;= quantity) StockValidation.Sufficient
     <span class="hljs-keyword">else</span> StockValidation.Insufficient(available = stock, requested = quantity)
-
+ 
 <span class="hljs-comment">// 엔티티: 검증 없이 차감만. Core가 검증을 보장한다.</span>
 <span class="hljs-keyword">class</span> <span class="hljs-title class_">Goods</span> {
     <span class="hljs-function"><span class="hljs-keyword">fun</span> <span class="hljs-title">applyStockDeduction</span><span class="hljs-params">(quantity: <span class="hljs-type">Int</span>)</span></span> {
@@ -356,13 +357,13 @@ assertEquals(<span class="hljs-number">18000</span>, (result <span class="hljs-k
 <pre data-lang="kotlin"><code class="language-kotlin hljs"><span class="hljs-keyword">interface</span> <span class="hljs-title class_">DiscountPolicy</span> {
     <span class="hljs-function"><span class="hljs-keyword">fun</span> <span class="hljs-title">calculate</span><span class="hljs-params">(goods: <span class="hljs-type">Goods</span>, quantity: <span class="hljs-type">Int</span>, subtotal: <span class="hljs-type">Int</span>)</span></span>: <span class="hljs-built_in">Int</span>
 }
-
+ 
 <span class="hljs-meta">@Component</span>
 <span class="hljs-keyword">class</span> <span class="hljs-title class_">QuantityDiscountPolicy</span> : <span class="hljs-type">DiscountPolicy</span> {
     <span class="hljs-keyword">override</span> <span class="hljs-function"><span class="hljs-keyword">fun</span> <span class="hljs-title">calculate</span><span class="hljs-params">(goods: <span class="hljs-type">Goods</span>, quantity: <span class="hljs-type">Int</span>, subtotal: <span class="hljs-type">Int</span>)</span></span>: <span class="hljs-built_in">Int</span> =
         <span class="hljs-keyword">if</span> (quantity &gt;= <span class="hljs-number">3</span>) (subtotal * <span class="hljs-number">0.10</span>).toInt() <span class="hljs-keyword">else</span> <span class="hljs-number">0</span>
 }
-
+ 
 <span class="hljs-meta">@Component</span>
 <span class="hljs-keyword">class</span> <span class="hljs-title class_">CategoryDiscountPolicy</span> : <span class="hljs-type">DiscountPolicy</span> {
     <span class="hljs-keyword">override</span> <span class="hljs-function"><span class="hljs-keyword">fun</span> <span class="hljs-title">calculate</span><span class="hljs-params">(goods: <span class="hljs-type">Goods</span>, quantity: <span class="hljs-type">Int</span>, subtotal: <span class="hljs-type">Int</span>)</span></span>: <span class="hljs-built_in">Int</span> {
@@ -370,7 +371,7 @@ assertEquals(<span class="hljs-number">18000</span>, (result <span class="hljs-k
         <span class="hljs-keyword">return</span> (subtotal * goods.category.discountRate / <span class="hljs-number">100.0</span>).toInt()
     }
 }
-
+ 
 <span class="hljs-meta">@Service</span>
 <span class="hljs-keyword">class</span> <span class="hljs-title class_">DiscountService</span>(<span class="hljs-keyword">private</span> <span class="hljs-keyword">val</span> policies: List&lt;DiscountPolicy&gt;) {
     <span class="hljs-function"><span class="hljs-keyword">fun</span> <span class="hljs-title">calculateDiscount</span><span class="hljs-params">(goods: <span class="hljs-type">Goods</span>, quantity: <span class="hljs-type">Int</span>, subtotal: <span class="hljs-type">Int</span>)</span></span>: <span class="hljs-built_in">Int</span> =
@@ -380,21 +381,21 @@ assertEquals(<span class="hljs-number">18000</span>, (result <span class="hljs-k
 <p>인터페이스 1개, 구현체 2개, 서비스 1개. 파일 2개. 클래스 4개입니다.</p>
 <p>그런데 <code>DiscountPolicy</code> 인터페이스를 보면, 메서드가 하나입니다. <code>calculate()</code> 하나. 이건 본질적으로 함수 타입 <code>(Goods, Int, Int) -&gt; Int</code>과 같습니다.</p>
 <pre data-lang="kotlin"><code class="language-kotlin hljs"><span class="hljs-keyword">typealias</span> DiscountPolicy = (GoodsSnapshot, <span class="hljs-built_in">Int</span>, <span class="hljs-built_in">Int</span>) -&gt; <span class="hljs-built_in">Int</span>
-
+ 
 <span class="hljs-keyword">val</span> quantityDiscount: DiscountPolicy = { _, quantity, subtotal -&gt;
     <span class="hljs-keyword">if</span> (quantity &gt;= <span class="hljs-number">3</span>) (subtotal * <span class="hljs-number">0.10</span>).toInt() <span class="hljs-keyword">else</span> <span class="hljs-number">0</span>
 }
-
+ 
 <span class="hljs-keyword">val</span> categoryDiscount: DiscountPolicy = { goods, _, subtotal -&gt;
     <span class="hljs-keyword">if</span> (goods.categoryDiscountRate &lt;= <span class="hljs-number">0</span>) <span class="hljs-number">0</span>
     <span class="hljs-keyword">else</span> (subtotal * goods.categoryDiscountRate / <span class="hljs-number">100.0</span>).toInt()
 }
-
+ 
 <span class="hljs-function"><span class="hljs-keyword">fun</span> <span class="hljs-title">bestDiscount</span><span class="hljs-params">(policies: <span class="hljs-type">List</span>&lt;<span class="hljs-type">DiscountPolicy</span>&gt;)</span></span>: DiscountPolicy =
     { goods, quantity, subtotal -&gt;
         policies.maxOfOrNull { it(goods, quantity, subtotal) } ?: <span class="hljs-number">0</span>
     }
-
+ 
 <span class="hljs-keyword">val</span> defaultDiscountPolicy = bestDiscount(listOf(quantityDiscount, categoryDiscount))
 </code></pre>
 <p>클래스 4개가 함수 3개 + 고차 함수 1개가 됐습니다. 파일 2개가 1개가 됐습니다. <code>@Component</code>와 <code>@Service</code>가 사라졌습니다. <code>Goods</code> 엔티티에 대한 의존도 사라졌습니다. <code>GoodsSnapshot</code>을 받으니 Core에서 직접 쓸 수 있습니다.</p>
@@ -405,8 +406,7 @@ assertEquals(<span class="hljs-number">18000</span>, (result <span class="hljs-k
 <p>단, 정책이 DB에서 할인율을 읽어야 한다면 이야기가 달라집니다. IO가 필요해지면 pure function이 깨지고, Shell에서 값을 미리 조회해서 Core에 주입하는 구조가 필요해집니다. 현재 구현에서는 할인율이 하드코딩이라 문제가 없지만, 이건 운이 좋은 케이스입니다.</p>
 <h3 id="두-전환의-대비에서-보이는-패턴">두 전환의 대비에서 보이는 패턴</h3>
 <p>재고 검증은 본질적 긴장이 있었습니다. 할인 정책은 벽이 없었습니다. 차이가 뭘까요.</p>
-<p>이 로직에 IO가 있는가, 라는 질문입니다.</p>
-<p>할인 정책은 IO가 없습니다. pure computation입니다. FP 전환 마찰이 거의 없습니다. 재고 검증은 검증 자체는 pure하지만, 차감은 IO(상태 변경)입니다. 분리는 가능하지만 encapsulation과의 긴장이 생깁니다. 재고 차감은 IO입니다. 엔티티의 상태를 바꾸니 FP로 만들 수 없고 Shell의 영역으로 남습니다.</p>
+<p>이 로직에 IO가 있는가, 라는 질문입니다. 할인 정책은 IO가 없는 pure computation이라 마찰이 없었습니다. 재고는 검증까지는 pure하지만 차감이 상태 변경(IO)이라, 분리하는 순간 encapsulation과의 긴장이 생겼습니다.</p>
 <p>IO의 유무가 FP 전환의 난이도를 결정합니다. IO가 없으면 벽이 없습니다. IO가 있으면 분리가 필요하고, 분리하면 본질적 트레이드오프를 마주하게 됩니다. 이것이 섹션 3의 핵심 발견입니다.</p>
 <h2 id="4-벽에-부딪히다--본질과-우연이-동시에-오는-구간">4. 벽에 부딪히다 — 본질과 우연이 동시에 오는 구간</h2>
 <p>섹션 3까지는 자연스러운 개선의 영역이었습니다. 코틀린 기본 기능만으로, 스프링과 싸우지 않으면서 FP를 적용할 수 있었습니다. 여기서부터 달라집니다.</p>
@@ -443,7 +443,7 @@ assertEquals(<span class="hljs-number">18000</span>, (result <span class="hljs-k
         <span class="hljs-keyword">return</span> orderService.create(request)  <span class="hljs-comment">// 한 줄</span>
     }
 }
-
+ 
 <span class="hljs-comment">// After: 서비스가 Either 반환, 컨트롤러가 fold</span>
 <span class="hljs-meta">@RestController</span>
 <span class="hljs-keyword">class</span> <span class="hljs-title class_">OrderController</span> {
@@ -468,7 +468,7 @@ assertEquals(<span class="hljs-number">18000</span>, (result <span class="hljs-k
 <p>FP가 항상 관심사 분리에 유리한 건 아닙니다. 프레임워크가 이미 제공하는 분리 메커니즘을 FP로 대체하면 오히려 관심사가 흩어질 수 있습니다.</p>
 <p>판정: 우연적 복잡성입니다. <code>@ControllerAdvice</code>가 예외 전용인 건 스프링의 설계 선택입니다. Ktor의 <code>StatusPages</code>는 값 기반 에러도 처리합니다. 그러나 스프링 안에서 이 벽을 넘으려면, 비용이 원래 문제의 비용보다 큽니다. 이게 우연적 복잡성의 핵심 특성입니다. "불가능"이 아니라 "비용 과다"입니다.</p>
 <h2 id="5-transactional의-함정--바이트코드를-까보다">5. @Transactional의 함정 — 바이트코드를 까보다</h2>
-<p>섹션 4-2에서 예외를 제거하고 <code>Either</code>를 도입했습니다. 수제 <code>sealed class</code>(<code>OrderResult</code>)로 시작했지만, 서비스와 컨트롤러까지 값 기반 에러를 관통시키려면 결국 Arrow의 <code>Either&lt;OrderError, T&gt;</code>와 <code>Raise</code> DSL이 필요했습니다. 에러 전파를 <code>raise()</code>/<code>bind()</code>로 자동화하기 위해서입니다.</p>
+<p>섹션 4-2에서 비용이 이득을 초과한다는 걸 확인했지만, 돌아서기 전에 한 발 더 밀어봤습니다. 수제 <code>sealed class</code>(<code>OrderResult</code>)로 시작했지만, 서비스와 컨트롤러까지 값 기반 에러를 관통시키려면 결국 Arrow의 <code>Either&lt;OrderError, T&gt;</code>와 <code>Raise</code> DSL이 필요했습니다. 에러 전파를 <code>raise()</code>/<code>bind()</code>로 자동화하기 위해서입니다.</p>
 <p>그런데 <code>Either</code>를 도입한 뒤, 한 가지 의문이 남았습니다. <code>@Transactional</code> 메서드가 <code>Either.Left</code>를 반환하면, 트랜잭션은 롤백되는가 커밋되는가.</p>
 <p>결론부터 말하면 커밋됩니다. 이유를 알려면 Arrow의 내부를 열어봐야 합니다.</p>
 <h3 id="arrow-raise의-정체">Arrow Raise의 정체</h3>
@@ -500,7 +500,7 @@ assertEquals(<span class="hljs-number">18000</span>, (result <span class="hljs-k
 <span class="hljs-function"><span class="hljs-keyword">fun</span> <span class="hljs-title">dangerousCreate</span><span class="hljs-params">(request: <span class="hljs-type">OrderRequest</span>)</span></span>: Either&lt;OrderError, OrderResponse&gt; = either {
     <span class="hljs-comment">// IO: 재고를 먼저 차감했다</span>
     goodsEntities[goodsId]!!.applyStockDeduction(quantity)
-
+ 
     <span class="hljs-comment">// Core: 그 다음에 계산을 한다</span>
     <span class="hljs-keyword">val</span> calc = OrderCalculator.calculateEither(inputs, snapshots, policy).bind()
     <span class="hljs-comment">//                                                                   ^^^^</span>
@@ -567,8 +567,8 @@ assertEquals(<span class="hljs-number">18000</span>, (result <span class="hljs-k
 </tr>
 </tbody></table>
 <p>여기서 패턴이 보입니다.</p>
-<p>pure computation 영역(할인 정책, 재고 검증, 주문 가격 계산)에서는 FP 전환이 자연스럽고 이득이 컸습니다. accidental wall은 쉽게 넘거나 돌아갔고, essential wall은 타협 가능한 수준이었습니다.</p>
-<p>프레임워크 infrastructure 영역(@Transactional, @ControllerAdvice, ResponseEntity)에서는 accidental wall이 한꺼번에 터졌습니다. 개별로는 넘을 수 있었지만, 전부 "예외 기반"이라는 하나의 세계관에 묶여 있어서, 하나를 바꾸면 전체가 흔들렸습니다.</p>
+<p>pure computation 영역(할인 정책, 재고 검증, 주문 가격 계산)에서는 FP 전환이 자연스럽고 이득이 컸습니다. 우연적 벽은 쉽게 넘거나 돌아갔고, 본질적 벽은 타협 가능한 수준이었습니다.</p>
+<p>프레임워크 infrastructure 영역(@Transactional, @ControllerAdvice, ResponseEntity)에서는 우연적 벽이 한꺼번에 터졌습니다. 개별로는 넘을 수 있었지만, 전부 "예외 기반"이라는 하나의 세계관에 묶여 있어서, 하나를 바꾸면 전체가 흔들렸습니다.</p>
 <h3 id="최적-멈춤-지점">최적 멈춤 지점</h3>
 <p><img src="/assets/c033870d-5aff-4461-932e-35e5ea14f3db.png" alt="" loading="lazy"></p>
 <p>손익분기선은 "pure computation"과 "framework infrastructure"의 경계에 있습니다. pure computation 영역까지는 밀어도 괜찮습니다. 그 너머는 프레임워크의 세계관과 싸우게 됩니다.</p>
@@ -583,14 +583,14 @@ assertEquals(<span class="hljs-number">18000</span>, (result <span class="hljs-k
         <span class="hljs-comment">// pure computation only. DB 모름. 예외 안 던짐.</span>
     }
 }
-
+ 
 <span class="hljs-comment">// ✅ 도메인 모델: 불변. JPA 무관.</span>
 <span class="hljs-keyword">data</span> <span class="hljs-keyword">class</span> <span class="hljs-title class_">GoodsSnapshot</span>(<span class="hljs-keyword">val</span> id: <span class="hljs-built_in">Long</span>, <span class="hljs-keyword">val</span> price: <span class="hljs-built_in">Int</span>, <span class="hljs-keyword">val</span> stock: <span class="hljs-built_in">Int</span>, ...)
-
+ 
 <span class="hljs-comment">// ✅ 할인 정책: 함수 타입 + 고차 함수.</span>
 <span class="hljs-keyword">typealias</span> DiscountPolicy = (GoodsSnapshot, <span class="hljs-built_in">Int</span>, <span class="hljs-built_in">Int</span>) -&gt; <span class="hljs-built_in">Int</span>
 <span class="hljs-keyword">val</span> defaultPolicy = bestDiscount(listOf(quantityDiscount, categoryDiscount))
-
+ 
 <span class="hljs-comment">// ⚠️ Shell: 스프링 관례 유지. Core의 Either → 예외로 변환.</span>
 <span class="hljs-meta">@Service</span>
 <span class="hljs-keyword">class</span> <span class="hljs-title class_">OrderService</span>(...) {
@@ -603,7 +603,7 @@ assertEquals(<span class="hljs-number">18000</span>, (result <span class="hljs-k
         ...
     }
 }
-
+ 
 <span class="hljs-comment">// ✅ 컨트롤러: 단순 위임. @ControllerAdvice가 에러 처리.</span>
 <span class="hljs-meta">@RestController</span>
 <span class="hljs-keyword">class</span> <span class="hljs-title class_">OrderController</span>(<span class="hljs-keyword">private</span> <span class="hljs-keyword">val</span> orderService: OrderService) {
@@ -616,23 +616,21 @@ assertEquals(<span class="hljs-number">18000</span>, (result <span class="hljs-k
 <ul>
 <li>Core: FP를 자유롭게 씁니다. <code>Either</code>, <code>sealed class</code>, pure function. 벽이 없으니 마음껏 씁니다.</li>
 <li>Shell: 스프링 관례를 존중합니다. <code>@Service</code>, <code>@Transactional</code>, 예외 기반 에러. 프레임워크와 싸우지 않습니다.</li>
-<li>경계: <code>Either</code>를 예외로 변환합니다. <code>getOrElse { throw it.toException() }</code>. 이 한 줄이 두 세계를 연결합니다.</li>
+<li>경계: <code>Either</code>를 예외로 변환합니다. <code>getOrElse { throw it.toException() }</code>. 이 한 줄이 두 세계를 연결합니다.<br><code>@Transactional</code>이 롤백을 보장하고, <code>@ControllerAdvice</code>가 에러를 글로벌하게 처리하고, 컨트롤러는 한 줄로 남습니다. 프레임워크가 제공하는 안전망을 그대로 활용하면서, Core의 테스트 용이성은 확보됩니다.</li>
 </ul>
-<p><code>@Transactional</code>이 롤백을 보장하고, <code>@ControllerAdvice</code>가 에러를 글로벌하게 처리하고, 컨트롤러는 한 줄로 남습니다. 프레임워크가 제공하는 안전망을 그대로 활용하면서, Core의 테스트 용이성은 확보됩니다.</p>
 <h2 id="7-결론">7. 결론</h2>
 <p>이 글을 관통하는 질문은 하나였습니다. "이 벽은 본질적인가, 우연적인가."</p>
-<p>essential wall은 타협의 대상입니다. encapsulation을 풀면 유연해지지만 방어막이 약해집니다. 생성은 FP에 유리하지만 변경은 OOP에 유리합니다. 이건 어떤 도구를 써도 남는 trade-off이고, 완벽한 해결이 아니라 의식적 설계가 필요합니다.</p>
+<p>본질적 벽은 타협의 대상입니다. encapsulation을 풀면 유연해지지만 방어막이 약해집니다. 생성은 FP에 유리하지만 변경은 OOP에 유리합니다. 이건 어떤 도구를 써도 남는 trade-off이고, 완벽한 해결이 아니라 의식적 설계가 필요합니다.</p>
 <p>우연적 벽은 선택의 대상입니다. JPA의 <code>PersistentBag</code>이 <code>val</code>을 거부하는 건 넘을 수 있습니다. 도메인 모델을 분리하면 됩니다. <code>@ControllerAdvice</code>가 예외 전용인 것도 넘을 수 있습니다. 그러나 비용이 이득을 초과하면 돌아가는 게 낫습니다.</p>
 <p>극한까지 밀어봐야 이 판별이 가능해집니다. 밀어보기 전에는 "이론적으로 FC/IS가 좋다"에서 멈추게 됩니다. 밀어봤기 때문에 <code>@Transactional</code>이 <code>raise()</code>를 어떻게 처리하는지, <code>@ControllerAdvice</code>가 이미 관심사 분리를 제공하고 있었다는 것을 발견할 수 있었습니다.</p>
 <p>마지막으로 하나 덧붙이면, FP vs OOP라는 프레이밍 자체가 정확하지 않다는 생각이 들었습니다. 더 정확한 변수는 pure vs impure입니다.</p>
 <ul>
 <li>IO가 없는 pure computation은 paradigm에 관계없이 테스트가 쉽고 추론이 쉽습니다.</li>
-<li>IO가 있는 impure code는 paradigm에 관계없이 mock이 필요하고 복잡도가 올라갑니다.</li>
+<li>IO가 있는 impure code는 paradigm에 관계없이 mock이 필요하고 복잡도가 올라갑니다.<br>FC/IS가 하는 일의 본질은 "FP를 도입하는 것"이 아니라 "pure한 것과 impure한 것을 구조적으로 분리하는 것"입니다. 그리고 그 분리의 경계가, 스프링에서 FP가 살 수 있는 자리입니다.</li>
 </ul>
-<p>FC/IS가 하는 일의 본질은 "FP를 도입하는 것"이 아니라 "pure한 것과 impure한 것을 구조적으로 분리하는 것"입니다. 그리고 그 분리의 경계가, 스프링에서 FP가 살 수 있는 자리입니다.</p>
 <p>이 글이 다룬 범위는 단일 서비스 내부의 계층 설계입니다. 서비스 간 통신에서의 에러 전파(gRPC의 Status, 이벤트 기반 아키텍처에서의 실패 처리 등)나, 분산 환경에서의 트랜잭션 관리는 또 다른 차원의 문제이고, 본질/우연의 구분도 달라질 수 있습니다. 이 부분은 별도의 주제로 다뤄져야 합니다.</p>
 <blockquote>
-<p>*"There is no single development, in either technology or management technique, which by itself promises even one order of magnitude improvement within a decade in productivity, in reliability, in simplicity."* — Fred Brooks, "No Silver Bullet" (1986)</p>
+<p><em>"No single development... by itself promises even one order of magnitude improvement."</em> — Fred Brooks, "No Silver Bullet" (1986)</p>
 </blockquote>
 <p>40년이 지났습니다. FP도 은탄환은 아닙니다. 그러나 벽의 종류를 알면, 어디서 싸우고 어디서 돌아갈지는 판단할 수 있습니다.</p>
 </body></html>

@@ -144,7 +144,7 @@
           <div class="entry-body">
             <p class="entry-date">DEC 04, 2025</p>
             <h2 class="entry-title">배포 후에야 알게 되는 gRPC 스키마 불일치, Kubernetes에서 자동으로 잡기</h2>
-            <p class="entry-lead">Kubernetes 환경에서 gRPC 마이크로서비스를 여러 개 운영하고 있었습니다. Buf Schema Registry(BSR)로 proto 파일을 중앙 관리했는데, 실제 배포된 서비스와 BSR 스키마가 맞지 않는 문제가 자꾸 생겼습니다. 이걸 자동으로 감지하는 도구를 Go로 만들어서 오픈소스로 공개했습니다.</p>
+            <p class="entry-lead">클라이언트가 갑자기 런타임 에러를 뱉습니다. 클라이언트 코드는 아무도 안 건드렸습니다. 수 시간을 뒤진 끝에 나오는 원인은 늘 비슷했습니다. 누군가 proto를 고쳐서 Kubernetes에 배포했는데, BSR(Buf Schema Registry)은 업데이트하지 않은 겁니다. 클라이언트는 BSR을 보고 개발했고, 서버는 다른 스키마로 떠 있었습니다.</p>
           </div>
         </a>
       </article>

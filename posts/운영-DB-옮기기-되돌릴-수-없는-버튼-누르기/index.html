@@ -5,18 +5,18 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <meta name="google-site-verification" content="sNrpo16A0vUj7vHmVNEmAGZj85cGykaOeHO44krbqDU" />
   <title>운영 DB 옮기기: 되돌릴 수 없는 버튼 누르기 · xhae123&#39;s notes</title>
-  <meta name="description" content="코드였으면 그냥 누르고 푸시했을 겁니다. 잘못 배포해도 롤백하면 되고, 버그는 핫픽스로 덮으면 됩니다. 우리가 하는 일은 대부분 되돌릴 수 있어서 &quot;일단 하고 깨지면 고친다&quot;가 먹힙니다. 하지만 이 명령어는 다릅니다. 누르면 인스턴스가 영영 사라져서 되돌릴 수가 없습니다." />
+  <meta name="description" content="코드였으면 그냥 누르고 푸시했을 겁니다. 잘못 배포해도 롤백하면 되고, 버그는 핫픽스로 덮으면 됩니다. 우리가 하는 일은 대부분 되돌릴 수 있어서 &quot;일단 하고 깨지면 고친다&quot;가 먹힙니다. 하지만 이 명령어는 다릅니다. 누르면 인스턴스가 영영 사라집니다." />
   <link rel="canonical" href="https://xhae123.github.io/posts/%EC%9A%B4%EC%98%81-DB-%EC%98%AE%EA%B8%B0%EA%B8%B0-%EB%90%98%EB%8F%8C%EB%A6%B4-%EC%88%98-%EC%97%86%EB%8A%94-%EB%B2%84%ED%8A%BC-%EB%88%84%EB%A5%B4%EA%B8%B0/" />
   <meta property="og:type" content="article" />
   <meta property="og:site_name" content="xhae123&#39;s notes" />
   <meta property="og:title" content="운영 DB 옮기기: 되돌릴 수 없는 버튼 누르기 · xhae123&#39;s notes" />
-  <meta property="og:description" content="코드였으면 그냥 누르고 푸시했을 겁니다. 잘못 배포해도 롤백하면 되고, 버그는 핫픽스로 덮으면 됩니다. 우리가 하는 일은 대부분 되돌릴 수 있어서 &quot;일단 하고 깨지면 고친다&quot;가 먹힙니다. 하지만 이 명령어는 다릅니다. 누르면 인스턴스가 영영 사라져서 되돌릴 수가 없습니다." />
+  <meta property="og:description" content="코드였으면 그냥 누르고 푸시했을 겁니다. 잘못 배포해도 롤백하면 되고, 버그는 핫픽스로 덮으면 됩니다. 우리가 하는 일은 대부분 되돌릴 수 있어서 &quot;일단 하고 깨지면 고친다&quot;가 먹힙니다. 하지만 이 명령어는 다릅니다. 누르면 인스턴스가 영영 사라집니다." />
   <meta property="og:url" content="https://xhae123.github.io/posts/%EC%9A%B4%EC%98%81-DB-%EC%98%AE%EA%B8%B0%EA%B8%B0-%EB%90%98%EB%8F%8C%EB%A6%B4-%EC%88%98-%EC%97%86%EB%8A%94-%EB%B2%84%ED%8A%BC-%EB%88%84%EB%A5%B4%EA%B8%B0/" />
   <meta property="og:locale" content="ko_KR" />
   <meta property="og:image" content="https://xhae123.github.io/assets/covers/cover-23.svg" />
   <meta name="twitter:card" content="summary_large_image" />
   <meta name="twitter:title" content="운영 DB 옮기기: 되돌릴 수 없는 버튼 누르기 · xhae123&#39;s notes" />
-  <meta name="twitter:description" content="코드였으면 그냥 누르고 푸시했을 겁니다. 잘못 배포해도 롤백하면 되고, 버그는 핫픽스로 덮으면 됩니다. 우리가 하는 일은 대부분 되돌릴 수 있어서 &quot;일단 하고 깨지면 고친다&quot;가 먹힙니다. 하지만 이 명령어는 다릅니다. 누르면 인스턴스가 영영 사라져서 되돌릴 수가 없습니다." />
+  <meta name="twitter:description" content="코드였으면 그냥 누르고 푸시했을 겁니다. 잘못 배포해도 롤백하면 되고, 버그는 핫픽스로 덮으면 됩니다. 우리가 하는 일은 대부분 되돌릴 수 있어서 &quot;일단 하고 깨지면 고친다&quot;가 먹힙니다. 하지만 이 명령어는 다릅니다. 누르면 인스턴스가 영영 사라집니다." />
   <meta name="twitter:image" content="https://xhae123.github.io/assets/covers/cover-23.svg" />
   <link rel="preconnect" href="https://cdn.jsdelivr.net" />
   <link rel="preconnect" href="https://fonts.googleapis.com" />
@@ -28,7 +28,7 @@
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/github.min.css" />
   <meta property="article:published_time" content="2026-06-03T14:41:48.000Z" />
   <meta property="article:author" content="김우진" />
-  <script type="application/ld+json">{"@context":"https://schema.org","@type":"BlogPosting","headline":"운영 DB 옮기기: 되돌릴 수 없는 버튼 누르기","description":"코드였으면 그냥 누르고 푸시했을 겁니다. 잘못 배포해도 롤백하면 되고, 버그는 핫픽스로 덮으면 됩니다. 우리가 하는 일은 대부분 되돌릴 수 있어서 \"일단 하고 깨지면 고친다\"가 먹힙니다. 하지만 이 명령어는 다릅니다. 누르면 인스턴스가 영영 사라져서 되돌릴 수가 없습니다.","datePublished":"2026-06-03T14:41:48.000Z","dateModified":"2026-06-03T14:41:48.000Z","author":{"@type":"Person","name":"김우진"},"url":"https://xhae123.github.io/posts/%EC%9A%B4%EC%98%81-DB-%EC%98%AE%EA%B8%B0%EA%B8%B0-%EB%90%98%EB%8F%8C%EB%A6%B4-%EC%88%98-%EC%97%86%EB%8A%94-%EB%B2%84%ED%8A%BC-%EB%88%84%EB%A5%B4%EA%B8%B0/","mainEntityOfPage":"https://xhae123.github.io/posts/%EC%9A%B4%EC%98%81-DB-%EC%98%AE%EA%B8%B0%EA%B8%B0-%EB%90%98%EB%8F%8C%EB%A6%B4-%EC%88%98-%EC%97%86%EB%8A%94-%EB%B2%84%ED%8A%BC-%EB%88%84%EB%A5%B4%EA%B8%B0/","image":"https://xhae123.github.io/assets/covers/cover-23.svg"}</script>
+  <script type="application/ld+json">{"@context":"https://schema.org","@type":"BlogPosting","headline":"운영 DB 옮기기: 되돌릴 수 없는 버튼 누르기","description":"코드였으면 그냥 누르고 푸시했을 겁니다. 잘못 배포해도 롤백하면 되고, 버그는 핫픽스로 덮으면 됩니다. 우리가 하는 일은 대부분 되돌릴 수 있어서 \"일단 하고 깨지면 고친다\"가 먹힙니다. 하지만 이 명령어는 다릅니다. 누르면 인스턴스가 영영 사라집니다.","datePublished":"2026-06-03T14:41:48.000Z","dateModified":"2026-06-03T14:41:48.000Z","author":{"@type":"Person","name":"김우진"},"url":"https://xhae123.github.io/posts/%EC%9A%B4%EC%98%81-DB-%EC%98%AE%EA%B8%B0%EA%B8%B0-%EB%90%98%EB%8F%8C%EB%A6%B4-%EC%88%98-%EC%97%86%EB%8A%94-%EB%B2%84%ED%8A%BC-%EB%88%84%EB%A5%B4%EA%B8%B0/","mainEntityOfPage":"https://xhae123.github.io/posts/%EC%9A%B4%EC%98%81-DB-%EC%98%AE%EA%B8%B0%EA%B8%B0-%EB%90%98%EB%8F%8C%EB%A6%B4-%EC%88%98-%EC%97%86%EB%8A%94-%EB%B2%84%ED%8A%BC-%EB%88%84%EB%A5%B4%EA%B8%B0/","image":"https://xhae123.github.io/assets/covers/cover-23.svg"}</script>
 </head>
 <body>
   <header class="site-header" id="site-header">
@@ -63,44 +63,40 @@
 <html><head></head><body><pre data-lang="dsconfig"><code class="hljs"><span class="hljs-string">aws</span> <span class="hljs-string">rds</span> <span class="hljs-built_in">delete-db-instance</span> <span class="hljs-built_in">--skip-final-snapshot</span> ...
 </code></pre>
 <p>엔터를 누르려다 멈췄습니다.</p>
-<p>코드였으면 그냥 누르고 푸시했을 겁니다. 잘못 배포해도 롤백하면 되고, 버그는 핫픽스로 덮으면 됩니다. 우리가 하는 일은 대부분 되돌릴 수 있어서 "일단 하고 깨지면 고친다"가 먹힙니다. 하지만 이 명령어는 다릅니다. 누르면 인스턴스가 영영 사라져서 되돌릴 수가 없습니다.</p>
-<p>운영 DB 마이그레이션의 어려움은 옮기는 기술 자체보다는 다른 데 있었습니다. 실제로 데이터를 옮기는 데 걸린 시간은 덤프 26초, 복원 0.75초가 전부였습니다. 어려운 부분은 이 마지막 엔터처럼 못 되돌리는 순간이 중간중간 박혀 있다는 점이었습니다. 그런 지점에서는 "깨지면 고친다"가 통하지 않으니, 누르기 전에 맞다는 확신이 있어야 합니다. 1</p>
-<hr>
-<h2 id="region이라는-비용">Region이라는 비용</h2>
-<p>앱은 서울인데 RDS는 시드니(이런저런 이유로..)에 있었습니다. "멀어서 느리겠지" 하고 넘기기 전에 얼마나 느린지부터 쟀습니다. 서울에서 시드니 RDS까지 TCP 왕복이 139ms, 같은 리전이면 0.2ms입니다. 쿼리를 던질 때마다 139ms씩 깔고 가는 셈입니다.</p>
-<p>덤프가 26초나 걸린 것도 같은 이유였습니다. <code>pg_dump</code>가 스키마를 알아내려고 카탈로그를 184번 물어보는데, 한 번 묻고 답을 받아야 다음을 묻는 식이라 전부 직렬로 처리됩니다. 184번 × 139ms면 25.7초입니다. 결국 느린 원인은 시드니라는 물리적 거리였습니다. 데이터가 12MB로 작았다는 사실은 여기서 별 상관이 없었습니다. 옮기고 나니 같은 쿼리의 왕복 시간이 0.2~0.9ms로 떨어졌습니다.</p>
-<h2 id="down-time의-비용">down time의 비용</h2>
-<p>무중단으로 옮기려면 앱과 DB 사이에 PgBouncer를 두고 앱을 여러 대로 띄워야 합니다. 우리는 서버 한 대에 앱이 DB로 바로 붙는 구조라, 이걸 하려면 구성을 새로 짜야 했습니다. 너무 큰 공사입니다.</p>
-<p>그 공사로 얻는 건 결국 다운타임 1분을 0으로 만드는 것뿐입니다. 그 1분이 얼마인지는 리허설에서 나왔습니다. 덤프 26초 + 복원 0.75초 + 앱 재시작 30초입니다. 새벽에 1분 멈추는 걸 0으로 만들겠다고 몇 주를 쓰지는 않습니다. 데이터가 12GB였으면 덤프만 수십 분 걸려서 얘기가 달랐겠지만, 우리는 12MB였습니다. 그래서 그냥 멈추고 복사하기로 했습니다.</p>
-<h2 id="메모리-예산">메모리 예산</h2>
-<p>RAM 1.9GB짜리 저사양 서버에 JVM 앱이 이미 도는데 DB까지 올리면 안 터질까? 리허설로 직접 확인해봤습니다.<br>앱 490MB, PostgreSQL 컨테이너 33MB, 남는 메모리 836MB였습니다. 둘 다 올려도 836MB가 비니까 인스턴스는 건드리지 않았습니다.</p>
-<p>PG가 33MB밖에 안 쓴 건 데이터가 12MB라 작업셋 자체가 작기 때문입니다. shared_buffers를 128MB로 잡아둬도 실제로 건드리는 페이지는 그 정도뿐입니다. 데이터가 작으니 통째로 메모리에 올라가서 디스크도 거의 읽지 않습니다(옮긴 뒤 캐시 히트율 99.5%). 사실 이 서버에서 메모리를 걱정해야 할 대상은 PG보다는 JVM 쪽이었습니다.</p>
-<h2 id="스왑과-디스크">스왑과 디스크</h2>
-<p>서버에 스왑이 아예 없었습니다. 스왑이 없으면 메모리가 잠깐 튀어도 바로 OOM으로 이어지기 때문에, 안전망 삼아 깔기로 했습니다. 크기는 디스크 여유 공간이 정해줬습니다. 당시 디스크 여유가 1.7GB라 2GB 스왑파일은 애초에 들어가지 않았습니다. 1GB로 만들었고, 그 1GB가 또 디스크를 먹어서 여유는 1.4GB(80%)가 됐습니다. 작은 서버에서는 안전망 하나 거는 것도 디스크를 갉아먹습니다.</p>
-<hr>
-<h2 id="전환">전환</h2>
+<p>코드였으면 그냥 누르고 푸시했을 겁니다. 잘못 배포해도 롤백하면 되고, 버그는 핫픽스로 덮으면 됩니다. 우리가 하는 일은 대부분 되돌릴 수 있어서 "일단 하고 깨지면 고친다"가 먹힙니다. 하지만 이 명령어는 다릅니다. 누르면 인스턴스가 영영 사라집니다.</p>
+<p>운영 DB 마이그레이션의 어려움은 옮기는 기술 자체에 있지 않았습니다. 실제로 데이터를 옮기는 데 걸린 시간은 덤프 26초, 복원 0.75초가 전부였습니다. 어려운 건 이 마지막 엔터처럼, 못 되돌리는 순간이 중간중간 박혀 있다는 점이었습니다. 그런 지점에서는 "깨지면 고친다"가 통하지 않으니, 누르기 전에 맞다는 확신이 있어야 합니다.</p>
+<h2 id="139ms--옮겨야-할-이유">139ms — 옮겨야 할 이유</h2>
+<p>앱은 서울인데 RDS는 시드니에 있었습니다(이런저런 이유로..). "멀어서 느리겠지" 하고 넘기기 전에, 얼마나 느린지부터 쟀습니다. 서울에서 시드니 RDS까지 TCP 왕복이 139ms. 같은 리전이면 0.2ms입니다. 쿼리를 던질 때마다 139ms씩 깔고 가는 셈입니다.</p>
+<p>덤프가 26초나 걸린 것도 같은 이유였습니다. <code>pg_dump</code>가 스키마를 알아내려고 카탈로그를 184번 물어보는데, 한 번 묻고 답을 받아야 다음을 묻는 식이라 전부 직렬로 처리됩니다. 184번 × 139ms = 25.7초. 느린 원인은 시드니라는 물리적 거리였고, 데이터가 12MB로 작다는 사실은 여기서 아무 도움이 안 됐습니다. 옮기고 나니 같은 쿼리의 왕복이 0.2~0.9ms로 떨어졌습니다.</p>
+<h2 id="1분--다운타임의-가격">1분 — 다운타임의 가격</h2>
+<p>무중단으로 옮기려면 앱과 DB 사이에 PgBouncer를 두고 앱을 여러 대로 띄워야 합니다. 우리는 서버 한 대에 앱이 DB로 바로 붙는 구조라, 이걸 하려면 구성을 새로 짜야 했습니다. 꽤 큰 공사입니다.</p>
+<p>그 공사로 사는 건 결국 다운타임 1분을 0으로 만드는 것뿐입니다. 그 1분의 내역은 리허설에서 나왔습니다. 덤프 26초 + 복원 0.75초 + 앱 재시작 30초. 새벽에 1분 멈추는 걸 0으로 만들겠다고 몇 주를 쓰지는 않습니다. 데이터가 12GB였으면 덤프만 수십 분이라 얘기가 달랐겠지만, 우리는 12MB였습니다. 그래서 그냥 멈추고 복사하기로 했습니다.</p>
+<h2 id="836mb--메모리-예산">836MB — 메모리 예산</h2>
+<p>RAM 1.9GB짜리 저사양 서버에 JVM 앱이 이미 도는데, DB까지 올리면 안 터질까? 리허설로 직접 확인했습니다. 앱 490MB, PostgreSQL 컨테이너 33MB, 남는 메모리 836MB. 둘 다 올려도 836MB가 비니까 인스턴스는 건드리지 않았습니다.</p>
+<p>PG가 33MB밖에 안 쓴 건 데이터가 12MB라 작업셋 자체가 작기 때문입니다. <code>shared_buffers</code>를 128MB로 잡아둬도 실제로 건드리는 페이지는 그 정도뿐입니다. 데이터가 작으니 통째로 메모리에 올라가 디스크도 거의 읽지 않습니다(옮긴 뒤 캐시 히트율 99.5%). 이 서버에서 메모리를 걱정해야 할 대상은 PG가 아니라 JVM이었습니다.</p>
+<h2 id="17gb--스왑이-들어갈-자리">1.7GB — 스왑이 들어갈 자리</h2>
+<p>서버에 스왑이 아예 없었습니다. 스왑이 없으면 메모리가 잠깐 튀어도 바로 OOM으로 이어지니, 안전망 삼아 깔기로 했습니다. 크기는 제가 아니라 디스크가 정했습니다. 당시 여유가 1.7GB라 2GB 스왑파일은 애초에 들어가지 않았습니다. 1GB로 만들었고, 그 1GB가 또 디스크를 먹어서 여유는 1.4GB(사용률 80%)가 됐습니다. 작은 서버에서는 안전망 하나 거는 것도 디스크를 갉아먹습니다.</p>
+<h2 id="전환--새벽의-1분">전환 — 새벽의 1분</h2>
 <p>새벽이 되었습니다. 여기서부터 못 되돌리는 일이 하나씩 생기기 때문에, 단계마다 통과 조건을 걸었습니다.</p>
-<p>앱이 이 DB에 쓰는 유일한 주체라고 보고, 앱을 멈춰서 RDS를 얼렸습니다. 양쪽이 둘 다 움직이면 비교가 안 되니 일단 멈춰야 합니다. (사실 엄밀히는 <code>pg_stat_activity</code>로 active 연결이 0인지 확인했어야 합니다. 앱만 끄고 "다른 데서 쓰는 건 없겠지" 하고 넘어간 게 이번 작업에서 가장 찜찜한 부분입니다.) 멈추고 나서 덤프 26초, 복원 0.75초, 경고 0줄이었습니다.</p>
-<p>복원이 제대로 됐는지는 행 수로 확인하지 않았습니다. 35개가 35개여도 값이 틀어질 수 있기 때문입니다. 대신 전체 행을 이어붙여 해시를 떠서 양쪽을 맞췄습니다.</p>
+<p>먼저 앱을 멈춰서 RDS를 얼렸습니다. 양쪽이 둘 다 움직이면 비교가 안 되기 때문입니다. 앱이 이 DB에 쓰는 유일한 주체라고 봤는데, 엄밀히는 <code>pg_stat_activity</code>로 active 연결이 0인지 확인했어야 합니다. 앱만 끄고 "다른 데서 쓰는 건 없겠지" 하고 넘어간 게 이번 작업에서 가장 찜찜한 부분입니다. 멈춘 뒤 덤프 26초, 복원 0.75초, 경고 0줄이었습니다.</p>
+<p>복원 검증은 행 수로 하지 않았습니다. 35개가 35개여도 값이 틀어질 수 있기 때문입니다. 대신 전체 행을 이어붙여 해시를 떠서 양쪽을 맞췄습니다.</p>
 <pre data-lang="abnf"><code class="hljs">            신 컨테이너        RDS
 users       <span class="hljs-number">8479836</span>e179a   <span class="hljs-operator">=</span>   <span class="hljs-number">8479836</span>e179a
 blog_posts  <span class="hljs-number">5</span>b2b243ef8ac   <span class="hljs-operator">=</span>   <span class="hljs-number">5</span>b2b243ef8ac
 </code></pre>
-<p>확장도 <code>pg_trgm 1.6</code>으로 양쪽이 같은지 확인했고, 빅뱅 방식이라 시퀀스는 덤프에 같이 딸려와서 <code>users_id_seq=1649</code> 그대로 들어왔습니다(논리 복제였다면 이걸 손으로 맞춰야 합니다). 해시가 맞은 뒤 <code>DB_HOST</code>를 컨테이너로 바꾸고 앱을 재시작했습니다. <code>DB_HOST</code>는 코드가 아니라 설정값이라 재시작만 하면 되는데, 한 가지 주의할 점은 Secrets Manager 값도 같이 바꾸지 않으면 다음 배포 때 <code>.env</code>가 옛날 값으로 다시 덮여서 지운 DB를 보러 간다는 점입니다. 복원 직후라 통계가 비어 있어서 <code>ANALYZE</code>를 한 번 돌렸고, 헬스는 <code>UP</code>, 연결 11개, 조회도 정상이었습니다. 앱을 멈춘 시점부터 1분 정도 만에 끝났습니다.</p>
-<p>이때부터 신 DB가 진짜였습니다. 여기가 돌아올 수 없는 지점이었습니다.</p>
-<hr>
+<p>확장도 <code>pg_trgm 1.6</code>으로 양쪽이 같은지 봤고, 빅뱅 방식이라 시퀀스는 덤프에 딸려와 <code>users_id_seq=1649</code> 그대로 들어왔습니다(논리 복제였다면 이걸 손으로 맞춰야 합니다).</p>
+<p>해시가 맞은 뒤 <code>DB_HOST</code>를 컨테이너로 바꾸고 앱을 재시작했습니다. <code>DB_HOST</code>는 코드가 아니라 설정값이라 재시작이면 충분한데, 함정이 하나 있습니다. Secrets Manager 값을 같이 바꾸지 않으면 다음 배포 때 <code>.env</code>가 옛날 값으로 다시 덮여서, 지운 DB를 보러 갑니다. 복원 직후라 통계가 비어 있어 <code>ANALYZE</code>를 한 번 돌렸고, 헬스 <code>UP</code>, 연결 11개, 조회 정상. 앱을 멈춘 시점부터 1분이었습니다.</p>
+<p>이때부터 신 DB가 진짜였습니다. 돌아올 수 없는 지점을 하나 넘은 겁니다.</p>
 <h2 id="삭제-그리고-망설임">삭제, 그리고 망설임</h2>
-<p>다시 그 삭제 명령 앞에 섰습니다. 누를 수 있었던 건 앞 단계가 다 통과했기 때문입니다. 해시가 맞았고, 앱 헬스는 UP, 조회도 정상이었습니다. 하나라도 빨간불이었으면 누르지 않고 <code>DB_HOST</code>를 RDS로 되돌렸을 겁니다. 셋 다 초록이라, 스냅샷을 하나 떠서 돌아갈 길을 남겨두고(그래서 <code>--skip-final-snapshot</code>) 눌렀습니다.</p>
+<p>다시 그 삭제 명령 앞에 섰습니다. 누를 수 있었던 건 앞 단계가 전부 초록이었기 때문입니다. 해시 일치, 헬스 UP, 조회 정상. 하나라도 빨간불이었으면 누르지 않고 <code>DB_HOST</code>를 RDS로 되돌렸을 겁니다. 그리고 미리 수동 스냅샷을 하나 떠서 돌아갈 길을 남겨뒀습니다. <code>--skip-final-snapshot</code>을 붙일 수 있었던 것도 그래서입니다.</p>
 <pre data-lang="avrasm"><code class="hljs"><span class="hljs-symbol">status:</span> deleting
 </code></pre>
-<p>게이트도 통과했고 스냅샷도 있었습니다. 잃을 것도 딱히 없었습니다. 그런데도 손가락이 한 번 멈췄습니다. <code>delete-db-instance</code>라는 명령이 한 방향으로만 작동한다는 사실 때문이었습니다. 누르면 그 인스턴스는 돌아오지 않습니다(스냅샷 복원은 새 인스턴스를 또 세우는 별개의 일입니다). 솔직히 잃을 게 없는 삭제라 이번 멈칫함은 거의 반사에 가까웠습니다. 다만 작은 비가역에도 손을 한 번 멈추고 게이트를 확인하는 게 버릇이 되면, 진짜 잃을 게 큰 삭제 앞에서도 그 버릇이 남습니다. 멈춘 손을 다시 움직인 건 그 게이트들이었습니다.</p>
-<hr>
+<p>게이트도 통과했고 스냅샷도 있었습니다. 잃을 게 딱히 없었습니다. 그런데도 손가락이 한 번 멈췄습니다. <code>delete-db-instance</code>가 한 방향으로만 작동한다는 사실 때문입니다. 누르면 그 인스턴스는 돌아오지 않습니다(스냅샷 복원은 새 인스턴스를 세우는 별개의 일입니다). 솔직히 이번 멈칫함은 반사에 가까웠습니다. 다만 작은 비가역 앞에서도 손을 멈추고 게이트를 확인하는 게 버릇이 되면, 진짜 잃을 게 큰 삭제 앞에서도 그 버릇이 남습니다. 멈춘 손을 다시 움직인 건 용기가 아니라 그 게이트들이었습니다.</p>
 <h2 id="옮기고-나서">옮기고 나서</h2>
-<p>RDS 요금이 무엇을 위한 돈이었는지는 떠나고 나서야 알았습니다. 자동 백업, 모니터링, 장애 복구를 사던 돈이었습니다. 떠둔 스냅샷은 옛날 RDS를 찍은 사진 한 장일 뿐, 새 컨테이너 DB의 백업은 아닙니다. 이제 그걸 다 직접 해야 합니다. 메모리가 100MB 밑으로 가면 디스코드로 알림이 오게는 해뒀지만, <code>pg_dump</code>를 S3로 넘기는 백업은 아직 하지 않았습니다. 그것도 복원까지 한 번 해봐야 백업이라고 부를 수 있습니다. managed를 떠난 게 돈을 아낀 일이었느냐면, 그렇지 않습니다. 돈을 노동과 리스크로 바꾼 것에 가깝습니다.</p>
-<p>남은 부채는 이렇습니다. 백업도 직접, 모니터링도 직접 해야 하고, 서버가 한 대뿐이라 이게 죽으면 앱과 DB가 같이 죽습니다. 8GB 디스크는 벌써 90%를 채웠습니다.</p>
-<hr>
-<p>데이터를 옮기는 데 걸린 시간은 27초였고, 나머지는 전부 못 되돌리는 순간을 넘기는 일이었습니다. 옮길 이유는 139ms가, 빅뱅 방식은 1분이, 인스턴스 유지는 836MB가, 스왑 크기는 디스크 1.7GB가, 엔터를 누르는 결정은 해시 일치가 정했습니다. 이 숫자들이 없으면 결정은 결국 느낌에 의존하게 됩니다. 못 되돌리는 작업일수록 더 그렇습니다. 어차피 되돌릴 수 없으니, 누르기 전에 숫자로 직접 확인하는 것 말고는 기댈 곳이 없었습니다.</p>
-<p><code>git revert</code>가 없는 작업은 생각보다 많습니다. 운영 중인 테이블 삭제, 데이터 이전, 한 번 나가면 끝인 결제 기능이 그렇습니다. 그런 명령 앞에서 손가락이 멈추는 건 겁먹어서가 아닙니다. 멈춘 김에 누를 근거가 다 확인됐는지 보면 됩니다.</p>
+<p>RDS 요금이 무엇을 사던 돈이었는지는 떠나고 나서야 알았습니다. 자동 백업, 모니터링, 장애 복구였습니다. 떠둔 스냅샷은 옛날 RDS를 찍은 사진 한 장일 뿐, 새 컨테이너 DB의 백업이 아닙니다. 이제 그걸 다 직접 해야 합니다. 메모리가 100MB 밑으로 가면 디스코드 알림이 오게는 해뒀지만, <code>pg_dump</code>를 S3로 넘기는 백업은 아직입니다. 그것도 복원까지 한 번 해봐야 백업이라 부를 수 있습니다. managed를 떠난 게 돈을 아낀 일이었느냐면, 아닙니다. 돈을 노동과 리스크로 바꾼 것에 가깝습니다.</p>
+<p>남은 부채도 있습니다. 백업도 직접, 모니터링도 직접, 서버가 한 대라 이게 죽으면 앱과 DB가 같이 죽습니다. 8GB 디스크는 벌써 90%를 채웠습니다.</p>
+<p>데이터를 옮기는 데 걸린 시간은 27초였고, 나머지는 전부 못 되돌리는 순간을 넘기는 일이었습니다. 옮길 이유는 139ms가, 빅뱅 방식은 1분이, 인스턴스 유지는 836MB가, 스왑 크기는 1.7GB가, 엔터를 누르는 결정은 해시 일치가 정했습니다. 이 숫자들이 없으면 결정은 결국 느낌에 기대게 됩니다. 못 되돌리는 작업일수록 더 그렇습니다.</p>
+<p><code>git revert</code>가 없는 작업은 생각보다 많습니다. 운영 중인 테이블 삭제, 데이터 이전, 한 번 나가면 끝인 결제. 그런 명령 앞에서 손가락이 멈추는 건 겁먹어서가 아닙니다. 멈춘 김에, 누를 근거가 다 초록인지 한 번 보면 됩니다.</p>
 </body></html>
         </div>
       </article>
@@ -121,11 +117,11 @@ blog_posts  <span class="hljs-number">5</span>b2b243ef8ac   <span class="hljs-op
     <aside class="toc" id="toc" aria-label="목차">
       <p class="toc-title">목차</p>
       <ul class="toc-list">
-        <li class="toc-item toc-item--h2"><a href="#region이라는-비용" data-target="region이라는-비용">Region이라는 비용</a></li>
-        <li class="toc-item toc-item--h2"><a href="#down-time의-비용" data-target="down-time의-비용">down time의 비용</a></li>
-        <li class="toc-item toc-item--h2"><a href="#메모리-예산" data-target="메모리-예산">메모리 예산</a></li>
-        <li class="toc-item toc-item--h2"><a href="#스왑과-디스크" data-target="스왑과-디스크">스왑과 디스크</a></li>
-        <li class="toc-item toc-item--h2"><a href="#전환" data-target="전환">전환</a></li>
+        <li class="toc-item toc-item--h2"><a href="#139ms--옮겨야-할-이유" data-target="139ms--옮겨야-할-이유">139ms — 옮겨야 할 이유</a></li>
+        <li class="toc-item toc-item--h2"><a href="#1분--다운타임의-가격" data-target="1분--다운타임의-가격">1분 — 다운타임의 가격</a></li>
+        <li class="toc-item toc-item--h2"><a href="#836mb--메모리-예산" data-target="836mb--메모리-예산">836MB — 메모리 예산</a></li>
+        <li class="toc-item toc-item--h2"><a href="#17gb--스왑이-들어갈-자리" data-target="17gb--스왑이-들어갈-자리">1.7GB — 스왑이 들어갈 자리</a></li>
+        <li class="toc-item toc-item--h2"><a href="#전환--새벽의-1분" data-target="전환--새벽의-1분">전환 — 새벽의 1분</a></li>
         <li class="toc-item toc-item--h2"><a href="#삭제-그리고-망설임" data-target="삭제-그리고-망설임">삭제, 그리고 망설임</a></li>
         <li class="toc-item toc-item--h2"><a href="#옮기고-나서" data-target="옮기고-나서">옮기고 나서</a></li>
       </ul>

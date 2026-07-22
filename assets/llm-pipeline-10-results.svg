@@ -1,0 +1,66 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 720 372" width="720" height="372" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', sans-serif" role="img" aria-label="결과 요약: 집필 토큰 장당 72136에서 45788로 37퍼센트 감소, 도구 왕복 13콜에서 5콜로, 소요 282초에서 121초로, 카드 손상률 25퍼센트에서 0으로, 선별 일치율 80퍼센트에서 93퍼센트로. 그리고 뜯다가 만들던 카드의 25퍼센트가 조용히 증발하던 걸 찾았다">
+  <rect width="720" height="372" fill="#17171b"/>
+
+  <text x="40" y="46" font-size="13" font-weight="600" letter-spacing="2" fill="#6f6f78">뜯기 전 → 후</text>
+  <text x="40" y="72" font-size="20" font-weight="700" fill="#f4f4f2">한 장 만드는 비용을 이렇게 바꿨습니다</text>
+
+  <g font-size="12" fill="#6f6f78" text-anchor="end">
+    <text x="686" y="60">전부 실측 · 같은 글 기준</text>
+  </g>
+
+  <!-- rows -->
+  <g>
+    <!-- row template: label / before / arrow / after / delta chip -->
+    <!-- 1 -->
+    <text x="40"  y="122" font-size="14" fill="#9a9aa2">집필 토큰 / 장</text>
+    <text x="330" y="124" font-size="16" fill="#6f6f78" text-anchor="end" text-decoration="line-through">72,136</text>
+    <text x="346" y="124" font-size="15" fill="#4a4a52">→</text>
+    <text x="368" y="126" font-size="26" font-weight="700" fill="#f4f4f2">45,788</text>
+    <rect x="612" y="107" width="74" height="24" rx="12" fill="#1baf7a" opacity="0.16"/>
+    <text x="649" y="123" font-size="13" font-weight="700" fill="#2fd18f" text-anchor="middle">−37%</text>
+
+    <!-- 2 -->
+    <text x="40"  y="170" font-size="14" fill="#9a9aa2">도구 왕복</text>
+    <text x="330" y="172" font-size="16" fill="#6f6f78" text-anchor="end" text-decoration="line-through">13콜</text>
+    <text x="346" y="172" font-size="15" fill="#4a4a52">→</text>
+    <text x="368" y="174" font-size="26" font-weight="700" fill="#f4f4f2">5콜</text>
+    <rect x="612" y="155" width="74" height="24" rx="12" fill="#1baf7a" opacity="0.16"/>
+    <text x="649" y="171" font-size="13" font-weight="700" fill="#2fd18f" text-anchor="middle">−62%</text>
+
+    <!-- 3 -->
+    <text x="40"  y="218" font-size="14" fill="#9a9aa2">소요 시간</text>
+    <text x="330" y="220" font-size="16" fill="#6f6f78" text-anchor="end" text-decoration="line-through">282s</text>
+    <text x="346" y="220" font-size="15" fill="#4a4a52">→</text>
+    <text x="368" y="222" font-size="26" font-weight="700" fill="#f4f4f2">121s</text>
+    <rect x="612" y="203" width="74" height="24" rx="12" fill="#1baf7a" opacity="0.16"/>
+    <text x="649" y="219" font-size="13" font-weight="700" fill="#2fd18f" text-anchor="middle">−57%</text>
+
+    <!-- 4 -->
+    <text x="40"  y="266" font-size="14" fill="#9a9aa2">카드 손상률</text>
+    <text x="330" y="268" font-size="16" fill="#6f6f78" text-anchor="end" text-decoration="line-through">25%</text>
+    <text x="346" y="268" font-size="15" fill="#4a4a52">→</text>
+    <text x="368" y="270" font-size="26" font-weight="700" fill="#f4f4f2">0</text>
+    <rect x="612" y="251" width="74" height="24" rx="12" fill="#1baf7a" opacity="0.16"/>
+    <text x="649" y="267" font-size="13" font-weight="700" fill="#2fd18f" text-anchor="middle">→ 0</text>
+
+    <!-- 5 -->
+    <text x="40"  y="314" font-size="14" fill="#9a9aa2">선별 일치율</text>
+    <text x="330" y="316" font-size="16" fill="#6f6f78" text-anchor="end" text-decoration="line-through">80%</text>
+    <text x="346" y="316" font-size="15" fill="#4a4a52">→</text>
+    <text x="368" y="318" font-size="26" font-weight="700" fill="#f4f4f2">93%</text>
+    <rect x="606" y="299" width="80" height="24" rx="12" fill="#4a9eff" opacity="0.16"/>
+    <text x="646" y="315" font-size="13" font-weight="700" fill="#7bb6ff" text-anchor="middle">+13%p</text>
+  </g>
+
+  <!-- row separators -->
+  <g stroke="#26262c" stroke-width="1">
+    <line x1="40" y1="140" x2="686" y2="140"/>
+    <line x1="40" y1="188" x2="686" y2="188"/>
+    <line x1="40" y1="236" x2="686" y2="236"/>
+    <line x1="40" y1="284" x2="686" y2="284"/>
+  </g>
+
+  <!-- kicker -->
+  <rect x="0" y="338" width="720" height="34" fill="#eb6834" opacity="0.14"/>
+  <text x="40" y="360" font-size="13.5" fill="#f0a988">덤으로 — 뜯다가, 만들던 카드의 <tspan font-weight="700" fill="#f5b593">25%</tspan>가 소리 없이 증발하고 있던 걸 찾았습니다.</text>
+</svg>

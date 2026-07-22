@@ -1,0 +1,667 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="google-site-verification" content="sNrpo16A0vUj7vHmVNEmAGZj85cGykaOeHO44krbqDU" />
+  <title>LLM 파이프라인 리팩터링 — 토큰 새는 곳 찾기 · xhae123&#39;s notes</title>
+  <meta name="description" content="영어 기술 원문을 읽고 한국어 소개 카드로 바꾸는 파이프라인이 있습니다. 벤더 178곳의 피드를 긁어와 쓸 만한 걸 고르고, 카드로 쓰고, 서빙까지 자동으로 갑니다. 결과물은 이렇게 생겼습니다." />
+  <link rel="canonical" href="https://xhae123.github.io/posts/LLM-%ED%8C%8C%EC%9D%B4%ED%94%84%EB%9D%BC%EC%9D%B8-%EB%A6%AC%ED%8C%A9%ED%84%B0%EB%A7%81-%ED%86%A0%ED%81%B0-%EC%83%88%EB%8A%94-%EA%B3%B3-%EC%B0%BE%EA%B8%B0/" />
+  <meta property="og:type" content="article" />
+  <meta property="og:site_name" content="xhae123&#39;s notes" />
+  <meta property="og:title" content="LLM 파이프라인 리팩터링 — 토큰 새는 곳 찾기 · xhae123&#39;s notes" />
+  <meta property="og:description" content="영어 기술 원문을 읽고 한국어 소개 카드로 바꾸는 파이프라인이 있습니다. 벤더 178곳의 피드를 긁어와 쓸 만한 걸 고르고, 카드로 쓰고, 서빙까지 자동으로 갑니다. 결과물은 이렇게 생겼습니다." />
+  <meta property="og:url" content="https://xhae123.github.io/posts/LLM-%ED%8C%8C%EC%9D%B4%ED%94%84%EB%9D%BC%EC%9D%B8-%EB%A6%AC%ED%8C%A9%ED%84%B0%EB%A7%81-%ED%86%A0%ED%81%B0-%EC%83%88%EB%8A%94-%EA%B3%B3-%EC%B0%BE%EA%B8%B0/" />
+  <meta property="og:locale" content="ko_KR" />
+  <meta property="og:image" content="https://xhae123.github.io/assets/llm-pipeline-09-served-cards.png?v=1" />
+  <meta name="twitter:card" content="summary_large_image" />
+  <meta name="twitter:title" content="LLM 파이프라인 리팩터링 — 토큰 새는 곳 찾기 · xhae123&#39;s notes" />
+  <meta name="twitter:description" content="영어 기술 원문을 읽고 한국어 소개 카드로 바꾸는 파이프라인이 있습니다. 벤더 178곳의 피드를 긁어와 쓸 만한 걸 고르고, 카드로 쓰고, 서빙까지 자동으로 갑니다. 결과물은 이렇게 생겼습니다." />
+  <meta name="twitter:image" content="https://xhae123.github.io/assets/llm-pipeline-09-served-cards.png?v=1" />
+  <link rel="preconnect" href="https://cdn.jsdelivr.net" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable.css" />
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500&display=swap" />
+  <link rel="stylesheet" href="/styles.css?v=fd8e39db" />
+  <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/github.min.css" />
+  <meta property="article:published_time" content="2026-07-22T15:54:18.000Z" />
+  <meta property="article:author" content="김우진" />
+  <script type="application/ld+json">{"@context":"https://schema.org","@type":"BlogPosting","headline":"LLM 파이프라인 리팩터링 — 토큰 새는 곳 찾기","description":"영어 기술 원문을 읽고 한국어 소개 카드로 바꾸는 파이프라인이 있습니다. 벤더 178곳의 피드를 긁어와 쓸 만한 걸 고르고, 카드로 쓰고, 서빙까지 자동으로 갑니다. 결과물은 이렇게 생겼습니다.","datePublished":"2026-07-22T15:54:18.000Z","dateModified":"2026-07-22T15:54:18.000Z","author":{"@type":"Person","name":"김우진"},"url":"https://xhae123.github.io/posts/LLM-%ED%8C%8C%EC%9D%B4%ED%94%84%EB%9D%BC%EC%9D%B8-%EB%A6%AC%ED%8C%A9%ED%84%B0%EB%A7%81-%ED%86%A0%ED%81%B0-%EC%83%88%EB%8A%94-%EA%B3%B3-%EC%B0%BE%EA%B8%B0/","mainEntityOfPage":"https://xhae123.github.io/posts/LLM-%ED%8C%8C%EC%9D%B4%ED%94%84%EB%9D%BC%EC%9D%B8-%EB%A6%AC%ED%8C%A9%ED%84%B0%EB%A7%81-%ED%86%A0%ED%81%B0-%EC%83%88%EB%8A%94-%EA%B3%B3-%EC%B0%BE%EA%B8%B0/","image":"https://xhae123.github.io/assets/llm-pipeline-09-served-cards.png?v=1"}</script>
+</head>
+<body>
+  <header class="site-header" id="site-header">
+    <div class="container">
+      <a class="site-label" href="/">xhae123&#39;s notes</a>
+      <nav class="site-links" aria-label="바로가기">
+        <a class="site-link" href="https://github.com/xhae123" target="_blank" rel="noopener noreferrer" aria-label="GitHub">
+          <svg width="15" height="15" viewBox="0 0 16 16" fill="currentColor" aria-hidden="true">
+            <path fill-rule="evenodd" d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.012 8.012 0 0 0 16 8c0-4.42-3.58-8-8-8z"/>
+          </svg>
+          <span class="site-link-txt">xhae123</span>
+        </a>
+        <a class="site-link" href="mailto:xhae000@gmail.com" aria-label="이메일">
+          <svg width="15" height="15" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.4" aria-hidden="true">
+            <rect x="1.5" y="3" width="13" height="10" rx="1.6"/>
+            <path d="M2 4.2l6 4.3 6-4.3"/>
+          </svg>
+          <span class="site-link-txt">xhae000@gmail.com</span>
+        </a>
+      </nav>
+    </div>
+  </header>
+  <main class="post-layout">
+    <div class="post-main">
+      <article class="post" id="post">
+        <header class="post-header">
+          <p class="post-meta">JUL 22, 2026</p>
+          <h1 class="post-title">LLM 파이프라인 리팩터링 — 토큰 새는 곳 찾기</h1>
+        </header>
+        <div class="post-body" id="post-body">
+<html><head></head><body><p>영어 기술 원문을 읽고 한국어 소개 카드로 바꾸는 파이프라인이 있습니다. 벤더 178곳의 피드를 긁어와 쓸 만한 걸 고르고, 카드로 쓰고, 서빙까지 자동으로 갑니다. 결과물은 이렇게 생겼습니다.</p>
+<p><img src="/assets/llm-pipeline-09-served-cards.png?v=1" alt="파이프라인이 뱉는 결과물 — 실제 서빙 중인 카드 세 장" loading="lazy"></p>
+<p>집필도 조립도 사람이 안 봅니다. 그런데 검수는 제가 계속 붙어 있어야 했습니다. 판정이 맞는지, 카드가 쓸 만한지 매번 확인하고 있으면 이게 자동화인가 싶어지죠. 일이 한 칸 옆으로 옮겨간 것뿐이니까요.</p>
+<p>그래서 파이프라인 전체를 처음부터 뜯었습니다. 시작은 단순한 질문이었습니다. 카드 한 장 만드는 데 토큰이 왜 이렇게 많이 드나. 선별 대기 중인 원문만 929건이고, 전부 카드로 쓰면 집필에만 4천만 토큰이 넘습니다. 단가를 조금만 깎아도 크게 남는 규모였습니다.</p>
+<p>그런데 깎으러 들어갔다가 엉뚱한 두 개를 들고 나왔습니다. 만든 카드 네 장 중 한 장이 디스크에서 조용히 증발하고 있었다는 것, 그리고 제가 비용의 세 축 중 하나만 붙잡고 있었다는 것. 둘 다 원래 찾던 게 아니었고, 재보지 않았으면 못 찾았을 겁니다.</p>
+<p>성과부터 펼쳐놓고 시작하겠습니다.</p>
+<p><img src="/assets/llm-pipeline-10-results.svg?v=1" alt="뜯기 전과 후 — 토큰 −37%, 도구 왕복 13콜→5콜, 소요 282s→121s, 손상률 25%→0, 선별 일치율 80%→93%" loading="lazy"></p>
+<p>작업 방식을 하나 밝혀두겠습니다. 이 리팩터링은 Claude Code 세션과 짝으로 진행했습니다. 실행과 측정은 대부분 세션이 했고, 저는 방향을 정하고 결과를 의심하는 쪽이었습니다. 본문의 "저"는 그 공동 작업의 기록이고, 아래에는 세션이 틀린 장면과 제가 틀린 장면이 둘 다 나옵니다. 어느 쪽도 덜어내지 않았습니다. 수치는 전부 실측입니다.</p>
+<hr>
+<h2 id="전체-구조">전체 구조</h2>
+<p><img src="/assets/llm-pipeline-00-architecture.svg?v=1" alt="4레이어 파이프라인 — 수급·선별·집필·조립, 그리고 사람이 붙는 자리" loading="lazy"></p>
+<p>네 단계이고, 두 단계만 LLM을 씁니다.</p>
+<table>
+<thead>
+<tr>
+<th>계층</th>
+<th>주체</th>
+<th>하는 일</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><strong>[1] 수급</strong></td>
+<td>스크립트 (LLM 0)</td>
+<td>벤더 피드 확인 → 원문 다운로드·추출</td>
+</tr>
+<tr>
+<td><strong>[2] 선별</strong></td>
+<td>Haiku · 일괄</td>
+<td>게이트로 bring / skip 판정</td>
+</tr>
+<tr>
+<td><strong>[3] 집필</strong></td>
+<td>Sonnet · 글당 1개</td>
+<td>원문 전문 정독 → 카드 작성</td>
+</tr>
+<tr>
+<td><strong>[4] 조립</strong></td>
+<td>스크립트 (LLM 0)</td>
+<td>DB upsert → 서빙 파일 export</td>
+</tr>
+</tbody></table>
+<h3 id="핵심-설계--파일-존재가-곧-상태다">핵심 설계 — 파일 존재가 곧 상태다</h3>
+<p>상태를 따로 기록하지 않습니다. 글 하나가 디렉토리 하나이고, 그 안에 어떤 파일이 있는지가 곧 상태입니다.</p>
+<pre data-lang="stylus"><code class="hljs"><span class="hljs-attribute">content</span>/&lt;id&gt;/
+  meta<span class="hljs-selector-class">.json</span>   →  original<span class="hljs-selector-class">.md</span>  →  triage<span class="hljs-selector-class">.json</span>  →  card<span class="hljs-selector-class">.md</span>  →  cards<span class="hljs-selector-class">.json</span> 포함 = 서빙
+   (수급)          (원문)          (선별)         (집필)         (서빙)
+</code></pre>
+<p>원장 파일이 없습니다. "어디까지 했나"를 기록하지 않으니 기록과 실제가 어긋날 일도 없고, 중간에 끊겨도 다음 파일이 없는 것만 처리하면 재개됩니다.</p>
+<p>이 원칙이 이번에 두 번 깨졌습니다. 뒤에서 나옵니다.</p>
+<h3 id="왜-이-구조인가--안-고른-길들">왜 이 구조인가 — 안 고른 길들</h3>
+<p>네 계층으로 쪼갠 것도, 그중 둘만 LLM을 쓰는 것도 처음부터 정한 게 아닙니다. 몇 번 데인 결과입니다.</p>
+<p>한 에이전트가 다 하게 두지 않은 이유부터요. 에이전트 하나한테 "피드 긁고, 고르고, 카드 써"를 통째로 맡기면 데모는 됩니다. 문제는 60건짜리 배치의 40번째에서 죽었을 때입니다. 상태가 전부 그 에이전트의 컨텍스트 안에만 있으니 앞 39건이 같이 날아갑니다. 디스크에 남은 게 없어 재개도 안 되고요. 계층을 나누면 실패가 글 하나에 갇히고, 죽은 지점부터 다시 시작할 수 있습니다.</p>
+<p>LLM을 두 곳에만 둔 건, 수급과 조립엔 판단이 없기 때문입니다. 피드에서 URL을 뽑고 카드를 DB에 넣는 일에 사고력이 필요하지 않죠. 여기에 모델을 끼우면 비싸지고, 무엇보다 비결정적이 됩니다. 같은 입력이 매번 다른 결과를 내면 재현이 깨지고, 재현이 깨진 파이프라인은 디버깅이 안 됩니다. 그래서 판단이 필요한 선별과 집필에만 모델을 두고, 나머지는 스크립트로 못을 박았습니다.</p>
+<p>프레임워크를 얹지 않은 이유도 있습니다. 이 파이프라인의 상태는 "디렉토리에 어떤 파일이 있는가"가 전부인데, 워크플로 프레임워크 대부분은 자체 상태 저장소를 요구합니다. 체크포인트 DB라든가 실행 그래프 같은 것들요. 그걸 얹는 순간 진실이 디스크와 프레임워크 두 곳에 생기고, 둘이 어긋나면 화해시키는 코드가 또 붙습니다. 상태를 늘리는 대신 없앴습니다. 지금 상태 조회는 <code>ls</code> 한 번이고, 재개는 "다음 파일이 없는 것만"입니다. 이 단순함이 프레임워크의 편의보다 값졌습니다.</p>
+<p>계층을 나눈 이유가 하나 더 있는데, 층마다 자원 프로파일이 다릅니다. 수급은 네트워크 IO, 선별은 싼 모델을 대량으로, 집필은 비싼 모델을 격리해서, 조립은 순수 함수. 한 프로세스에 뭉치면 제일 비싼 자원에 나머지가 묶여서, 값싼 일까지 비싼 요금을 뭅니다.</p>
+<hr>
+<h2 id="1-수급--원문이-토대다">[1] 수급 — 원문이 토대다</h2>
+<p>벤더 178곳의 피드를 확인해 새 URL을 찾고, 원문을 받아 마크다운으로 추출합니다. LLM을 안 씁니다.</p>
+<p>설계 원칙이 하나 있습니다. 원문이 없으면 카드도 없습니다. 집필 에이전트가 웹을 다시 긁는 걸 금지했는데, 그러면 같은 글에 대해 매번 다른 원문을 볼 수 있어 재현이 안 되기 때문입니다.</p>
+<p>그래서 이 계층의 품질이 하류 전체를 좌우합니다. 이번에 그게 실제로 터졌습니다. 추출물 앞머리에 사이트 메뉴가 붙는 글들이 있었고, 그것 때문에 선별이 우량 원문을 버리고 있었습니다. 자세한 건 다음 절에서 다룹니다.</p>
+<p>한 가지 더. 서빙 중인 카드 33장 중 22장은 원문이 없습니다. 원문 저장소를 도입하기 전에 만든 것들이라 재집필도 사실 대조도 불가능합니다. 관리 화면에 "원문 없음" 배지를 붙여 드러냈습니다.</p>
+<hr>
+<h2 id="2-선별--안목이-상품이다">[2] 선별 — 안목이 상품이다</h2>
+<p>통과율이 낮은 게 나쁜 게 아닙니다. "다 안 다룬다"가 이 제품의 정의라서, 걸러내는 게 이 계층의 일입니다. 게이트 5개를 순서대로 통과해야 bring 입니다.</p>
+<table>
+<thead>
+<tr>
+<th></th>
+<th>게이트</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>G1</td>
+<td>폼팩터 — 글이며 사실·개념 기반인가</td>
+</tr>
+<tr>
+<td>G2</td>
+<td>쓸모 — 실무에서 꺼내 쓸 알맹이가 있는가</td>
+</tr>
+<tr>
+<td>G3</td>
+<td>발견성 — "이런 게 있었네"가 나오는가</td>
+</tr>
+<tr>
+<td>G4</td>
+<td>graspable — 가볍게 소화되는가</td>
+</tr>
+<tr>
+<td>G5</td>
+<td>중복 — 기존 카드와 겹치는가</td>
+</tr>
+</tbody></table>
+<p>문제는 이 판정이 맞는지 사람이 매번 봐야 한다는 것이었습니다. 그래서 40건을 직접 검증해봤습니다.</p>
+<h3 id="8라운드-40건">8라운드 40건</h3>
+<p>만들어놓고 "효과는 나중에" 하기엔 찜찜해서, 그 자리에서 루프를 돌렸습니다.</p>
+<ul>
+<li>매 라운드 서로 다른 벤더 5곳에서 1건씩 (출처 편향 방지)</li>
+<li>세션이 판정 → 제가 검토 → 이견이면 피드백 → 다음 라운드는 처음 보는 글 5건</li>
+</ul>
+<p>학습셋과 평가셋이 분리됩니다. 고친 기준을 새 글에 적용하는 거니까요.</p>
+<p><img src="/assets/llm-pipeline-08-rounds.svg?v=1" alt="8라운드 결과 — 60줄 시절 80%에서 전문 판정 후 93%로" loading="lazy"></p>
+<h4>이견 5건을 분류해보니</h4>
+<p>25건을 돌리는 동안 사람과 판정이 어긋난 게 5건이었습니다. 그런데 그 5건 중 3건이 루브릭 문제가 아니었습니다.</p>
+<table>
+<thead>
+<tr>
+<th>글</th>
+<th>판정</th>
+<th>실제</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>Brendan Gregg — No More Blue Fridays</td>
+<td>"추출 실패"</td>
+<td>본문 멀쩡 (7,206자)</td>
+</tr>
+<tr>
+<td>Slack Engineering — 에이전트 컨텍스트</td>
+<td>"본체 부재"</td>
+<td>본문 멀쩡 (21,758자)</td>
+</tr>
+<tr>
+<td>Google SRE Book — Eliminating Toil</td>
+<td>"추출 실패"</td>
+<td>본문 멀쩡 (13,726자)</td>
+</tr>
+</tbody></table>
+<p>셋 다 우리가 제일 원하는 급의 소스였고, 셋 다 같은 이유로 잘렸습니다. 판정자에게 원문 앞 60줄만 읽히고 있었는데, 그 사이트들은 앞에 사이트 메뉴나 챕터 목차가 길게 붙습니다. 판정자는 메뉴만 보고 "추출 실패"라고 결론냈습니다. 지시를 정확히 따랐고, 지시가 함정이었습니다.</p>
+<p>이 3건을 전부 루브릭 피드백으로 밀어넣었다면 엉뚱한 게이트에 조항만 쌓이고 진짜 원인은 그대로 남았을 겁니다.</p>
+<h4>추출기부터 고쳤다 — 실패</h4>
+<p>추출기가 메뉴를 못 걷어내는 게 원인이니 추출기를 고치기로 했습니다. 컨테이너 후보를 늘리고, <code>class</code>에 <code>sidebar|toc|related</code>가 있으면 제거하고, 링크만 빽빽한 <code>&lt;ul&gt;</code>을 제거하는 readability 휴리스틱을 넣었습니다.</p>
+<p>단위 테스트는 통과했습니다. 메뉴는 지워지고 산문 리스트는 남았습니다.</p>
+<p>실제 사이트에선 개선이 1.3%였습니다.</p>
+<table>
+<thead>
+<tr>
+<th></th>
+<th>앞 60줄의 메뉴 줄</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>Brendan Gregg</td>
+<td>29 → <strong>30</strong></td>
+</tr>
+<tr>
+<td>Slack</td>
+<td>24 → 24</td>
+</tr>
+<tr>
+<td>Google SRE Book</td>
+<td>26 → 26</td>
+</tr>
+</tbody></table>
+<p>제가 상상한 HTML과 실제 HTML이 달랐던 겁니다. 그 사이트들은 메뉴를 <code>&lt;ul class="sidebar"&gt;</code> 같은 걸로 만들지 않습니다. 되돌렸습니다.</p>
+<blockquote>
+<p>이 과정에서 더 부끄러운 것도 나왔습니다. "본문이 159줄부터 시작한다"는 진단의 근거가, 알고 보니 우리가 파일 맨 위에 붙이는 <code>&gt; source:</code> URL 줄이었습니다. 탐지기가 80자 넘는 걸 보고 산문으로 셌던 겁니다. 잘못 만든 자로 문제 크기를 재고, 그 위에 해법을 세웠던 거죠.</p>
+</blockquote>
+<h4>60줄 제한을 치웠다</h4>
+<p>추출기가 답이 아니라면 읽는 범위를 의심할 차례였습니다. <code>original.md</code>에는 전문이 다 있는데, 판정자에게는 앞 60줄만 읽히고 있었습니다. 자른 이유는 비용이었습니다. 그런데 그 비용을 실제로 재본 적이 없었습니다.</p>
+<p>재보니 이랬습니다.</p>
+<table>
+<thead>
+<tr>
+<th></th>
+<th>판정 입력 (60건 배치)</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>앞 60줄</td>
+<td>44K 토큰</td>
+</tr>
+<tr>
+<td>전문</td>
+<td>314K 토큰 (7.1배)</td>
+</tr>
+</tbody></table>
+<p>7배는 크지만, 오판 하나의 비용과 비교해야 합니다. 잘못 bring하면 집필 45K가 날아가고, 잘못 skip하면 우량 원문이 영구히 사라집니다. 60건 배치에서 오판이 6건만 줄어도 회수됩니다. 당시 오판율은 20%였으니 60건이면 12건이었습니다.</p>
+<p>그래서 글당 400줄 상한으로 바꿨습니다(극단값이 340KB짜리라 무제한은 위험합니다). 배치는 60건에서 30건으로 줄였고요.</p>
+<h4>재판정 — 세 건이 살아났다</h4>
+<table>
+<thead>
+<tr>
+<th>글</th>
+<th>60줄 시절</th>
+<th>전문 판정 후</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>Brendan Gregg</td>
+<td>SKIP "추출 실패"</td>
+<td><strong>BRING</strong> — eBPF 검증 메커니즘</td>
+</tr>
+<tr>
+<td>Slack Engineering</td>
+<td>SKIP "본체 부재"</td>
+<td><strong>BRING</strong> — 멀티에이전트 컨텍스트</td>
+</tr>
+<tr>
+<td>Google SRE Book</td>
+<td>SKIP "추출 실패"</td>
+<td>SKIP — <strong>G3 발견성 부족</strong></td>
+</tr>
+</tbody></table>
+<p>세 번째가 특히 중요합니다. 여전히 skip인데 사유가 바뀌었습니다. "못 읽겠다"에서 "읽어봤더니 상식 수준"으로요. 판정이 비로소 실제 내용에 근거하게 됐습니다.</p>
+<p>전체 일치율도 올랐습니다.</p>
+<table>
+<thead>
+<tr>
+<th></th>
+<th>표본</th>
+<th>일치</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>60줄 시절 (R1~5)</td>
+<td>25건</td>
+<td><strong>80%</strong></td>
+</tr>
+<tr>
+<td>전문 판정 후 (R6~8)</td>
+<td>15건</td>
+<td><strong>93%</strong></td>
+</tr>
+</tbody></table>
+<p>그리고 실제 비용 증가는 추정치보다 훨씬 작았습니다. 라운드당 40<del>46K에서 54</del>58K, 약 25%입니다. 판정자가 400줄 상한 안에서 필요한 만큼만 읽었기 때문입니다. 7배라는 추정도 틀렸던 겁니다.</p>
+<h4>루프가 증명한 것 — 세 가지</h4>
+<p>루브릭은 아직 한 줄도 안 고쳤습니다. 그런데 루프는 이미 세 번 값을 했습니다.</p>
+<p>먼저, 조용히 죽던 버그를 찾아냈습니다. 판정자는 "추출 실패"라고 정상 종료했습니다. 에러도 경고도 없습니다. 사람이 들여다보지 않았으면 Brendan Gregg·Slack Engineering·Google SRE Book이 계속 버려지는 걸 아무도 몰랐을 겁니다.</p>
+<p>규모를 재보면 이렇습니다. 실험 40건 중 3건(7.5%)이 이 문제였고, 현재 선별 대기 중인 929건에 적용하면 약 70건이 같은 이유로 잘못 버려질 상태였습니다. 그것도 무작위 70건이 아니라 긴 목차·사이드바를 가진 사이트, 그러니까 오래되고 잘 정리된 기술 사이트 쪽에 몰립니다.</p>
+<p>두 번째로, 잘못된 개정을 막았습니다. 실험 도중 제가 AWS Builders' Library의 캐싱 글을 "수치가 하나도 없는 일반론"이라며 skip해야 한다고 피드백 초안을 썼습니다. 초안을 받은 세션이 되물었습니다.</p>
+<blockquote>
+<p>"저 기준이 잘못된 거 같은데요? 원칙·조언만이어도 우리 목적에 적합하면 통과시켜야 할 듯한데요?"</p>
+</blockquote>
+<p>맞는 말이었습니다. 확인해보니 루브릭은 원래 맞았고(G2에 "고전 개념의 동작 원리와 왜 이렇게 생겼나"가 bring 신호로 이미 있었습니다), 틀린 건 제가 새로 만든 기준이었습니다. 그 초안이 그대로 들어갔다면 "수치 없으면 skip" 조항이 붙고, 고전 글이 통째로 걸러지기 시작했을 겁니다. 우리 제품 정의가 "시스템 디자인 — 고전 포함"인데 말이죠.</p>
+<p>피드백 루프의 위험은 과편향만이 아니었습니다. 피드백 자체가 틀릴 수 있고, 이번엔 그게 AI가 아니라 사람 쪽에서 나왔습니다.</p>
+<p>세 번째, 과편향 방지 장치가 실제로 작동했습니다. 개정 도구는 피드백이 3건 미만이면 개정을 거부합니다. 지금 2건이라 안 돌아갑니다. 억지로 한 건 더 만들어 채울 수도 있었지만, 그러면 안전장치를 스스로 우회하는 겁니다.</p>
+<p>이 가드를 넣은 데는 이유가 있습니다. 이 프로젝트의 집필 정책 v0.1이 단 하나의 사례로 과편향돼서, 만드는 카드가 전부 같은 구조("이상한 패턴 발견 → 역설 → 해결")로 수렴한 사고가 있었습니다. 한두 건으로 기준을 흔들면 그렇게 됩니다.</p>
+<h4>그리고 개정을 돌렸습니다 — 효과 측정</h4>
+<p>피드백이 3건이 되자 게이트가 열렸습니다. 개정 도구를 돌려 G1에 한 줄을 추가했습니다.</p>
+<pre data-lang="diff"><code class="language-diff hljs"><span class="hljs-addition">+ skip: 남의 글·발표에 대한 반응글 — 원글을 길게 인용하거나 뉴스·정책 발표에</span>
+<span class="hljs-addition">+   논평하는 형식. 알맹이가 원 출처에 있어 카드가 요약의 요약이 된다.</span>
+</code></pre>
+<p>근거는 2건(charity, cloudflare)이었고, 행사 후기 1건은 근거 부족으로 보류했습니다. 규칙대로입니다.</p>
+<p>그리고 효과를 쟀습니다. 설계는 이렇게 잡았습니다.</p>
+<ul>
+<li>개정 근거 2건 재판정 — 새 규칙이 실제로 잡는가</li>
+<li>새 글 3건 — 규칙이 멀쩡한 글을 잘못 자르지 않는가(회귀)</li>
+</ul>
+<table>
+<thead>
+<tr>
+<th>글</th>
+<th>개정 전</th>
+<th>개정 후</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>charity (Mat Duggan 글 논평)</td>
+<td><strong>BRING</strong></td>
+<td><strong>SKIP</strong></td>
+</tr>
+<tr>
+<td>cloudflare (행정명령 논평)</td>
+<td><strong>BRING</strong></td>
+<td><strong>SKIP</strong></td>
+</tr>
+<tr>
+<td>새 글 3건</td>
+<td>—</td>
+<td>BRING 2 / SKIP 1 (정상)</td>
+</tr>
+</tbody></table>
+<p>판정 사유에 새 규칙이 그대로 인용됐습니다.</p>
+<blockquote>
+<p>"Mat Duggan의 원문을 길게 인용하며 논평하는 반응글. <strong>알맹이가 원 출처에 있어 카드가 요약의 요약이 됨.</strong>"</p>
+<p>"White House Executive Order 발표에 대한 정책 논평글. Cloudflare의 입장으로 발표를 해석하는 형식으로, <strong>알맹이가 정책 자체에 있음.</strong>"</p>
+</blockquote>
+<p>제 코멘트에 쓴 표현이 판정 근거로 되돌아왔습니다. 루프가 한 바퀴 돈 셈입니다.</p>
+<p>다만 이 측정에는 한계가 있습니다. 뒤집힌 2건은 개정의 <em>근거가 된</em> 글이라, 학습셋으로 평가한 셈입니다. 엄밀히는 새로 들어온 반응글이 잡혀야 완전한 증명인데, 이 라운드 새 글 3건에는 그런 유형이 없었습니다.</p>
+<p>그래서 지금 말할 수 있는 건 정확히 이만큼입니다. 규칙이 의도대로 작동하고, 회귀는 없다. "취향이 얼마나 녹아드는가"는 라운드가 더 쌓여야 나옵니다.</p>
+<h4>그래서 이 실험의 결론은</h4>
+<p>피드백 루프의 성과는 루브릭 개정이 아니었습니다. 고칠 곳이 루브릭이 아니라는 걸 알아낸 것이었습니다.</p>
+<p>이견 5건을 전부 "루브릭에 조항 추가"로 처리하는 게 사실 가장 자연스러운 반응입니다. 그랬다면 게이트에 조항이 3개 쌓이고, 진짜 원인(읽는 범위)은 그대로 남고, 일치율은 80%에 머물렀을 겁니다. 원인별로 분류했기 때문에 한 줄 수정으로 93%가 됐습니다.</p>
+<p>루프의 값은 "기준을 고쳐준다"가 아니라 "어디를 고쳐야 하는지 알려준다"에 있었습니다.</p>
+<hr>
+<h2 id="3-집필--크래프트가-해자다">[3] 집필 — 크래프트가 해자다</h2>
+<p>글 하나당 서브에이전트 하나를 띄우고, 그 에이전트가 원문 전문을 읽어 카드를 씁니다. 글마다 하나인 이유는 실패 격리입니다. 한 글이 죽어도 나머지가 살고, 재개할 때 그 글만 다시 하면 됩니다.</p>
+<p>토큰이 여기서 제일 많이 나갑니다. 그래서 여기를 제일 오래 붙잡고 있었습니다.</p>
+<h3 id="모델을-내려도-입력은-그대로다">모델을 내려도 입력은 그대로다</h3>
+<p>집필은 Sonnet이 맡습니다. 토큰이 제일 많이 나가는 곳이니, 더 싼 Haiku로 내려도 되는지부터 봤습니다. 내리기 전에 현황부터 쟀습니다.</p>
+<pre data-lang="dns"><code class="hljs">원문 평균 <span class="hljs-number">13</span>,<span class="hljs-number">331</span> bytes (중앙값 <span class="hljs-number">10</span>,<span class="hljs-number">440</span>, p<span class="hljs-number">90 25,422</span>)
+   ↓
+산출 본문 <span class="hljs-number">2</span>,<span class="hljs-number">000</span>자
+</code></pre>
+<p>입력이 출력의 5~10배인 read-heavy 작업이었습니다. 모델을 내려도 13KB를 읽는 건 똑같습니다. 단가만 낮아지고 토큰 수는 그대로죠.</p>
+<p>그래도 실제로 해봐야 아니까 Haiku로 여러 번 돌렸습니다. 여기서 나온 관찰이 이후 전부를 결정했습니다.</p>
+<table>
+<thead>
+<tr>
+<th>준 것</th>
+<th>결과</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>"~요체로 써라" (지시)</td>
+<td><strong>실패</strong> — 3장 중 1장만</td>
+</tr>
+<tr>
+<td>불릿 포맷 (구조)</td>
+<td><strong>성공</strong> — 100%</td>
+</tr>
+<tr>
+<td>"숫자를 계산하지 마라" (금지)</td>
+<td><strong>성공</strong></td>
+</tr>
+<tr>
+<td>분량 상한 없음</td>
+<td><strong>폭주</strong> — 2,000자</td>
+</tr>
+</tbody></table>
+<p>패턴이 보입니다. Haiku는 "하지 마라"와 "이 칸에 넣어라"는 지키고, "이렇게 써라"는 흘립니다.</p>
+<p>이유가 있습니다. "~요체로 써라"는 매 문장마다 다시 적용해야 하는 판단입니다. 300문장 동안 그 일관성을 유지하지 못합니다. 반면 구조 제약은 한 번 정해지면 끝까지 갑니다.</p>
+<p>그래서 작업을 쪼갰습니다. <code>추출 → 조판 → 문체</code> 3콜 체인. 한 콜에 하나만 시키니 형태는 3/3 안정, 문체 치환은 100%까지 나왔습니다.</p>
+<p>그런데 글이 안 좋았습니다.</p>
+<p>같은 원문에 대해 두 모델이 쓴 문장입니다.</p>
+<blockquote>
+<p><strong>Sonnet</strong>: 캐시는 안 믿고 매번 원본에 물어보되, 실제로 데이터를 옮기는 일은 거의 없게 만든 거예요.</p>
+<p><strong>Haiku</strong>: 서버가 304 Not Modified를 반환하면 artifact가 변경되지 않았다는 뜻이고, 프록시 캐시에서 바로 제공했어요.</p>
+</blockquote>
+<p>같은 사실인데 앞은 왜 영리한지까지 잇고, 뒤는 동작만 나열합니다. 용어도 갈렸습니다. Haiku는 <code>artifact</code>를 20번 영어로 흘렸고, Sonnet은 "아티팩트(빌드 산출물)"로 한 번 풀고 갔습니다.</p>
+<p>그래서 모델은 안 내리기로 했습니다. 이 글의 품질이 제품의 해자인데 거기를 깎으면 최적화가 아니라 그냥 손해입니다. 대신 낭비를 찾기로 방향을 틀었습니다.</p>
+<hr>
+<h3 id="측정-방법을-바꾸다--파일-크기는-답이-아니었다">측정 방법을 바꾸다 — 파일 크기는 답이 아니었다</h3>
+<p>그때까지 저는 "정책 문서 11.7KB를 5.5KB로 줄였다" 같은 식으로 파일 크기를 세고 있었습니다. 그런데 총 토큰이 별로 안 줄었습니다.</p>
+<p>그래서 실제 과금 내역을 까봤습니다. 에이전트 실행 로그(<code>jsonl</code>)에는 요청마다 이런 값이 남습니다.</p>
+<ul>
+<li><code>cache_creation_input_tokens</code> — 새로 청구되는 입력</li>
+<li><code>cache_read_input_tokens</code> — 캐시에서 나온 입력 (10배 이상 쌈)</li>
+<li><code>output_tokens</code> — 출력</li>
+</ul>
+<blockquote>
+<p>함정 하나. 같은 <code>message.id</code>를 공유하는 content 블록들이 usage를 중복 기록합니다. dedupe 안 하면 5배 과대 계상됩니다. 처음에 이걸로 한 번 속았습니다.</p>
+</blockquote>
+<p>그리고 결정적인 실험을 했습니다. 아무 일도 안 하는 에이전트를 띄워본 겁니다.</p>
+<pre data-lang="makefile"><code class="hljs"><span class="hljs-section">프롬프트: "ok 라고만 답해라. 도구를 쓰지 마라."</span>
+<span class="hljs-section">결과: 실입력 25,559 토큰</span>
+</code></pre>
+<p><code>ok</code> 두 글자를 받으려고 25,559 토큰을 냅니다. 시스템 프롬프트, 도구 스키마, 프로젝트 설정 파일이 에이전트를 띄우는 순간 딸려 들어가기 때문입니다.</p>
+<p><img src="/assets/llm-pipeline-01-cost-breakdown.svg?v=1" alt="집필 1건의 입력 토큰 분해 — 48,932 중 25,559(52%)가 고정 오버헤드" loading="lazy"></p>
+<p>집필 비용의 52%가 고정 오버헤드였습니다. 공들여 깎은 정책 문서 6KB는 저 주황색 막대 안의 일부였고, 총량에는 거의 잡히지 않았습니다.</p>
+<p>여기서 배운 게 이 글의 첫 번째 교훈입니다. 파일 크기를 세지 말고 과금 내역을 까볼 것, 그리고 빈 작업으로 고정비부터 잴 것. 고정비가 절반이면 나머지를 아무리 깎아도 소용없습니다.</p>
+<hr>
+<h3 id="진짜-레버--프리픽스-캐시는-바이트-단위다">진짜 레버 — 프리픽스 캐시는 바이트 단위다</h3>
+<p>고정 오버헤드 25.6K를 없앨 수는 없습니다. 에이전트를 띄우는 비용이니까요. 대신 캐시에서 받을 수는 있습니다.</p>
+<p>두 번 재봤습니다.</p>
+<table>
+<thead>
+<tr>
+<th></th>
+<th>새 입력</th>
+<th>캐시 히트</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>프롬프트가 <strong>1바이트라도 다름</strong></td>
+<td>27,223</td>
+<td>15,783</td>
+</tr>
+<tr>
+<td>프롬프트가 <strong>완전히 동일</strong></td>
+<td><strong>0</strong></td>
+<td><strong>43,006</strong></td>
+</tr>
+</tbody></table>
+<p>프롬프트 캐시는 breakpoint까지 바이트가 정확히 일치해야 히트합니다. 그런데 제 프롬프트는 맨 앞에 담당 글 경로가 박혀 있었습니다.</p>
+<pre data-lang="bash"><code class="hljs">&lt;<span class="hljs-built_in">dir</span>&gt; = content/cloudflare--hyper-bug
+</code></pre>
+<p>글마다 이 줄이 다르니 그 뒤 전부가 캐시 미스였습니다. 43,006 토큰짜리 프리픽스를 글마다 새로 내고 있었던 겁니다.</p>
+<p><img src="/assets/llm-pipeline-02-prefix-cache.svg?v=1" alt="프롬프트 구조와 캐시 히트/미스" loading="lazy"></p>
+<p>해법은 구조에 있습니다. 변수를 프롬프트에서 빼고 파일로 넘깁니다.</p>
+<pre data-lang="css"><code class="hljs"><span class="hljs-attribute">content</span>/_state/write-queue/
+  <span class="hljs-number">01</span><span class="hljs-selector-class">.todo</span>   → <span class="hljs-attribute">content</span>/cloudflare<span class="hljs-attr">--hyper-bug</span>
+  <span class="hljs-number">02</span><span class="hljs-selector-class">.todo</span>   → <span class="hljs-attribute">content</span>/uber<span class="hljs-attr">--modernizing-artifact-storage</span>
+</code></pre>
+<p>집필자는 큐에서 <code>.todo</code> 하나를 <code>mv</code>로 <code>.taken</code>으로 바꿔 선점하고(POSIX <code>mv</code>는 원자적이라 병렬에서도 겹치지 않습니다), 그 안의 경로를 담당합니다. 모든 집필자가 글자 하나 다르지 않은 같은 지시를 받습니다.</p>
+<p>기준가 환산으로 72,136 → 45,788 (−37%).</p>
+<p>함정이 하나 남습니다. 동시에 띄우면 전부 콜드입니다. 첫 번째가 캐시를 채우기 전에 나머지가 출발하니까요. 그래서 1건을 먼저 돌려 캐시를 데운 뒤 나머지를 병렬로 띄웁니다.</p>
+<blockquote>
+<p>부수 발견: <code>effort</code> 같은 파라미터를 바꾸면 캐시 키가 달라져 프리픽스가 전멸합니다(<code>cache_read</code> 15,783 → 0). A/B 테스트할 때 이 1회성 전환 비용을 그 옵션의 비용으로 착각하면 안 됩니다. 이 실수가 뒤에서 한 번 더 나옵니다.</p>
+</blockquote>
+<hr>
+<h3 id="도구-왕복--13콜이-5콜이-되다">도구 왕복 — 13콜이 5콜이 되다</h3>
+<p>측정하다 보니 이상한 게 보였습니다. 재집필할 때 도구 호출이 13번이나 나갔습니다.</p>
+<pre data-lang="pgsql"><code class="hljs"><span class="hljs-keyword">Write</span> card.json
+  → error: File has <span class="hljs-keyword">not</span> been <span class="hljs-keyword">read</span> yet
+<span class="hljs-keyword">Read</span> card.json      ← 어쩔 수 없이 구버전을 읽음
+Edit card.json
+</code></pre>
+<p>하네스가 기존 파일은 Read 없이 Write를 막습니다. 재집필은 파일이 이미 있으니 매번 걸리고, <code>Write 실패 → Read → Edit</code> 3콜로 늘어납니다. Edit은 old/new를 둘 다 실어 본문을 두 번 냅니다.</p>
+<p>해법은 한 줄입니다. 재집필 전에 기존 산출물을 지웁니다.</p>
+<p>그런데 예상 못 한 게 나왔습니다. 강제로 읽힌 구버전이 새 카드를 오염시키고 있었습니다.</p>
+<table>
+<thead>
+<tr>
+<th></th>
+<th>제목</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>원본</td>
+<td>요청은 매번 보내는데, 다운로드는 안 해요</td>
+</tr>
+<tr>
+<td>1차 재집필</td>
+<td>레거시 스토리지에서 관리형 SaaS + 검증 프록시로 옮기며 egress 99% 줄였어요</td>
+</tr>
+<tr>
+<td>2차 재집필</td>
+<td>검증 프록시로 SaaS 아티팩트 저장소의 egress를 99% 이상 줄렸어요</td>
+</tr>
+</tbody></table>
+<p>2차가 1차를 베꼈습니다. 원본과는 전혀 안 닮았고요. "새로 쓰라"고 했지만 직전 결과물이 컨텍스트에 들어오니 거기에 닻을 내린 겁니다. (이 글 맨 위 결과물 세 장 중 가운데 우버 카드가 바로 그 글입니다. 결국 살아남은 제목은 맨 윗줄 원본이었고요.)</p>
+<p>삭제는 토큰 문제이자 품질 문제였습니다.</p>
+<p>비슷한 걸 하나 더 찾았습니다. 필드 계약을 다 적어줬는데도 형식을 확인한다며 다른 글의 카드를 <code>find → Read → cat</code>으로 뒤지고 있었습니다. "다른 글의 카드를 예시로 들춰보지 마라" 한 줄로 3콜이 사라졌습니다.</p>
+<p>13콜 → 5콜(Read 4개 병렬 + Write 1개, 이론상 최소), 282초 → 121초.</p>
+<hr>
+<h3 id="그러다-발견한-것--4장-중-1장이-사라지고-있었다">그러다 발견한 것 — 4장 중 1장이 사라지고 있었다</h3>
+<p>옵션 실험 중 산출물을 검사하다가 이상한 걸 봤습니다.</p>
+<pre data-lang="pgsql"><code class="hljs"><span class="hljs-type">json</span>.decoder.JSONDecodeError: Invalid control <span class="hljs-type">character</span> at <span class="hljs-type">line</span> <span class="hljs-number">5</span> <span class="hljs-keyword">column</span> <span class="hljs-number">675</span>
+</code></pre>
+<p>그래서 그때 만든 산출물 8개를 전부 검사했습니다. 8회 중 2회(25%)가 깨져 있었습니다. 모델 옵션과도 무관했습니다. Sonnet에서도, Haiku에서도 났습니다.</p>
+<p>원인은 명확합니다. 카드 본문은 여러 줄 마크다운에 한글에 따옴표까지 섞인 텍스트입니다. 그걸 JSON 문자열 안에 넣으려면 전부 이스케이프해야 하는데, LLM이 그걸 완벽하게 하지 못합니다.</p>
+<p>더 나빴던 건 그 다음이었습니다.</p>
+<pre data-lang="python"><code class="language-python hljs"><span class="hljs-keyword">def</span> <span class="hljs-title function_">read_json</span>(<span class="hljs-params">path</span>):
+    <span class="hljs-keyword">try</span>:
+        <span class="hljs-keyword">return</span> json.load(...)
+    <span class="hljs-keyword">except</span> (FileNotFoundError, json.JSONDecodeError, ...):
+        <span class="hljs-keyword">return</span> <span class="hljs-literal">None</span>      <span class="hljs-comment"># ← 여기</span>
+</code></pre>
+<p>이 파이프라인은 "파일 존재 = 상태" 원칙으로 돕니다. 카드 파일이 있으면 "집필됨", 없으면 "집필 대기"죠. 그런데 파일이 있는데 못 읽으니 "집필 대기"로 되돌아갑니다.</p>
+<p>6만 토큰짜리 작업이 디스크에 멀쩡히 있는데 관리 화면에서는 그냥 사라집니다. 아무도 모릅니다.</p>
+<p><img src="/assets/llm-pipeline-03-silent-loss.svg?v=1" alt="깨진 JSON이 조용히 사라지는 경로와 card.md 해법" loading="lazy"></p>
+<h4>왜 검증이 아니라 포맷을 바꿨나</h4>
+<p>선택지는 둘이었습니다. 쓰고 나서 파싱 검사를 하고 실패하면 재시도하는 검증을 붙이거나, 이스케이프가 필요 없는 형태로 포맷 자체를 바꾸거나.</p>
+<p>검증은 실패율을 낮출 뿐 없애지 못합니다. 재시도 비용도 붙고요. 실제로 Haiku가 자가 검증 루프를 돌 때 도구 호출이 16번까지 갔습니다.</p>
+<p>그래서 포맷을 바꿨습니다. 본문을 본문 자리에 두면 이스케이프할 일 자체가 없습니다.</p>
+<pre data-lang="yaml"><code class="hljs"><span class="hljs-meta">---</span>
+<span class="hljs-attr">slug:</span> <span class="hljs-string">cloudflare-hyper-flush-race</span>
+<span class="hljs-attr">title:</span> <span class="hljs-string">모든</span> <span class="hljs-string">로그가</span> <span class="hljs-string">괜찮다고</span> <span class="hljs-string">했는데,</span> <span class="hljs-string">커널만</span> <span class="hljs-string">알고</span> <span class="hljs-string">있었대요</span>
+<span class="hljs-attr">tags:</span> <span class="hljs-string">concurrency,</span> <span class="hljs-string">networking,</span> <span class="hljs-string">observability</span>
+<span class="hljs-meta">---
+</span>
+<span class="hljs-comment">## 200 OK인데, 사진이 반쪽만 왔어요</span>
+
+<span class="hljs-string">본문에</span> <span class="hljs-string">"따옴표"</span><span class="hljs-string">를</span> <span class="hljs-string">쓰든</span> <span class="hljs-string">줄바꿈을</span> <span class="hljs-string">하든</span> <span class="hljs-string">아무</span> <span class="hljs-string">문제가</span> <span class="hljs-string">없습니다.</span>
+</code></pre>
+<p>실패 모드가 줄어든 게 아니라 구조적으로 사라집니다. 삼키던 예외도 드러냈습니다. 파싱에 실패하면 플래그를 세워 관리 화면에 표시합니다.</p>
+<blockquote>
+<p>이 전환의 토큰 이득은 0입니다. 같은 글 기준 66.1K vs 65.5K로 차이가 없었습니다. 비용이 아니라 신뢰성을 위한 변경입니다.</p>
+</blockquote>
+<hr>
+<h3 id="이번엔-세션이-틀렸다--그리고-저는-믿을-뻔했다">이번엔 세션이 틀렸다 — 그리고 저는 믿을 뻔했다</h3>
+<p><code>effort: low</code>를 처음 쟀을 때 +40%가 나왔습니다. 세션은 "저효율 사고가 시행착오 루프를 만든다"는 설명과 함께 기각 결론을 냈습니다. 그럴듯했고, 저는 받아들일 뻔했습니다.</p>
+<p>그런데 이론적으로 이상했습니다. 사고를 덜 하는 모드가 토큰을 더 쓴다니요. 프롬프트를 그 모드에 맞게 바꿔야 하는 것 아니냐고 되물었고, 실험을 다시 뜯어보니 오류가 둘 있었습니다.</p>
+<p>우선 프롬프트를 안 바꿨습니다. 저효율 모드는 계획을 덜 세우니 자가 검증 루프를 명시적으로 막았어야 했는데, 오히려 "자가 게이트" 항목이 그대로 있어 검증을 부추기고 있었습니다.</p>
+<p>그리고 캐시 오염을 실패 원인에 섞었습니다. 파라미터를 바꾸면 캐시가 전멸한다는 걸 이미 알고 있었는데도, 그 1회성 전환 비용을 정상 운영 비용으로 계상했습니다.</p>
+<p>둘을 걷어내고 다시 재니 −10%. 오히려 쌌습니다.</p>
+<p>그런데 그 재실험이 위의 25% 손상을 찾아냈습니다. "낭비"라고 깎아내렸던 자가 디버깅 루프는 사실 모델이 그 문제를 잡아내던 것이었습니다.</p>
+<p>최종 판단은 여전히 기각입니다. −10%는 요청 1회 차이에서 왔고 원시 토큰은 사실상 같습니다. 하지만 잘못된 근거로 내린 옳은 결론이었고, 재실험은 훨씬 큰 걸 건졌습니다.</p>
+<p>결과가 이론과 어긋나면 실험 설계부터 의심해야 합니다. 모델은 결론을 먼저 정해놓고 원인을 갖다 붙였고, 사람은 그럴듯한 설명 앞에서 하마터면 의심을 접을 뻔했습니다.</p>
+<hr>
+<h3 id="집필-계층--결과">집필 계층 — 결과</h3>
+<p><img src="/assets/llm-pipeline-04-before-after.svg?v=1" alt="전후 비교 — 토큰 37% 감소, 도구 호출 13→5, 손상률 25%→0" loading="lazy"></p>
+<p>품질 지표는 유지됐습니다. 같은 글 기준 핵심 사실 커버리지 9/9, 원문에 없는 수치 0.</p>
+<p>그리고 바닥도 확인했습니다. 남은 45K의 내역이 이렇습니다.</p>
+<table>
+<thead>
+<tr>
+<th>덩어리</th>
+<th>토큰</th>
+<th>더 깎을 수 있나</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>프리픽스</td>
+<td>43K → 캐시로 <strong>4.3K</strong></td>
+<td>이미 90% 할인</td>
+</tr>
+<tr>
+<td>새 입력</td>
+<td>18K (원문 정독 + 산출물 되돌이)</td>
+<td>원문을 덜 읽으면 커버리지가 깨진다</td>
+</tr>
+<tr>
+<td>출력</td>
+<td>10K (사고 + 카드)</td>
+<td>옵션을 낮추면 품질이 떨어진다</td>
+</tr>
+</tbody></table>
+<p>뒤 두 덩어리는 전부 품질과 직접 교환 관계입니다. 단가 축은 여기가 바닥입니다.</p>
+<hr>
+<h2 id="4-조립--llm-0">[4] 조립 — LLM 0</h2>
+<p>카드를 모아 DB에 upsert 하고 서빙 파일로 export 합니다. 사람도 LLM도 안 붙습니다.</p>
+<p>여기서 결함 하나를 고쳤습니다. 재집필로 카드의 slug 가 바뀌면 구 카드가 안 지워져 같은 글이 두 장 서빙됐습니다. DB가 slug 를 기본키로 쓰는데 "이 글에서 나온 카드"라는 연결이 없었기 때문입니다. 내부 추적 필드를 심어 같은 글의 옛 행을 지우게 했습니다.</p>
+<hr>
+<h2 id="사람의-자리--검수를-기준으로-흡수시키기">사람의 자리 — 검수를 기준으로 흡수시키기</h2>
+<h3 id="비용은-한-축이-아니었다">비용은 한 축이 아니었다</h3>
+<p>토큰 작업이 끝나갈 때쯤 요구사항을 하나 얹었습니다. 선별 결과에 코멘트를 달 수 있게 하고, 그게 쌓이면 판정 기준을 고치는 구조를 만들자고요. 별개 기능처럼 들리지만, 계산해보면 같은 문제입니다.</p>
+<p><strong>총비용 = 단가 × 건수 × 재작업률</strong></p>
+<p>그때까지 저는 단가만 팠습니다. 45K를 28K로 만들어도 45K짜리 일을 계속하는 한 그게 끝입니다. 상수배 개선이고, 1회성입니다.</p>
+<p><img src="/assets/llm-pipeline-05-three-axes.svg?v=1" alt="비용의 세 축 — 단가는 상수배, 건수와 재작업은 복리" loading="lazy"></p>
+<p>그래서 나머지 두 축을 실제로 재봤습니다.</p>
+<pre data-lang="erlang-repl"><code class="hljs">판정 <span class="hljs-number">294</span>건 — bring <span class="hljs-number">78</span> / skip <span class="hljs-number">216</span>
+  선별 통과율    <span class="hljs-number">26.5</span><span class="hljs-comment">%</span>
+  bring 정밀도   <span class="hljs-number">71.8</span><span class="hljs-comment">%   ← bring 중 반려 안 된 비율</span>
+</code></pre>
+<p>bring 78건 중 22건(28%)이 반려·보류됐습니다. 이미 45K씩 쓰고 버린 겁니다. 약 100만 토큰이 재작업으로 나갔습니다.</p>
+<p>이게 선별 오판보다 비쌉니다. 선별이 잘못 skip하면 생각 비용만 날리지만, 잘못 bring하면 집필 비용 전액을 날립니다.</p>
+<p>그리고 이 축은 복리입니다. 잘못된 판정 하나를 고치면 그 유형이 앞으로 계속 안 옵니다. 단가는 한 번 깎으면 끝이지만, 판단은 고칠수록 쌓입니다.</p>
+<hr>
+<h3 id="사람을-루프-안에-두되-매번-부르지는-않는다">사람을 루프 안에 두되, 매번 부르지는 않는다</h3>
+<p>그래서 만든 게 피드백 루프입니다. 그런데 이걸 "토큰 절감 수단"으로 보면 설계를 잘못하게 됩니다. 본질은 사람의 판단을 시스템에 축적하는 것이고, 토큰 절감은 결과지 목적이 아닙니다.</p>
+<p><img src="/assets/llm-pipeline-06-feedback-loop.svg?v=1" alt="피드백 루프 구조 — 코멘트가 파일로 쌓이고, 수동 발동 스킬이 기준 문서를 개정한다" loading="lazy"></p>
+<p>설계에서 신경 쓴 것들이 있습니다.</p>
+<p>코멘트는 판정 옆에 붙습니다. 관리 화면의 선별·집필·서빙 목록마다 💬 버튼이 있고, 코멘트는 글별 파일에 쌓입니다. 별도 로그 테이블은 만들지 않았습니다. 이 파이프라인은 "파일 존재 = 상태"로 도는데, 원장 파일을 새로 만들면 그 원칙이 깨지니까요.</p>
+<p>어느 단계에 대한 코멘트인지는 자동으로 정해집니다. 선별 화면에서 누르면 <code>triage</code>, 서빙 화면에서 누르면 <code>write</code>. 사람이 고르게 하면 실수합니다. 어느 화면에서 눌렀는지가 곧 그 정보입니다.</p>
+<p>같은 글에 두 종류가 달릴 수 있습니다. "선별은 옳았는데 집필이 나빴다"는 흔한 케이스인데, 글 하나에 코멘트 하나로 설계하면 이걸 표현하지 못합니다.</p>
+<p>개정은 사람이 수동으로 발동합니다. 코멘트가 쌓인다고 자동으로 기준이 바뀌지 않습니다. 3건 미만이면 개정을 거부하고요. 한두 건으로 기준을 흔들면 과편향됩니다. 실제로 이 프로젝트의 집필 정책 v0.1이 단 한 건의 사례로 과편향돼서 모든 글이 같은 구조로 수렴한 사고가 있었습니다.</p>
+<p>개정 도구는 둘로 나눴습니다. 선별 기준(게이트: 통과/탈락)과 집필 기준(크래프트: 문체·구조·화자)은 성격이 다릅니다. 하나로 합치면 프롬프트가 두꺼워져 흔들립니다. 이 글 앞부분에서 실측한 "한 콜에 하나만" 교훈 그대로입니다.</p>
+<hr>
+<h3 id="개정이-개선인지-어떻게-아나--계측-먼저">개정이 개선인지 어떻게 아나 — 계측 먼저</h3>
+<p>여기서 한 가지가 걸렸습니다. 개정이 개선인지 개악인지 어떻게 아나.</p>
+<p>기준을 고쳤는데 정밀도가 떨어졌다면 되돌려야 합니다. 그런데 재는 게 없으면 영영 모릅니다. 그냥 취향이 왔다 갔다 하는 거죠.</p>
+<p>계측은 개정 전에 시작해야 합니다. 나중에 붙이면 비교할 이전 값이 없으니까요.</p>
+<p>이 글의 앞부분이 통째로 그 교훈이었습니다. 파일 크기를 세다가 헛다리를 짚었고, 과금 내역을 까고 나서야 진짜를 봤습니다. 같은 실수를 반복하지 않으려면 지표를 먼저 심어야 했습니다.</p>
+<p>그래서 지표 셋을 정하고 기준선을 찍었습니다.</p>
+<p><img src="/assets/llm-pipeline-07-baseline.svg?v=1" alt="기준선 — 선별 통과율 26.5%, bring 정밀도 71.8%, 집필 수용률 42.3%" loading="lazy"></p>
+<p>핵심 지표는 bring 정밀도입니다. 통과율은 낮다고 나쁜 게 아닙니다. 걸러내는 게 일이니까요. 하지만 bring 정밀도가 낮으면 쓰고 나서 버린다는 뜻이고, 그게 제일 비싼 실패입니다.</p>
+<p>스냅샷은 append-only 파일에 쌓입니다. 기준선이 덮이면 계측이 무의미해지니까요. 개정 도구가 실행 전후로 자동으로 스냅샷을 찍게 연결해뒀습니다. 사람이 잊어도 기록이 남습니다.</p>
+<hr>
+<h2 id="정리">정리</h2>
+<p><strong>측정에 대해</strong></p>
+<ol>
+<li>파일 크기를 세지 말고 과금 내역을 까라. 새 입력과 캐시 읽기는 단가가 10배 다릅니다.</li>
+<li>빈 작업으로 고정비부터 재라. "ok만 답해라" 한 번이면 나옵니다. 그게 절반이면 나머지는 의미가 없습니다.</li>
+<li>결과가 이론과 어긋나면 실험 설계를 먼저 의심해라. 그럴듯한 설명은 모델도 만들어냅니다.</li>
+<li>고치기 전에 기준선을 찍어라. 나중에 붙이면 비교 대상이 없습니다.</li>
+</ol>
+<p><strong>LLM 파이프라인에 대해</strong></p>
+<ol start="5">
+<li>프리픽스 캐시는 바이트 단위다. 프롬프트를 동일하게 만드는 게 파일을 깎는 것보다 10배 중요합니다. 변수는 프롬프트가 아니라 파일로.</li>
+<li>모델을 내리기 전에 낭비부터 세라. 도구 왕복만으로 13콜이 5콜, 시간이 절반이 됐습니다.</li>
+<li>LLM에게 이스케이프를 시키지 마라. 25% 깨집니다. 본문은 본문 자리에.</li>
+<li>파싱 실패를 삼키지 마라. <code>except: return None</code>은 작업물을 조용히 증발시킵니다.</li>
+</ol>
+<p><strong>비용 구조에 대해</strong></p>
+<ol start="9">
+<li>단가는 상수배, 판단은 복리다. 단가 최적화는 한 번 하면 끝이지만, 잘못된 판정을 고치면 그 유형이 계속 안 옵니다.</li>
+<li>쓰고 나서 버리는 게 제일 비싸다. 잘못 거르면 생각 비용만 날리지만, 잘못 통과시키면 전액을 날립니다.</li>
+</ol>
+<hr>
+<p>토큰 최적화로 시작한 작업인데, 끝에 남은 두 개는 최적화가 아니었습니다. 4장 중 1장이 사라지고 있는 걸 몰랐다는 것, 그리고 축 하나만 파고 있었다는 것.</p>
+<p>둘 다 측정하지 않았으면 못 찾았을 겁니다. 그리고 둘 다, 원래 찾으려던 게 아니었습니다.</p>
+</body></html>
+        </div>
+      </article>
+    <nav class="post-nav" aria-label="이전/다음 글">
+      <a class="post-nav-item post-nav-item--prev" href="/posts/AI-%EA%B3%BC%EB%8F%84%EA%B8%B0-%EB%8C%80%ED%95%99-%EC%A1%B0%EB%B3%84%EA%B3%BC%EC%A0%9C%EB%8A%94-%EC%96%B4%EB%94%94%EB%A1%9C-%EA%B0%80%EC%95%BC-%ED%95%A0%EA%B9%8C/">
+        <span class="post-nav-label">이전 글</span>
+        <span class="post-nav-title">AI 과도기, 대학 조별과제는 어디로 가야 할까</span>
+      </a>
+      <span></span>
+    </nav>
+      <nav class="post-back">
+        <a href="/">← 목록으로</a>
+      </nav>
+    </div>
+    <aside class="toc" id="toc" aria-label="목차">
+      <p class="toc-title">목차</p>
+      <ul class="toc-list">
+        <li class="toc-item toc-item--h2"><a href="#전체-구조" data-target="전체-구조">전체 구조</a></li>
+        <li class="toc-item toc-item--h3"><a href="#핵심-설계--파일-존재가-곧-상태다" data-target="핵심-설계--파일-존재가-곧-상태다">핵심 설계 — 파일 존재가 곧 상태다</a></li>
+        <li class="toc-item toc-item--h3"><a href="#왜-이-구조인가--안-고른-길들" data-target="왜-이-구조인가--안-고른-길들">왜 이 구조인가 — 안 고른 길들</a></li>
+        <li class="toc-item toc-item--h2"><a href="#1-수급--원문이-토대다" data-target="1-수급--원문이-토대다">[1] 수급 — 원문이 토대다</a></li>
+        <li class="toc-item toc-item--h2"><a href="#2-선별--안목이-상품이다" data-target="2-선별--안목이-상품이다">[2] 선별 — 안목이 상품이다</a></li>
+        <li class="toc-item toc-item--h3"><a href="#8라운드-40건" data-target="8라운드-40건">8라운드 40건</a></li>
+        <li class="toc-item toc-item--h2"><a href="#3-집필--크래프트가-해자다" data-target="3-집필--크래프트가-해자다">[3] 집필 — 크래프트가 해자다</a></li>
+        <li class="toc-item toc-item--h3"><a href="#모델을-내려도-입력은-그대로다" data-target="모델을-내려도-입력은-그대로다">모델을 내려도 입력은 그대로다</a></li>
+        <li class="toc-item toc-item--h3"><a href="#측정-방법을-바꾸다--파일-크기는-답이-아니었다" data-target="측정-방법을-바꾸다--파일-크기는-답이-아니었다">측정 방법을 바꾸다 — 파일 크기는 답이 아니었다</a></li>
+        <li class="toc-item toc-item--h3"><a href="#진짜-레버--프리픽스-캐시는-바이트-단위다" data-target="진짜-레버--프리픽스-캐시는-바이트-단위다">진짜 레버 — 프리픽스 캐시는 바이트 단위다</a></li>
+        <li class="toc-item toc-item--h3"><a href="#도구-왕복--13콜이-5콜이-되다" data-target="도구-왕복--13콜이-5콜이-되다">도구 왕복 — 13콜이 5콜이 되다</a></li>
+        <li class="toc-item toc-item--h3"><a href="#그러다-발견한-것--4장-중-1장이-사라지고-있었다" data-target="그러다-발견한-것--4장-중-1장이-사라지고-있었다">그러다 발견한 것 — 4장 중 1장이 사라지고 있었다</a></li>
+        <li class="toc-item toc-item--h3"><a href="#이번엔-세션이-틀렸다--그리고-저는-믿을-뻔했다" data-target="이번엔-세션이-틀렸다--그리고-저는-믿을-뻔했다">이번엔 세션이 틀렸다 — 그리고 저는 믿을 뻔했다</a></li>
+        <li class="toc-item toc-item--h3"><a href="#집필-계층--결과" data-target="집필-계층--결과">집필 계층 — 결과</a></li>
+        <li class="toc-item toc-item--h2"><a href="#4-조립--llm-0" data-target="4-조립--llm-0">[4] 조립 — LLM 0</a></li>
+        <li class="toc-item toc-item--h2"><a href="#사람의-자리--검수를-기준으로-흡수시키기" data-target="사람의-자리--검수를-기준으로-흡수시키기">사람의 자리 — 검수를 기준으로 흡수시키기</a></li>
+        <li class="toc-item toc-item--h3"><a href="#비용은-한-축이-아니었다" data-target="비용은-한-축이-아니었다">비용은 한 축이 아니었다</a></li>
+        <li class="toc-item toc-item--h3"><a href="#사람을-루프-안에-두되-매번-부르지는-않는다" data-target="사람을-루프-안에-두되-매번-부르지는-않는다">사람을 루프 안에 두되, 매번 부르지는 않는다</a></li>
+        <li class="toc-item toc-item--h3"><a href="#개정이-개선인지-어떻게-아나--계측-먼저" data-target="개정이-개선인지-어떻게-아나--계측-먼저">개정이 개선인지 어떻게 아나 — 계측 먼저</a></li>
+        <li class="toc-item toc-item--h2"><a href="#정리" data-target="정리">정리</a></li>
+      </ul>
+    </aside>
+  </main>
+  <script src="/app.js?v=03b32691"></script>
+</body>
+</html>

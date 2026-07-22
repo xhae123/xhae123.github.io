@@ -355,11 +355,15 @@ a:focus-visible,
 }
 
 .rail-name {
+  display: block;
   font-size: 16.5px;
   font-weight: 700;
   letter-spacing: -0.01em;
   margin: 0 0 8px;
+  transition: color 0.15s;
 }
+
+.rail-name:hover { color: var(--color-accent); }
 
 .rail-links {
   display: flex;
@@ -374,11 +378,12 @@ a:focus-visible,
   gap: 7px;
   font-size: 12.5px;
   color: var(--color-text-mute);
-  transition: color 0.14s;
+  transition: color 0.15s;
 }
 
-.rail-links a svg { flex: 0 0 auto; opacity: 0.75; }
-.rail-links a:hover { color: var(--color-text); }
+.rail-links a svg { flex: 0 0 auto; opacity: 0.75; transition: opacity 0.15s; }
+.rail-links a:hover { color: var(--color-accent); }
+.rail-links a:hover svg { opacity: 1; }
 
 .rail-cats {
   display: flex;
@@ -401,7 +406,7 @@ a:focus-visible,
   font-size: 14.5px;
   letter-spacing: -0.01em;
   color: var(--color-text-mute);
-  transition: color 0.14s;
+  transition: color 0.15s;
 }
 
 .rail-cats button .ic {
@@ -409,7 +414,7 @@ a:focus-visible,
   width: 14px;
   height: 14px;
   opacity: 0.5;
-  transition: opacity 0.14s;
+  transition: opacity 0.15s;
 }
 
 .rail-cats button .ic svg { width: 14px; height: 14px; }
@@ -420,14 +425,14 @@ a:focus-visible,
   font-weight: 700;
   color: var(--color-text-mute);
   font-variant-numeric: tabular-nums;
-  transition: color 0.14s;
+  transition: color 0.15s;
 }
 
 .rail-cats button:hover { color: var(--color-text-sub); }
 .rail-cats button:hover .ic { opacity: 0.75; }
-.rail-cats button.is-on { color: var(--color-text); font-weight: 600; }
+.rail-cats button.is-on { color: var(--color-accent); font-weight: 600; }
 .rail-cats button.is-on .ic { opacity: 1; }
-.rail-cats button.is-on .n { color: var(--color-text); }
+.rail-cats button.is-on .n { color: var(--color-accent); }
 
 .feed { padding: 52px 0 130px; min-width: 0; }
 
@@ -437,11 +442,20 @@ a:focus-visible,
   gap: 30px;
   padding: 30px 0;
   border-bottom: 1px solid var(--color-border-faint);
+  opacity: 0;
+  animation: fade-up 0.45s cubic-bezier(0.22, 1, 0.36, 1) both;
+  animation-delay: min(calc(var(--i, 0) * 45ms), 400ms);
 }
 
 .item:first-child { padding-top: 4px; }
 
 .item.is-hidden { display: none; }
+
+/* Category-filter re-entry: no stagger, just a quick uniform fade. */
+.item.is-refiltering {
+  animation-duration: 0.3s;
+  animation-delay: 0ms;
+}
 
 .i-main { flex: 1; min-width: 0; padding-top: 2px; }
 
@@ -452,12 +466,11 @@ a:focus-visible,
   line-height: 1.48;
   margin: 0 0 7px;
   word-break: keep-all;
+  transition: color 0.18s;
 }
 
 .item:hover .i-title {
-  text-decoration: underline;
-  text-underline-offset: 4px;
-  text-decoration-thickness: 1.3px;
+  color: var(--color-accent);
 }
 
 .i-lead {
@@ -493,7 +506,8 @@ a:focus-visible,
   background: var(--color-border-faint);
 }
 
-.i-thumb img { width: 100%; height: 100%; object-fit: cover; display: block; }
+.i-thumb img { width: 100%; height: 100%; object-fit: cover; display: block; transition: transform 0.35s ease; }
+.item:hover .i-thumb img { transform: scale(1.03); }
 
 .feed-empty {
   padding: 56px 0;

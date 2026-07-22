@@ -59,12 +59,21 @@
     const items = Array.from(document.querySelectorAll('.item'));
     const emptyEl = document.getElementById('feed-empty');
 
-    const applyFilter = (cat) => {
+    const applyFilter = (cat, { animate = false } = {}) => {
       let visible = 0;
       items.forEach((item) => {
         const show = cat === '*' || item.dataset.cat === cat;
         item.classList.toggle('is-hidden', !show);
         if (show) visible++;
+        if (show && animate) {
+          // Re-trigger the fade-up on surviving items without the load-time
+          // stagger, so a category switch reads as one quick refresh, not a
+          // hard cut.
+          item.classList.add('is-refiltering');
+          item.style.animation = 'none';
+          void item.offsetHeight;
+          item.style.animation = '';
+        }
       });
       if (emptyEl) emptyEl.hidden = visible !== 0;
       buttons.forEach((b) => b.classList.toggle('is-on', b.dataset.cat === cat));
@@ -80,7 +89,7 @@
     buttons.forEach((b) => {
       b.addEventListener('click', () => {
         const cat = b.dataset.cat;
-        applyFilter(cat);
+        applyFilter(cat, { animate: true });
         syncUrl(cat);
       });
     });

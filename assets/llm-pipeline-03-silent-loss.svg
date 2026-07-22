@@ -1,0 +1,56 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 720 340" width="720" height="340" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', sans-serif" role="img" aria-label="깨진 JSON은 파싱 실패를 삼키는 코드 때문에 상태가 되돌아가 집필물이 조용히 사라진다">
+  <rect width="720" height="340" fill="#fcfcfb"/>
+
+  <text x="32" y="34" font-size="17" font-weight="600" fill="#1a1a19">집필물이 조용히 사라지는 경로</text>
+  <text x="32" y="56" font-size="13" fill="#5c5b55">파일은 디스크에 있는데, 화면에는 &quot;집필 안 됨&quot;으로 보인다</text>
+
+  <!-- flow boxes -->
+  <g font-size="12.5">
+    <rect x="32" y="86" width="132" height="56" rx="6" fill="#ffffff" stroke="#d9d8d2" stroke-width="1.5"/>
+    <text x="98" y="110" text-anchor="middle" fill="#1a1a19" font-weight="600">집필</text>
+    <text x="98" y="128" text-anchor="middle" fill="#5c5b55">6만 토큰</text>
+
+    <path d="M170 114 L192 114" stroke="#8a8980" stroke-width="1.5" marker-end="url(#ar)"/>
+
+    <rect x="198" y="86" width="150" height="56" rx="6" fill="#ffffff" stroke="#e34948" stroke-width="1.5"/>
+    <text x="273" y="110" text-anchor="middle" fill="#8f2b2a" font-weight="600">card.json 저장</text>
+    <text x="273" y="128" text-anchor="middle" fill="#5c5b55">이스케이프 실패 25%</text>
+
+    <path d="M354 114 L376 114" stroke="#8a8980" stroke-width="1.5" marker-end="url(#ar)"/>
+
+    <rect x="382" y="86" width="164" height="56" rx="6" fill="#ffffff" stroke="#e34948" stroke-width="1.5"/>
+    <text x="464" y="107" text-anchor="middle" fill="#8f2b2a" font-weight="600">read_json 파싱 실패</text>
+    <text x="464" y="126" text-anchor="middle" font-family="ui-monospace, SFMono-Regular, Menlo, monospace" font-size="11.5" fill="#5c5b55">except: return None</text>
+
+    <path d="M552 114 L574 114" stroke="#8a8980" stroke-width="1.5" marker-end="url(#ar)"/>
+
+    <rect x="580" y="86" width="108" height="56" rx="6" fill="#ffffff" stroke="#d9d8d2" stroke-width="1.5"/>
+    <text x="634" y="110" text-anchor="middle" fill="#1a1a19" font-weight="600">상태 = 미집필</text>
+    <text x="634" y="128" text-anchor="middle" fill="#5c5b55">화면에서 소멸</text>
+  </g>
+
+  <defs>
+    <marker id="ar" viewBox="0 0 8 8" refX="7" refY="4" markerWidth="7" markerHeight="7" orient="auto">
+      <path d="M0 0 L8 4 L0 8 z" fill="#8a8980"/>
+    </marker>
+  </defs>
+
+  <!-- the fix -->
+  <text x="32" y="192" font-size="13" font-weight="600" fill="#1a1a19">해법: 본문을 본문 자리에 둔다</text>
+
+  <g font-family="ui-monospace, SFMono-Regular, Menlo, monospace" font-size="11.5">
+    <rect x="32" y="204" width="320" height="112" rx="6" fill="#ffffff" stroke="#e34948" stroke-width="1.5"/>
+    <text x="46" y="224" fill="#8f2b2a" font-weight="700" font-family="-apple-system, sans-serif" font-size="12">card.json — 이스케이프가 필요하다</text>
+    <text x="46" y="248" fill="#5c5b55">{</text>
+    <text x="46" y="266" fill="#5c5b55">  &quot;body&quot;: &quot;## 제목<tspan fill="#c0392b" font-weight="700">\n\n</tspan>본문에 <tspan fill="#c0392b" font-weight="700">\&quot;</tspan>따옴표<tspan fill="#c0392b" font-weight="700">\&quot;</tspan>...&quot;</text>
+    <text x="46" y="284" fill="#5c5b55">}</text>
+    <text x="46" y="306" fill="#8f2b2a" font-family="-apple-system, sans-serif" font-size="11.5">한글·줄바꿈·따옴표가 전부 지뢰</text>
+
+    <rect x="368" y="204" width="320" height="112" rx="6" fill="#ffffff" stroke="#1baf7a" stroke-width="1.5"/>
+    <text x="382" y="224" fill="#0d6b4a" font-weight="700" font-family="-apple-system, sans-serif" font-size="12">card.md — 이스케이프할 일이 없다</text>
+    <text x="382" y="248" fill="#5c5b55">---</text>
+    <text x="382" y="266" fill="#5c5b55">title: 커널만 알고 있었대요</text>
+    <text x="382" y="284" fill="#5c5b55">---</text>
+    <text x="382" y="306" fill="#0d6b4a" font-family="-apple-system, sans-serif" font-size="11.5">본문은 그 아래 마크다운 그대로</text>
+  </g>
+</svg>

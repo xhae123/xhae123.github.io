@@ -1,0 +1,51 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 720 400" width="720" height="400" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', sans-serif" role="img" aria-label="8라운드 판정 실험: 60줄 시절 일치율 80퍼센트에서 전문 판정 전환 후 93퍼센트로 상승, 오판 원인의 절반 이상이 루브릭이 아니라 읽는 범위였다">
+  <rect width="720" height="400" fill="#fcfcfb"/>
+
+  <text x="32" y="34" font-size="17" font-weight="600" fill="#1a1a19">8라운드 40건 — 무엇이 오판을 만들었나</text>
+  <text x="32" y="56" font-size="13" fill="#5c5b55">매 라운드 새 벤더 5곳에서 뽑아 판정하고, 사람이 검토했다</text>
+
+  <!-- round bars -->
+  <g font-size="12">
+    <text x="32" y="92" fill="#5c5b55">라운드</text>
+    <text x="470" y="92" fill="#5c5b55">일치</text>
+  </g>
+
+  <!-- R1~R5 -->
+  <g>
+    <rect x="98" y="100" width="356" height="140" rx="6" fill="#8a8980" opacity="0.07"/>
+    <text x="112" y="120" font-size="11.5" font-weight="600" fill="#5c5b55">앞 60줄만 읽던 시절</text>
+  </g>
+  <g font-size="12.5">
+    <text x="42" y="142" fill="#1a1a19">R1</text><rect x="98" y="131" width="284" height="14" rx="3" fill="#e8e7e1"/><rect x="98" y="131" width="227" height="14" rx="3" fill="#2a78d6"/><text x="470" y="142" fill="#1a1a19">4/5</text>
+    <text x="42" y="166" fill="#1a1a19">R2</text><rect x="98" y="155" width="284" height="14" rx="3" fill="#e8e7e1"/><rect x="98" y="155" width="227" height="14" rx="3" fill="#2a78d6"/><text x="470" y="166" fill="#1a1a19">4/5</text>
+    <text x="42" y="190" fill="#1a1a19">R3</text><rect x="98" y="179" width="284" height="14" rx="3" fill="#e8e7e1"/><rect x="98" y="179" width="170" height="14" rx="3" fill="#2a78d6"/><text x="470" y="190" fill="#1a1a19">3/5</text>
+    <text x="42" y="214" fill="#1a1a19">R4</text><rect x="98" y="203" width="284" height="14" rx="3" fill="#e8e7e1"/><rect x="98" y="203" width="284" height="14" rx="3" fill="#2a78d6"/><text x="470" y="214" fill="#1a1a19">5/5</text>
+    <text x="42" y="238" fill="#1a1a19">R5</text><rect x="98" y="227" width="284" height="14" rx="3" fill="#e8e7e1"/><rect x="98" y="227" width="227" height="14" rx="3" fill="#2a78d6"/><text x="470" y="238" fill="#1a1a19">4/5</text>
+  </g>
+  <text x="510" y="176" font-size="13" font-weight="700" fill="#1a1a19">80%</text>
+  <text x="510" y="194" font-size="11.5" fill="#5c5b55">20/25</text>
+
+  <!-- divider -->
+  <line x1="32" y1="256" x2="688" y2="256" stroke="#4a3aa7" stroke-width="1.5" stroke-dasharray="4 3"/>
+  <text x="42" y="272" font-size="11.5" font-weight="600" fill="#4a3aa7">여기서 판정자가 읽는 범위를 60줄 → 400줄로 (원문은 이미 로컬에 다 있었다)</text>
+
+  <!-- R6~R8 -->
+  <g>
+    <rect x="98" y="282" width="356" height="92" rx="6" fill="#1baf7a" opacity="0.08"/>
+    <text x="112" y="300" font-size="11.5" font-weight="600" fill="#0d6b4a">전문을 읽게 한 뒤</text>
+  </g>
+  <g font-size="12.5">
+    <text x="42" y="322" fill="#1a1a19">R6</text><rect x="98" y="311" width="284" height="14" rx="3" fill="#e8e7e1"/><rect x="98" y="311" width="284" height="14" rx="3" fill="#1baf7a"/><text x="470" y="322" fill="#1a1a19">5/5</text>
+    <text x="42" y="346" fill="#1a1a19">R7</text><rect x="98" y="335" width="284" height="14" rx="3" fill="#e8e7e1"/><rect x="98" y="335" width="284" height="14" rx="3" fill="#1baf7a"/><text x="470" y="346" fill="#1a1a19">5/5</text>
+    <text x="42" y="370" fill="#1a1a19">R8</text><rect x="98" y="359" width="284" height="14" rx="3" fill="#e8e7e1"/><rect x="98" y="359" width="227" height="14" rx="3" fill="#1baf7a"/><text x="470" y="370" fill="#1a1a19">4/5</text>
+  </g>
+  <text x="510" y="340" font-size="13" font-weight="700" fill="#0d6b4a">93%</text>
+  <text x="510" y="358" font-size="11.5" fill="#5c5b55">14/15</text>
+
+  <!-- key finding -->
+  <text x="560" y="176" font-size="11.5" fill="#5c5b55">오판 5건 중</text>
+  <text x="560" y="194" font-size="11.5" font-weight="600" fill="#8f2b2a">3건이 루브릭 밖</text>
+  <text x="560" y="211" font-size="11.5" fill="#5c5b55">(읽는 범위 문제)</text>
+  <text x="560" y="340" font-size="11.5" font-weight="600" fill="#0d6b4a">그 3건 전부</text>
+  <text x="560" y="357" font-size="11.5" font-weight="600" fill="#0d6b4a">정상 판정으로</text>
+</svg>

@@ -1,0 +1,38 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 720 320" width="720" height="320" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', sans-serif" role="img" aria-label="리팩터링 전후: 토큰 72136에서 45788로 37퍼센트 감소, 도구 호출 13회에서 5회, 손상률 25퍼센트에서 0">
+  <rect width="720" height="320" fill="#fcfcfb"/>
+
+  <text x="32" y="34" font-size="17" font-weight="600" fill="#1a1a19">전후 — 글 1장 집필 기준</text>
+  <text x="32" y="56" font-size="13" fill="#5c5b55">품질 지표(커버리지 9/9 · 날조 수치 0)는 유지한 상태의 수치</text>
+
+  <!-- row 1: tokens -->
+  <text x="32" y="96" font-size="13" font-weight="600" fill="#1a1a19">토큰 <tspan fill="#5c5b55" font-weight="400">(기준가 환산)</tspan></text>
+  <g>
+    <text x="32" y="126" font-size="12" fill="#5c5b55">전</text>
+    <rect x="60" y="112" width="520" height="20" rx="4" fill="#8a8980" opacity="0.35"/>
+    <text x="590" y="127" font-size="13" fill="#5c5b55" font-weight="600">72,136</text>
+
+    <text x="32" y="156" font-size="12" fill="#5c5b55">후</text>
+    <rect x="60" y="142" width="330" height="20" rx="4" fill="#2a78d6"/>
+    <text x="400" y="157" font-size="13" fill="#1a1a19" font-weight="600">45,788</text>
+    <text x="470" y="157" font-size="12.5" fill="#0d6b4a" font-weight="600">−37%</text>
+  </g>
+
+  <!-- row 2: tool calls -->
+  <text x="32" y="200" font-size="13" font-weight="600" fill="#1a1a19">도구 호출</text>
+  <g>
+    <text x="32" y="230" font-size="12" fill="#5c5b55">전</text>
+    <rect x="60" y="216" width="520" height="20" rx="4" fill="#8a8980" opacity="0.35"/>
+    <text x="590" y="231" font-size="13" fill="#5c5b55" font-weight="600">13회</text>
+
+    <text x="32" y="260" font-size="12" fill="#5c5b55">후</text>
+    <rect x="60" y="246" width="200" height="20" rx="4" fill="#eb6834"/>
+    <text x="270" y="261" font-size="13" fill="#1a1a19" font-weight="600">5회</text>
+    <text x="320" y="261" font-size="12.5" fill="#5c5b55">Read 4 병렬 + Write 1 — 이론상 최소</text>
+  </g>
+
+  <!-- row 3: corruption -->
+  <g>
+    <rect x="32" y="284" width="656" height="24" rx="4" fill="#f2f1ec"/>
+    <text x="48" y="301" font-size="12.5" fill="#1a1a19">집필물 손상률 <tspan font-weight="600" fill="#8f2b2a">25%</tspan> <tspan fill="#5c5b55">(8회 중 2회, 조용히 유실)</tspan> → <tspan font-weight="600" fill="#0d6b4a">0%</tspan> <tspan fill="#5c5b55">· 손상 시 콘솔에 표시</tspan></text>
+  </g>
+</svg>

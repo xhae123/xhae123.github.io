@@ -356,8 +356,9 @@ a:focus-visible,
 
 .rail-name {
   display: block;
-  font-size: 16.5px;
-  font-weight: 700;
+  font-family: var(--font-mono);
+  font-size: 15px;
+  font-weight: 500;
   letter-spacing: -0.01em;
   margin: 0 0 8px;
   transition: color 0.15s;

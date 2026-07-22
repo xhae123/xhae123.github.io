@@ -24,6 +24,41 @@ let APP_VER = '';
 
 const MONTHS = ['JAN', 'FEB', 'MAR', 'APR', 'MAY', 'JUN', 'JUL', 'AUG', 'SEP', 'OCT', 'NOV', 'DEC'];
 
+// Home categories: derived from an issue's GitHub labels (first match wins).
+// Icons are 16px, 1.4px stroke, currentColor — lifted verbatim from the approved
+// mockup (mockups/icons.js) so the home page renders the same marks server-side.
+const CATS = ['AI', 'Backend', 'Infra', 'Product', 'Thoughts'];
+const CAT_ICONS = {
+  AI: `<svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+    <rect x="4.6" y="4.6" width="6.8" height="6.8" rx="1.6"/>
+    <path d="M6.2 4.6V2.6M9.8 4.6V2.6M6.2 13.4v-2M9.8 13.4v-2M4.6 6.2h-2M4.6 9.8h-2M13.4 6.2h-2M13.4 9.8h-2"/>
+  </svg>`,
+  Backend: `<svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" aria-hidden="true">
+    <ellipse cx="8" cy="3.9" rx="5.2" ry="2.1"/>
+    <path d="M2.8 3.9v8.2c0 1.16 2.33 2.1 5.2 2.1s5.2-.94 5.2-2.1V3.9"/>
+    <path d="M2.8 8c0 1.16 2.33 2.1 5.2 2.1S13.2 9.16 13.2 8"/>
+  </svg>`,
+  Infra: `<svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+    <rect x="2.6" y="2.8" width="10.8" height="4.2" rx="1.3"/>
+    <rect x="2.6" y="9" width="10.8" height="4.2" rx="1.3"/>
+    <path d="M5 4.9h.01M5 11.1h.01" stroke-width="1.8"/>
+    <path d="M8.2 4.9H11M8.2 11.1H11" opacity=".55"/>
+  </svg>`,
+  Product: `<svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+    <path d="M8 1.9 13.4 5v6L8 14.1 2.6 11V5L8 1.9Z"/>
+    <path d="M2.6 5 8 8.1 13.4 5M8 8.1v6"/>
+  </svg>`,
+  Thoughts: `<svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+    <path d="M13.4 7.9c0 2.6-2.4 4.7-5.4 4.7-.55 0-1.08-.07-1.58-.2L3.2 13.5l.75-2.4C3.16 10.3 2.6 9.15 2.6 7.9c0-2.6 2.4-4.7 5.4-4.7s5.4 2.1 5.4 4.7Z"/>
+  </svg>`,
+};
+
+// First issue label that names a known category, else null (uncategorized).
+function categoryOf(labels) {
+  const names = (labels || []).map((l) => l.name || l);
+  return CATS.find((c) => names.includes(c)) || null;
+}
+
 marked.setOptions({ gfm: true, breaks: true });
 
 // Metadata is smuggled in an HTML comment so it stays invisible in GitHub's issue
@@ -184,6 +219,7 @@ async function fetchIssues() {
         date: parseDate(body) || iss.created_at,
         html,
         cover: coverFor(slug, html),
+        category: categoryOf(iss.labels),
       });
     }
     if (batch.length < 100) break;
@@ -248,6 +284,12 @@ async function main() {
 function formatDate(iso) {
   const d = new Date(iso);
   return `${MONTHS[d.getMonth()]} ${String(d.getDate()).padStart(2, '0')}, ${d.getFullYear()}`;
+}
+
+// Home feed date format: "2026. 7. 20." (no zero-padding on month/day).
+function formatDateKr(iso) {
+  const d = new Date(iso);
+  return `${d.getFullYear()}. ${d.getMonth() + 1}. ${d.getDate()}.`;
 }
 
 function firstImage(html) {
@@ -405,22 +447,35 @@ function siteHeader() {
 }
 
 function renderIndex(items) {
-  const entries = items
-    .map((item, i) => {
+  const total = items.length;
+  const counts = Object.fromEntries(CATS.map((c) => [c, items.filter((i) => i.category === c).length]));
+
+  const catButtons = [
+    `        <button class="is-on" data-cat="*">전체<span class="n">${total}</span></button>`,
+    ...CATS.map(
+      (c) =>
+        `        <button data-cat="${esc(c)}"><span class="ic">${CAT_ICONS[c]}</span>${esc(c)}<span class="n">${counts[c]}</span></button>`
+    ),
+  ].join('\n');
+
+  const feedItems = items
+    .map((item) => {
       const slug = item.slug;
       const title = item.title || '';
-      const date = formatDate(item.date);
+      const date = formatDateKr(item.date);
       const lead = firstParagraph(item.html);
-      return `      <article class="entry" style="--i:${i}">
-        <a class="entry-link" href="/posts/${encodeURIComponent(slug)}/">
-          <div class="entry-cover"><img src="${esc(item.cover.src)}" alt="" loading="lazy" /></div>
-          <div class="entry-body">
-            <p class="entry-date">${esc(date)}</p>
-            <h2 class="entry-title">${esc(title)}</h2>
-            <p class="entry-lead">${esc(lead)}</p>
-          </div>
-        </a>
-      </article>`;
+      const cat = item.category;
+      const metaCat = cat
+        ? `<span class="sep">·</span><span class="ic">${CAT_ICONS[cat]}</span>${esc(cat)}`
+        : '';
+      return `      <a class="item" data-cat="${esc(cat || '')}" href="/posts/${encodeURIComponent(slug)}/">
+        <div class="i-main">
+          <h2 class="i-title">${esc(title)}</h2>
+          ${lead ? `<p class="i-lead">${esc(lead)}</p>` : ''}
+          <p class="i-meta">${esc(date)}${metaCat}</p>
+        </div>
+        <div class="i-thumb"><img src="${esc(item.cover.src)}" alt="" loading="lazy" /></div>
+      </a>`;
     })
     .join('\n');
 
@@ -447,12 +502,30 @@ ${head({
 })}
 </head>
 <body>
-${siteHeader('home')}
-  <main class="container">
-    <section class="post-list" id="post-list">
-${entries}
-    </section>
-  </main>
+  <div class="wrap">
+    <aside class="rail">
+      <p class="rail-name">${esc(SITE_NAME)}</p>
+      <div class="rail-links">
+        <a href="https://github.com/xhae123" target="_blank" rel="noopener noreferrer">
+          <svg width="14" height="14" viewBox="0 0 16 16" fill="currentColor" aria-hidden="true"><path fill-rule="evenodd" d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.012 8.012 0 0 0 16 8c0-4.42-3.58-8-8-8z"/></svg>
+          xhae123
+        </a>
+        <a href="mailto:xhae000@gmail.com">
+          <svg width="14" height="14" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.4" aria-hidden="true"><rect x="1.5" y="3" width="13" height="10" rx="1.6"/><path d="M2 4.2l6 4.3 6-4.3"/></svg>
+          xhae000@gmail.com
+        </a>
+      </div>
+      <nav class="rail-cats" id="rail-cats">
+${catButtons}
+      </nav>
+    </aside>
+    <main class="feed">
+      <section id="feed-list">
+${feedItems}
+      </section>
+      <p class="feed-empty" id="feed-empty" hidden>이 카테고리에는 아직 글이 없어요.</p>
+    </main>
+  </div>
   <script src="/app.js?v=${APP_VER}"></script>
 </body>
 </html>

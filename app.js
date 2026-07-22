@@ -51,4 +51,42 @@
       }
     }
   }
+
+  // Home category filter (rail on desktop, sticky toolbar on mobile)
+  const railCats = document.getElementById('rail-cats');
+  if (railCats) {
+    const buttons = Array.from(railCats.querySelectorAll('button'));
+    const items = Array.from(document.querySelectorAll('.item'));
+    const emptyEl = document.getElementById('feed-empty');
+
+    const applyFilter = (cat) => {
+      let visible = 0;
+      items.forEach((item) => {
+        const show = cat === '*' || item.dataset.cat === cat;
+        item.classList.toggle('is-hidden', !show);
+        if (show) visible++;
+      });
+      if (emptyEl) emptyEl.hidden = visible !== 0;
+      buttons.forEach((b) => b.classList.toggle('is-on', b.dataset.cat === cat));
+    };
+
+    const syncUrl = (cat) => {
+      const url = new URL(window.location.href);
+      if (cat === '*') url.searchParams.delete('cat');
+      else url.searchParams.set('cat', cat);
+      window.history.replaceState(null, '', url.pathname + url.search);
+    };
+
+    buttons.forEach((b) => {
+      b.addEventListener('click', () => {
+        const cat = b.dataset.cat;
+        applyFilter(cat);
+        syncUrl(cat);
+      });
+    });
+
+    const initial = new URLSearchParams(window.location.search).get('cat');
+    const validCats = buttons.map((b) => b.dataset.cat);
+    if (initial && validCats.includes(initial)) applyFilter(initial);
+  }
 })();

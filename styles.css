@@ -1,4 +1,6 @@
 :root {
+  color-scheme: light dark;
+
   --color-bg: #ffffff;
   --color-text: #191f28;
   --color-text-sub: #6b7684;
@@ -10,11 +12,39 @@
   --color-accent-weak: rgba(91, 61, 245, 0.35);
   --color-selection: rgba(91, 61, 245, 0.18);
   --color-code-bg: #f3f1fb;
+  --color-header-bg: rgba(255, 255, 255, 0.85);
+  --color-toolbar-bg: rgba(255, 255, 255, 0.93);
+  --color-thumb-border: rgba(0, 0, 0, 0.06);
+  --color-pre-bg: #f6f8fa;
+  --color-pre-text: #1f2328;
+  --color-pre-lang: rgba(31, 35, 40, 0.38);
 
   --font-sans: 'Pretendard Variable', Pretendard, -apple-system, BlinkMacSystemFont, system-ui, Roboto, sans-serif;
   --font-mono: 'JetBrains Mono', ui-monospace, Menlo, Monaco, Consolas, monospace;
 
   --header-h: 64px;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --color-bg: #131519;
+    --color-text: #e9eaee;
+    --color-text-sub: #9aa1ac;
+    --color-text-mute: #6e7580;
+    --color-border: #2b2e35;
+    --color-border-faint: #1f2126;
+    --color-hover: rgba(143, 124, 250, 0.12);
+    --color-accent: #9080fb;
+    --color-accent-weak: rgba(144, 128, 251, 0.4);
+    --color-selection: rgba(144, 128, 251, 0.28);
+    --color-code-bg: rgba(144, 128, 251, 0.14);
+    --color-header-bg: rgba(19, 21, 25, 0.85);
+    --color-toolbar-bg: rgba(19, 21, 25, 0.93);
+    --color-thumb-border: rgba(255, 255, 255, 0.08);
+    --color-pre-bg: #0d1117;
+    --color-pre-text: #c9d1d9;
+    --color-pre-lang: rgba(201, 209, 217, 0.45);
+  }
 }
 
 * {
@@ -73,7 +103,7 @@ a:focus-visible,
   position: sticky;
   top: 0;
   z-index: 10;
-  background: rgba(255, 255, 255, 0.85);
+  background: var(--color-header-bg);
   backdrop-filter: saturate(180%) blur(12px);
   -webkit-backdrop-filter: saturate(180%) blur(12px);
   border-bottom: 1px solid transparent;
@@ -503,7 +533,7 @@ a:focus-visible,
   aspect-ratio: 16 / 10;
   overflow: hidden;
   border-radius: 6px;
-  border: 1px solid rgba(0, 0, 0, 0.06);
+  border: 1px solid var(--color-thumb-border);
   background: var(--color-border-faint);
 }
 
@@ -525,7 +555,7 @@ a:focus-visible,
     position: sticky;
     top: 0;
     z-index: 5;
-    background: rgba(255, 255, 255, 0.93);
+    background: var(--color-toolbar-bg);
     backdrop-filter: blur(10px);
     -webkit-backdrop-filter: blur(10px);
     flex-direction: row;
@@ -754,8 +784,8 @@ a:focus-visible,
 
 .post-body pre {
   position: relative;
-  background: #f6f8fa;
-  color: #1f2328;
+  background: var(--color-pre-bg);
+  color: var(--color-pre-text);
   border: 1px solid var(--color-border);
   border-radius: 8px;
   padding: 32px 22px 20px;
@@ -783,7 +813,7 @@ a:focus-visible,
   font-size: 10.5px;
   font-weight: 500;
   letter-spacing: 0.08em;
-  color: rgba(31, 35, 40, 0.38);
+  color: var(--color-pre-lang);
   text-transform: uppercase;
   pointer-events: none;
 }

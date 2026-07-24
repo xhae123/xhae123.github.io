@@ -608,6 +608,7 @@ ${head({
   ogType: 'article',
   extraHead: `
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/github.min.css" />
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/github-dark.min.css" media="(prefers-color-scheme: dark)" />
   <meta property="article:published_time" content="${pubISO}" />
   <meta property="article:author" content="${esc(AUTHOR)}" />
   <script type="application/ld+json">${JSON.stringify(jsonLd)}</script>`,

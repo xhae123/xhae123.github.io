@@ -1,0 +1,86 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 675" width="1200" height="675">
+  <defs>
+    <marker id="ah" markerWidth="9" markerHeight="9" refX="6" refY="3" orient="auto" markerUnits="userSpaceOnUse">
+      <path d="M0.5,0.5 L6,3 L0.5,5.5" fill="none" stroke="#A3A3A3" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round"/>
+    </marker>
+  </defs>
+
+  <!-- background + border -->
+  <rect x="0.5" y="0.5" width="1199" height="674" rx="12" fill="#FFFFFF" stroke="#E5E5E5" stroke-width="1"/>
+
+  <!-- header -->
+  <text x="56" y="76" font-family="'JetBrains Mono', ui-monospace, 'SF Mono', Menlo, monospace" font-size="12" letter-spacing="3" fill="#A3A3A3">03 — TRIAGE</text>
+  <text x="56" y="120" font-family="Pretendard, 'Apple SD Gothic Neo', -apple-system, sans-serif" font-size="34" font-weight="700" fill="#0A0A0A">테스트가 실패하면, 실패는 넷 중 하나가 된다</text>
+
+  <!-- top flow -->
+  <rect x="56" y="199" width="70" height="32" rx="6" fill="#EEF2FF"/>
+  <text x="91" y="220" text-anchor="middle" font-family="'JetBrains Mono', ui-monospace, 'SF Mono', Menlo, monospace" font-size="12" letter-spacing="2" fill="#4F46E5">FAIL</text>
+
+  <line x1="134" y1="215" x2="180" y2="215" stroke="#A3A3A3" stroke-width="1.2" marker-end="url(#ah)"/>
+
+  <text x="192" y="211" font-family="Pretendard, 'Apple SD Gothic Neo', -apple-system, sans-serif" font-size="15" fill="#0A0A0A">한 번 재시도</text>
+  <text x="192" y="230" font-family="'JetBrains Mono', ui-monospace, 'SF Mono', Menlo, monospace" font-size="11" letter-spacing="1" fill="#A3A3A3">(flaky?)</text>
+
+  <line x1="290" y1="215" x2="336" y2="215" stroke="#A3A3A3" stroke-width="1.2" marker-end="url(#ah)"/>
+
+  <text x="348" y="220" font-family="Pretendard, 'Apple SD Gothic Neo', -apple-system, sans-serif" font-size="15" fill="#0A0A0A">지난 체크와 비교</text>
+
+  <line x1="486" y1="215" x2="532" y2="215" stroke="#A3A3A3" stroke-width="1.2" marker-end="url(#ah)"/>
+
+  <!-- branch node -->
+  <path d="M560,205 L575,220 L560,235 L545,220 Z" fill="#FFFFFF" stroke="#A3A3A3" stroke-width="1.2"/>
+
+  <!-- node down to distribution bus -->
+  <line x1="560" y1="235" x2="560" y2="280" stroke="#A3A3A3" stroke-width="1.2"/>
+  <line x1="183" y1="280" x2="1017" y2="280" stroke="#A3A3A3" stroke-width="1.2"/>
+
+  <!-- drop arrows into each card -->
+  <line x1="183" y1="280" x2="183" y2="303" stroke="#A3A3A3" stroke-width="1.2" marker-end="url(#ah)"/>
+  <line x1="461" y1="280" x2="461" y2="303" stroke="#A3A3A3" stroke-width="1.2" marker-end="url(#ah)"/>
+  <line x1="739" y1="280" x2="739" y2="303" stroke="#A3A3A3" stroke-width="1.2" marker-end="url(#ah)"/>
+  <line x1="1017" y1="280" x2="1017" y2="303" stroke="#A3A3A3" stroke-width="1.2" marker-end="url(#ah)"/>
+
+  <!-- card 1 : REAL BUG -->
+  <rect x="56" y="308" width="254" height="200" rx="10" fill="#FFFFFF" stroke="#E5E5E5" stroke-width="1"/>
+  <text x="78" y="344" font-family="'JetBrains Mono', ui-monospace, 'SF Mono', Menlo, monospace" font-size="12" letter-spacing="2" fill="#A3A3A3">REAL BUG</text>
+  <text x="78" y="380" font-family="Pretendard, 'Apple SD Gothic Neo', -apple-system, sans-serif" font-size="18" font-weight="700" fill="#0A0A0A">이슈 초안을 만든다</text>
+  <text x="78" y="416" font-family="Pretendard, 'Apple SD Gothic Neo', -apple-system, sans-serif" font-size="13" fill="#737373">
+    <tspan x="78" dy="0">제목, 재현 절차, 증거</tspan>
+    <tspan x="78" dy="23">화면. 사람이 승인하면</tspan>
+    <tspan x="78" dy="23">GitHub에 올린다.</tspan>
+  </text>
+
+  <!-- card 2 : INTENDED REDESIGN -->
+  <rect x="334" y="308" width="254" height="200" rx="10" fill="#FFFFFF" stroke="#E5E5E5" stroke-width="1"/>
+  <text x="356" y="344" font-family="'JetBrains Mono', ui-monospace, 'SF Mono', Menlo, monospace" font-size="12" letter-spacing="2" fill="#A3A3A3">INTENDED REDESIGN</text>
+  <text x="356" y="380" font-family="Pretendard, 'Apple SD Gothic Neo', -apple-system, sans-serif" font-size="18" font-weight="700" fill="#0A0A0A">테스트를 갱신한다</text>
+  <text x="356" y="416" font-family="Pretendard, 'Apple SD Gothic Neo', -apple-system, sans-serif" font-size="13" fill="#737373">
+    <tspan x="356" dy="0">화면이 의도적으로 바뀐</tspan>
+    <tspan x="356" dy="23">경우. 시나리오 수정을</tspan>
+    <tspan x="356" dy="23">제안한다.</tspan>
+  </text>
+
+  <!-- card 3 : TEST PROBLEM -->
+  <rect x="612" y="308" width="254" height="200" rx="10" fill="#FFFFFF" stroke="#E5E5E5" stroke-width="1"/>
+  <text x="634" y="344" font-family="'JetBrains Mono', ui-monospace, 'SF Mono', Menlo, monospace" font-size="12" letter-spacing="2" fill="#A3A3A3">TEST PROBLEM</text>
+  <text x="634" y="380" font-family="Pretendard, 'Apple SD Gothic Neo', -apple-system, sans-serif" font-size="18" font-weight="700" fill="#0A0A0A">스스로 고친다</text>
+  <text x="634" y="416" font-family="Pretendard, 'Apple SD Gothic Neo', -apple-system, sans-serif" font-size="13" fill="#737373">
+    <tspan x="634" dy="0">앱은 멀쩡한데 테스트가</tspan>
+    <tspan x="634" dy="23">낡았다. 자기 테스트의</tspan>
+    <tspan x="634" dy="23">수리를 제안한다.</tspan>
+  </text>
+
+  <!-- card 4 : NOT SURE (accent) -->
+  <rect x="890" y="308" width="254" height="200" rx="10" fill="#FFFFFF" stroke="#E5E5E5" stroke-width="1"/>
+  <text x="912" y="344" font-family="'JetBrains Mono', ui-monospace, 'SF Mono', Menlo, monospace" font-size="12" letter-spacing="2" fill="#4F46E5">NOT SURE</text>
+  <text x="912" y="380" font-family="Pretendard, 'Apple SD Gothic Neo', -apple-system, sans-serif" font-size="18" font-weight="700" fill="#0A0A0A">사람에게 묻는다</text>
+  <text x="912" y="416" font-family="Pretendard, 'Apple SD Gothic Neo', -apple-system, sans-serif" font-size="13" fill="#737373">
+    <tspan x="912" dy="0">추측하지 않는다. 불확실한</tspan>
+    <tspan x="912" dy="23">건 정직하게 사람에게</tspan>
+    <tspan x="912" dy="23">넘긴다.</tspan>
+  </text>
+
+  <!-- footnote -->
+  <line x1="56" y1="560" x2="1144" y2="560" stroke="#E5E5E5" stroke-width="1"/>
+  <text x="56" y="592" font-family="Pretendard, 'Apple SD Gothic Neo', -apple-system, sans-serif" font-size="15" fill="#737373">심각한 버그는 판정을 'Hold the release'로 뒤집는다 — 막는 이유와 함께</text>
+</svg>

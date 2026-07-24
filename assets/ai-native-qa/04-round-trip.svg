@@ -1,0 +1,67 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 675" width="1200" height="675" role="img" aria-label="왕복 검증: 화면의 주장, Jerry의 행동, 판정">
+  <defs>
+    <marker id="arrow" markerWidth="10" markerHeight="10" refX="7" refY="4" orient="auto" markerUnits="userSpaceOnUse">
+      <path d="M0,0 L8,4 L0,8" fill="none" stroke="#A3A3A3" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+    </marker>
+  </defs>
+
+  <!-- background -->
+  <rect x="0" y="0" width="1200" height="675" fill="#FFFFFF"/>
+  <rect x="0.5" y="0.5" width="1199" height="674" rx="12" fill="none" stroke="#E5E5E5" stroke-width="1"/>
+
+  <!-- header -->
+  <text x="64" y="80" font-family="'JetBrains Mono', ui-monospace, 'SF Mono', Menlo, monospace" font-size="12" letter-spacing="2.5" fill="#A3A3A3">04 — ORACLE PROBLEM</text>
+  <text x="64" y="124" font-family="Pretendard, 'Apple SD Gothic Neo', -apple-system, sans-serif" font-size="34" font-weight="700" fill="#0A0A0A">‘성공했다’는 말을 믿지 않는다 — 왕복 검증</text>
+
+  <!-- ============ CARD 1 : UI CLAIM ============ -->
+  <rect x="64" y="186" width="320" height="364" rx="12" fill="#FFFFFF" stroke="#E5E5E5" stroke-width="1"/>
+  <text x="88" y="224" font-family="'JetBrains Mono', ui-monospace, 'SF Mono', Menlo, monospace" font-size="11" letter-spacing="2.5" fill="#A3A3A3">UI CLAIM</text>
+  <text x="88" y="258" font-family="Pretendard, 'Apple SD Gothic Neo', -apple-system, sans-serif" font-size="20" font-weight="600" fill="#0A0A0A">화면의 주장</text>
+
+  <!-- mini browser mockup -->
+  <rect x="88" y="292" width="272" height="212" rx="8" fill="#FFFFFF" stroke="#E5E5E5" stroke-width="1"/>
+  <path d="M88,300 a8,8 0 0 1 8,-8 h256 a8,8 0 0 1 8,8 v24 h-272 z" fill="#F5F5F5"/>
+  <line x1="88" y1="324" x2="360" y2="324" stroke="#E5E5E5" stroke-width="1"/>
+  <circle cx="106" cy="312" r="4" fill="#E5E5E5"/>
+  <circle cx="122" cy="312" r="4" fill="#E5E5E5"/>
+  <circle cx="138" cy="312" r="4" fill="#E5E5E5"/>
+  <text x="224" y="405" text-anchor="middle" font-family="Pretendard, 'Apple SD Gothic Neo', -apple-system, sans-serif" font-size="24" font-weight="700" fill="#0A0A0A">저장 완료!</text>
+  <text x="224" y="438" text-anchor="middle" font-family="Pretendard, 'Apple SD Gothic Neo', -apple-system, sans-serif" font-size="13" fill="#737373">핀 1개가 저장되었습니다</text>
+
+  <!-- arrow 1 -->
+  <line x1="392" y1="368" x2="424" y2="368" stroke="#A3A3A3" stroke-width="1.5" marker-end="url(#arrow)"/>
+
+  <!-- ============ CARD 2 : READ BACK ============ -->
+  <rect x="432" y="186" width="320" height="364" rx="12" fill="#FFFFFF" stroke="#E5E5E5" stroke-width="1"/>
+  <text x="456" y="224" font-family="'JetBrains Mono', ui-monospace, 'SF Mono', Menlo, monospace" font-size="11" letter-spacing="2.5" fill="#4F46E5">READ BACK</text>
+  <text x="456" y="258" font-family="Pretendard, 'Apple SD Gothic Neo', -apple-system, sans-serif" font-size="20" font-weight="600" fill="#0A0A0A">Jerry의 행동</text>
+
+  <text x="456" y="296" font-family="Pretendard, 'Apple SD Gothic Neo', -apple-system, sans-serif" font-size="14" fill="#737373">축하 화면을 믿지 않고</text>
+  <text x="456" y="318" font-family="Pretendard, 'Apple SD Gothic Neo', -apple-system, sans-serif" font-size="14" fill="#737373">데이터를 다시 읽으러 간다</text>
+
+  <!-- empty map mockup -->
+  <rect x="456" y="342" width="272" height="132" rx="8" fill="#FFFFFF" stroke="#E5E5E5" stroke-width="1"/>
+  <line x1="524" y1="342" x2="524" y2="474" stroke="#E5E5E5" stroke-width="1"/>
+  <line x1="592" y1="342" x2="592" y2="474" stroke="#E5E5E5" stroke-width="1"/>
+  <line x1="660" y1="342" x2="660" y2="474" stroke="#E5E5E5" stroke-width="1"/>
+  <line x1="456" y1="386" x2="728" y2="386" stroke="#E5E5E5" stroke-width="1"/>
+  <line x1="456" y1="430" x2="728" y2="430" stroke="#E5E5E5" stroke-width="1"/>
+  <text x="456" y="500" font-family="'JetBrains Mono', ui-monospace, 'SF Mono', Menlo, monospace" font-size="11" letter-spacing="2" fill="#A3A3A3">PINS ON MAP: 0</text>
+
+  <!-- arrow 2 -->
+  <line x1="760" y1="368" x2="792" y2="368" stroke="#A3A3A3" stroke-width="1.5" marker-end="url(#arrow)"/>
+
+  <!-- ============ CARD 3 : VERDICT ============ -->
+  <rect x="800" y="186" width="320" height="364" rx="12" fill="#EEF2FF" stroke="#E5E5E5" stroke-width="1"/>
+  <text x="824" y="224" font-family="'JetBrains Mono', ui-monospace, 'SF Mono', Menlo, monospace" font-size="11" letter-spacing="2.5" fill="#A3A3A3">VERDICT</text>
+  <text x="824" y="258" font-family="Pretendard, 'Apple SD Gothic Neo', -apple-system, sans-serif" font-size="20" font-weight="600" fill="#0A0A0A">판정</text>
+
+  <text x="824" y="342" font-family="Pretendard, 'Apple SD Gothic Neo', -apple-system, sans-serif" font-size="19" font-weight="700" fill="#4F46E5">화면은 성공을 말했지만</text>
+  <text x="824" y="372" font-family="Pretendard, 'Apple SD Gothic Neo', -apple-system, sans-serif" font-size="19" font-weight="700" fill="#4F46E5">데이터는 아니었다</text>
+
+  <text x="824" y="430" font-family="'JetBrains Mono', ui-monospace, 'SF Mono', Menlo, monospace" font-size="13" letter-spacing="2" fill="#4F46E5">→ REAL BUG</text>
+
+  <!-- footnote -->
+  <line x1="64" y1="596" x2="1136" y2="596" stroke="#E5E5E5" stroke-width="1"/>
+  <text x="64" y="628" font-family="Pretendard, 'Apple SD Gothic Neo', -apple-system, sans-serif" font-size="15" fill="#737373">QA 이론이 오라클 문제라 부르는 것 — 이 왕복 검증이 실제 버그를 잡았다</text>
+</svg>

@@ -1,0 +1,35 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 675" width="1200" height="675">
+  <!-- background -->
+  <rect x="0.5" y="0.5" width="1199" height="674" rx="12" fill="#FFFFFF" stroke="#E5E5E5" stroke-width="1"/>
+
+  <!-- header -->
+  <text x="50" y="52" font-family="'JetBrains Mono', ui-monospace, 'SF Mono', Menlo, monospace" font-size="12" fill="#A3A3A3" letter-spacing="2" text-transform="uppercase">06 — NO SILVER BULLET · 1986</text>
+  <text x="50" y="98" font-family="Pretendard, 'Apple SD Gothic Neo', -apple-system, sans-serif" font-weight="700" font-size="34" fill="#0A0A0A">은탄환은 이번에도 없었다</text>
+
+  <!-- baseline -->
+  <line x1="180" y1="500" x2="1020" y2="500" stroke="#E5E5E5" stroke-width="1"/>
+
+  <!-- ================= LEFT: 우연적 복잡성 ================= -->
+  <!-- dashed empty bar -->
+  <rect x="240" y="220" width="200" height="280" rx="4" fill="none" stroke="#A3A3A3" stroke-width="1.5" stroke-dasharray="6 5"/>
+  <!-- low actual remainder fill at bottom -->
+  <rect x="240" y="476" width="200" height="24" rx="0" fill="#E5E5E5"/>
+  <!-- downward arrow -->
+  <text x="340" y="262" text-anchor="middle" font-family="Pretendard, 'Apple SD Gothic Neo', -apple-system, sans-serif" font-size="14" fill="#4F46E5">AI가 0 근처로</text>
+  <line x1="340" y1="278" x2="340" y2="424" stroke="#4F46E5" stroke-width="2"/>
+  <polygon points="340,436 332,420 348,420" fill="#4F46E5"/>
+  <!-- caption -->
+  <text x="340" y="540" text-anchor="middle" font-family="Pretendard, 'Apple SD Gothic Neo', -apple-system, sans-serif" font-weight="700" font-size="20" fill="#0A0A0A">우연적 복잡성</text>
+  <text x="340" y="566" text-anchor="middle" font-family="Pretendard, 'Apple SD Gothic Neo', -apple-system, sans-serif" font-size="13" fill="#737373">타이핑 · 보일러플레이트 · 구현</text>
+
+  <!-- ================= RIGHT: 본질적 복잡성 ================= -->
+  <!-- full bar -->
+  <rect x="760" y="220" width="200" height="280" rx="4" fill="#EEF2FF" stroke="#4F46E5" stroke-width="1.5"/>
+  <text x="860" y="367" text-anchor="middle" font-family="Pretendard, 'Apple SD Gothic Neo', -apple-system, sans-serif" font-weight="700" font-size="18" fill="#4F46E5">그대로</text>
+  <!-- caption -->
+  <text x="860" y="540" text-anchor="middle" font-family="Pretendard, 'Apple SD Gothic Neo', -apple-system, sans-serif" font-weight="700" font-size="20" fill="#0A0A0A">본질적 복잡성</text>
+  <text x="860" y="566" text-anchor="middle" font-family="Pretendard, 'Apple SD Gothic Neo', -apple-system, sans-serif" font-size="13" fill="#737373">무엇을 · 어디까지 · 왜 · 제대로인가</text>
+
+  <!-- footnote -->
+  <text x="600" y="632" text-anchor="middle" font-family="Pretendard, 'Apple SD Gothic Neo', -apple-system, sans-serif" font-size="15" fill="#737373">타이핑은 공짜가 되었지만, 무엇을·어디까지·왜의 값은 한 푼도 내려가지 않았습니다</text>
+</svg>

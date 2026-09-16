@@ -103,9 +103,9 @@
 </tbody></table>
 <h3 id="핵심-설계--파일-존재가-곧-상태다">핵심 설계 — 파일 존재가 곧 상태다</h3>
 <p>상태를 따로 기록하지 않습니다. 글 하나가 디렉토리 하나이고, 그 안에 어떤 파일이 있는지가 곧 상태입니다.</p>
-<pre data-lang="stylus"><code class="hljs"><span class="hljs-attribute">content</span>/&lt;id&gt;/
-  meta<span class="hljs-selector-class">.json</span>   →  original<span class="hljs-selector-class">.md</span>  →  triage<span class="hljs-selector-class">.json</span>  →  card<span class="hljs-selector-class">.md</span>  →  cards<span class="hljs-selector-class">.json</span> 포함 = 서빙
-   (수급)          (원문)          (선별)         (집필)         (서빙)
+<pre data-lang="dns"><code class="hljs">content/&lt;id&gt;/
+  meta.json   →  original.md  →  triage.json  →  card.md  →  cards.json 포함 = 서빙
+   <span class="hljs-punctuation">(</span>수급<span class="hljs-punctuation">)</span>          <span class="hljs-punctuation">(</span>원문<span class="hljs-punctuation">)</span>          <span class="hljs-punctuation">(</span>선별<span class="hljs-punctuation">)</span>         <span class="hljs-punctuation">(</span>집필<span class="hljs-punctuation">)</span>         <span class="hljs-punctuation">(</span>서빙<span class="hljs-punctuation">)</span>
 </code></pre>
 <p>원장 파일이 없습니다. "어디까지 했나"를 기록하지 않으니 기록과 실제가 어긋날 일도 없고, 중간에 끊겨도 다음 파일이 없는 것만 처리하면 재개됩니다.</p>
 <p>이 원칙이 이번에 두 번 깨졌습니다. 뒤에서 나옵니다.</p>
@@ -350,7 +350,7 @@
 <p>토큰이 여기서 제일 많이 나갑니다. 그래서 여기를 제일 오래 붙잡고 있었습니다.</p>
 <h3 id="모델을-내려도-입력은-그대로다">모델을 내려도 입력은 그대로다</h3>
 <p>집필은 Sonnet이 맡습니다. 토큰이 제일 많이 나가는 곳이니, 더 싼 Haiku로 내려도 되는지부터 봤습니다. 내리기 전에 현황부터 쟀습니다.</p>
-<pre data-lang="dns"><code class="hljs">원문 평균 <span class="hljs-number">13</span>,<span class="hljs-number">331</span> bytes (중앙값 <span class="hljs-number">10</span>,<span class="hljs-number">440</span>, p<span class="hljs-number">90 25,422</span>)
+<pre data-lang="dns"><code class="hljs">원문 평균 <span class="hljs-number">13</span>,<span class="hljs-number">331</span> bytes <span class="hljs-punctuation">(</span>중앙값 <span class="hljs-number">10</span>,<span class="hljs-number">440</span>, p90 <span class="hljs-number">25</span>,<span class="hljs-number">422</span><span class="hljs-punctuation">)</span>
    ↓
 산출 본문 <span class="hljs-number">2</span>,<span class="hljs-number">000</span>자
 </code></pre>

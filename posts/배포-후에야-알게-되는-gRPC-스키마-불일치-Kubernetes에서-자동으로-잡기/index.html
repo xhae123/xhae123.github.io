@@ -76,13 +76,13 @@
 <li>웹 대시보드로 시각화</li>
 </ol>
 <p>클러스터 안에서 도는 단일 Pod입니다. 30분마다 스캔합니다.</p>
-<pre data-lang="nestedtext"><code class="hljs"><span class="hljs-attribute">언어</span><span class="hljs-punctuation">:</span> <span class="hljs-string">Go 1.21</span>
-<span class="hljs-attribute">핵심 라이브러리</span><span class="hljs-punctuation">:</span> <span class="hljs-string">client-go, grpcreflect, protoreflect</span>
-<span class="hljs-attribute">아키텍처</span><span class="hljs-punctuation">:</span> <span class="hljs-string">Hexagonal Architecture</span>
-<span class="hljs-attribute">배포</span><span class="hljs-punctuation">:</span> <span class="hljs-string">Kubernetes In-cluster Pod</span>
-<span class="hljs-attribute">저장소</span><span class="hljs-punctuation">:</span> <span class="hljs-string">In-memory (sync.RWMutex)</span>
-<span class="hljs-attribute">설정</span><span class="hljs-punctuation">:</span> <span class="hljs-string">ConfigMap + Secret</span>
-<span class="hljs-attribute">보안</span><span class="hljs-punctuation">:</span> <span class="hljs-string">RBAC, Non-root, Read-only FS</span>
+<pre data-lang="dart"><code class="hljs">언어: <span class="hljs-title class_">Go</span> <span class="hljs-number">1.21</span>
+핵심 라이브러리: client-go, grpcreflect, protoreflect
+아키텍처: <span class="hljs-title class_">Hexagonal</span> <span class="hljs-title class_">Architecture</span>
+배포: <span class="hljs-title class_">Kubernetes</span> <span class="hljs-title class_">In</span>-cluster <span class="hljs-title class_">Pod</span>
+저장소: <span class="hljs-title class_">In</span>-memory (<span class="hljs-keyword">sync</span>.<span class="hljs-title class_">RWMutex</span>)
+설정: <span class="hljs-title class_">ConfigMap</span> + <span class="hljs-title class_">Secret</span>
+보안: RBAC, <span class="hljs-title class_">Non</span>-root, <span class="hljs-title class_">Read</span>-only FS
 </code></pre>
 <h2 id="현실-쪽-진실은-pod-안에-있습니다">현실 쪽 진실은 Pod 안에 있습니다</h2>
 <p>배포된 서비스의 진짜 스키마는 소스 리포지토리가 아니라 실행 중인 바이너리 안에 있습니다. 그래서 proto 파일을 찾아다니지 않고, 떠 있는 프로세스한테 직접 물어봅니다.</p>

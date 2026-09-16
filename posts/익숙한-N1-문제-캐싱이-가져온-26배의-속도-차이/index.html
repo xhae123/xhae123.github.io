@@ -120,10 +120,10 @@
 <span class="hljs-section">P99: 1800ms</span>
 </code></pre>
 <p><strong>병목 지점</strong></p>
-<pre data-lang="erlang-repl"><code class="hljs">쿼리 실행: <span class="hljs-number">650</span>ms (<span class="hljs-number">79</span><span class="hljs-comment">%)</span>
-N+<span class="hljs-number">1</span> 쿼리: <span class="hljs-number">120</span>ms (<span class="hljs-number">15</span><span class="hljs-comment">%)</span>
-객체 매핑: <span class="hljs-number">30</span>ms (<span class="hljs-number">4</span><span class="hljs-comment">%)</span>
-기타: <span class="hljs-number">20</span>ms (<span class="hljs-number">2</span><span class="hljs-comment">%)</span>
+<pre data-lang="dns"><code class="hljs">쿼리 실행: <span class="hljs-number">650m</span>s <span class="hljs-punctuation">(</span><span class="hljs-number">79</span>%<span class="hljs-punctuation">)</span>
+N+<span class="hljs-number">1</span> 쿼리: <span class="hljs-number">120m</span>s <span class="hljs-punctuation">(</span><span class="hljs-number">15</span>%<span class="hljs-punctuation">)</span>
+객체 매핑: <span class="hljs-number">30m</span>s <span class="hljs-punctuation">(</span><span class="hljs-number">4</span>%<span class="hljs-punctuation">)</span>
+기타: <span class="hljs-number">20m</span>s <span class="hljs-punctuation">(</span><span class="hljs-number">2</span>%<span class="hljs-punctuation">)</span>
 </code></pre>
 <h4>문제 1: UNION ALL 다중 실행</h4>
 <p>UNION ALL은 4개의 독립적인 쿼리를 실행한 뒤 병합합니다. MySQL이 이를 최적화하지 못해 Full Table Scan이 중복으로 일어납니다.</p>
@@ -204,20 +204,20 @@ N+<span class="hljs-number">1</span> 쿼리: <span class="hljs-number">120</span
 </tbody></table>
 <p>단일 인스턴스라 네트워크 I/O가 필요 없었습니다. Caffeine을 선택했습니다.</p>
 <h3 id="24-아키텍처">2.4 아키텍처</h3>
-<pre data-lang="stylus"><code class="hljs"><span class="hljs-selector-attr">[서버 시작]</span>
+<pre data-lang="dns"><code class="hljs">[서버 시작]
     ↓
-<span class="hljs-function"><span class="hljs-title">warmupCache</span><span class="hljs-params">()</span></span>
-    ├─ 최근 <span class="hljs-number">6</span>주 완료 경기 → Completed Cache (최대 <span class="hljs-number">5000</span>개)
-    └─ 예정/진행 중 경기 → Upcoming Cache (최대 <span class="hljs-number">2000</span>개)
+warmupCache<span class="hljs-punctuation">(</span><span class="hljs-punctuation">)</span>
+    ├─ 최근 <span class="hljs-number">6</span>주 완료 경기 → Completed Cache <span class="hljs-punctuation">(</span>최대 <span class="hljs-number">5000</span>개<span class="hljs-punctuation">)</span>
+    └─ 예정/진행 중 경기 → Upcoming Cache <span class="hljs-punctuation">(</span>최대 <span class="hljs-number">2000</span>개<span class="hljs-punctuation">)</span>
 
-<span class="hljs-selector-attr">[조회 요청]</span>
+[조회 요청]
     ↓
-<span class="hljs-number">1</span>. 친구 목록 조회 (<span class="hljs-number">1</span> query)
-<span class="hljs-number">2</span>. 캐시에서 피드 조회 (<span class="hljs-number">0</span> query)
+<span class="hljs-number">1</span>. 친구 목록 조회 <span class="hljs-punctuation">(</span><span class="hljs-number">1</span> query<span class="hljs-punctuation">)</span>
+<span class="hljs-number">2</span>. 캐시에서 피드 조회 <span class="hljs-punctuation">(</span><span class="hljs-number">0</span> query<span class="hljs-punctuation">)</span>
 <span class="hljs-number">3</span>. 메모리에서 정렬/필터링
 <span class="hljs-number">4</span>. 페이지네이션
     ↓
-<span class="hljs-selector-attr">[응답]</span>
+[응답]
 </code></pre>
 <p>서버 시작 시 DB에서 데이터를 로딩하고, 이후 조회는 메모리에서만 처리합니다.</p>
 <h3 id="25-설계-결정">2.5 설계 결정</h3>
@@ -427,11 +427,11 @@ cache.put(gameRecordId, feedItem)
 </ul>
 <p>DB 부하가 98% 감소했습니다.</p>
 <h3 id="43-처리-시간-분해-after">4.3 처리 시간 분해 (After)</h3>
-<pre data-lang="erlang-repl"><code class="hljs">친구 조회: <span class="hljs-number">5</span>ms (<span class="hljs-number">13</span><span class="hljs-comment">%)</span>
-캐시 읽기: <span class="hljs-number">1</span>ms (<span class="hljs-number">3</span><span class="hljs-comment">%)</span>
-정렬/필터링: <span class="hljs-number">15</span>ms (<span class="hljs-number">39</span><span class="hljs-comment">%)</span>
-페이지네이션: <span class="hljs-number">2</span>ms (<span class="hljs-number">5</span><span class="hljs-comment">%)</span>
-기타: <span class="hljs-number">15</span>ms (<span class="hljs-number">40</span><span class="hljs-comment">%)</span>
+<pre data-lang="dns"><code class="hljs">친구 조회: <span class="hljs-number">5m</span>s <span class="hljs-punctuation">(</span><span class="hljs-number">13</span>%<span class="hljs-punctuation">)</span>
+캐시 읽기: <span class="hljs-number">1m</span>s <span class="hljs-punctuation">(</span><span class="hljs-number">3</span>%<span class="hljs-punctuation">)</span>
+정렬/필터링: <span class="hljs-number">15m</span>s <span class="hljs-punctuation">(</span><span class="hljs-number">39</span>%<span class="hljs-punctuation">)</span>
+페이지네이션: <span class="hljs-number">2m</span>s <span class="hljs-punctuation">(</span><span class="hljs-number">5</span>%<span class="hljs-punctuation">)</span>
+기타: <span class="hljs-number">15m</span>s <span class="hljs-punctuation">(</span><span class="hljs-number">40</span>%<span class="hljs-punctuation">)</span>
 </code></pre>
 <p>대부분 메모리 연산입니다.</p>
 <h3 id="44-메모리-사용량">4.4 메모리 사용량</h3>

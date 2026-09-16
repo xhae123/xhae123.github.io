@@ -87,15 +87,15 @@
 <p>대화 맥락에 오염되는 문제도 있었습니다(Context Contamination). 직전에 "공격적으로 리팩토링해"라는 대화가 있었으면, 바로 다음에 호출한 SKILL도 공격적으로 동작했습니다. 함수로 치면 말이 안 되는 일입니다. <code>calculateDiscount(price, rate)</code>를 호출하는데 직전에 호출한 함수가 뭐였는지에 따라 결과가 달라진다면, 전역 변수를 쓴 적도 없는데 이상한 일입니다. 그런데 LLM에서는 이게 일상적으로 벌어집니다. 전체 대화가 하나의 거대한 전역 상태인 셈입니다.</p>
 <p>이 문제는 격리 선언("이전 맥락을 무시하라")으로는 못 막는다는 걸 금방 알게 됐습니다. 그래서 방향을 바꿨습니다. 오염 자체를 막는 대신, 오염됐을 때 피해 범위를 측정하는 쪽으로 옮겼습니다. 읽기 전용 SKILL이면 오염돼도 큰 문제가 아닙니다. 하지만 DB를 바꾸거나 Jira를 승인하는 SKILL이 오염되면 프로덕션에 영향이 갑니다. 그래서 blast radius를 Local/Team/Production 3단계로 나누고, Production 단계에서 사전 확인 게이트가 없으면 FAIL 판정을 내리도록 했습니다.</p>
 <p>이런 식으로 총 7개 차원이 만들어졌습니다. SKILL 하나를 검증하면 이런 결과가 나옵니다.</p>
-<pre data-lang="stylus"><code class="hljs">/validate-skill approve-db-changes
+<pre data-lang="dart"><code class="hljs">/validate-skill approve-db-changes
 
-<span class="hljs-selector-attr">[1]</span> Intent Drift Prevention       WARN — 금지 섹션 없음. 금지 항목 <span class="hljs-number">0</span>개
-<span class="hljs-selector-attr">[2]</span> Intent Corruption Prevention  FAIL — 불변 조건 섹션 없음. 입출력 예시 없음
-<span class="hljs-selector-attr">[3]</span> Intent Completeness           FAIL — 미정의: 비정상 입력, 누락된 티켓, API 실패
-<span class="hljs-selector-attr">[4]</span> Trigger Clarity               PASS — 트리거 <span class="hljs-number">3</span>개 명확. 충돌 없음
-<span class="hljs-selector-attr">[5]</span> Environment Dependencies      WARN — 토큰 명시됐으나 획득 경로 미기술
-<span class="hljs-selector-attr">[6]</span> Context Contamination Risk    WARN — Jira 승인(Production) + <span class="hljs-built_in">Slack</span>(Team). 확인 게이트 모호
-<span class="hljs-selector-attr">[7]</span> Testability                   FAIL — 책임 분리 없음. 실패 원인 구분 불가
+[<span class="hljs-number">1</span>] <span class="hljs-title class_">Intent</span> <span class="hljs-title class_">Drift</span> <span class="hljs-title class_">Prevention</span>       WARN — 금지 섹션 없음. 금지 항목 <span class="hljs-number">0</span>개
+[<span class="hljs-number">2</span>] <span class="hljs-title class_">Intent</span> <span class="hljs-title class_">Corruption</span> <span class="hljs-title class_">Prevention</span>  FAIL — 불변 조건 섹션 없음. 입출력 예시 없음
+[<span class="hljs-number">3</span>] <span class="hljs-title class_">Intent</span> <span class="hljs-title class_">Completeness</span>           FAIL — 미정의: 비정상 입력, 누락된 티켓, API 실패
+[<span class="hljs-number">4</span>] <span class="hljs-title class_">Trigger</span> <span class="hljs-title class_">Clarity</span>               PASS — 트리거 <span class="hljs-number">3</span>개 명확. 충돌 없음
+[<span class="hljs-number">5</span>] <span class="hljs-title class_">Environment</span> <span class="hljs-title class_">Dependencies</span>      WARN — 토큰 명시됐으나 획득 경로 미기술
+[<span class="hljs-number">6</span>] <span class="hljs-title class_">Context</span> <span class="hljs-title class_">Contamination</span> <span class="hljs-title class_">Risk</span>    WARN — <span class="hljs-title class_">Jira</span> 승인(<span class="hljs-title class_">Production</span>) + <span class="hljs-title class_">Slack</span>(<span class="hljs-title class_">Team</span>). 확인 게이트 모호
+[<span class="hljs-number">7</span>] <span class="hljs-title class_">Testability</span>                   FAIL — 책임 분리 없음. 실패 원인 구분 불가
 </code></pre>
 <p>FAIL이 나오면 고치고 다시 돌립니다. 이 루프를 통과한 최종 문서는 이렇게 생겼습니다.</p>
 <pre data-lang="markdown"><code class="language-markdown hljs"><span class="hljs-section">## execute@approve-db-changes</span>

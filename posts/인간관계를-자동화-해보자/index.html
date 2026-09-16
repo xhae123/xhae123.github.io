@@ -110,23 +110,23 @@
 <p>안전해 보였습니다. 하루 써보니 문제가 뚜렷했습니다. 매번 "ㅇㅇ"을 치는 것 자체가 카톡 답장의 귀찮음과 다르지 않았습니다. 카톡을 피하던 이유가 원래 그 한 줄 쓰는 부담이었는데, 그걸 "ㅇㅇ" 치는 부담으로 바꿔놓은 꼴이었습니다. 원점이었습니다. 사람은 승인 루프가 있으면 그 루프 자체를 피하게 됩니다.</p>
 <p>그래서 승인을 빼고 자동 전송으로 갔습니다. 대신 승인을 <strong>등록 시점 한 번</strong>으로 모았습니다.</p>
 <p>등록할 때 에이전트가 과거 카톡 500개를 읽고 사회과학적 리포트를 씁니다. 관계의 성격과 말투, 답장하지 말아야 할 주제 같은 것들입니다. 대충 이런 식입니다.</p>
-<pre data-lang="markdown"><code class="hljs">[맹구 분석 리포트]
+<pre data-lang="dns"><code class="hljs">[맹구 분석 리포트]
 
 ▸ 관계의 성격
-<span class="hljs-bullet">  -</span> 친밀도: 반말, 농담 섞음, 자조 공유 → 10년 이상 친구로 추정
-<span class="hljs-bullet">  -</span> 주도권: 메시지 시작 비율 58:42 (맹구:나). 맹구가 살짝 더 자주 건다
-<span class="hljs-bullet">  -</span> 응답 리듬: 평균 응답 간격 나 12분 / 맹구 4분. 내가 늦는 편
+  - 친밀도: 반말, 농담 섞음, 자조 공유 → <span class="hljs-number">10</span>년 이상 친구로 추정
+  - 주도권: 메시지 시작 비율 <span class="hljs-number">58</span>:<span class="hljs-number">42</span> <span class="hljs-punctuation">(</span>맹구:나<span class="hljs-punctuation">)</span>. 맹구가 살짝 더 자주 건다
+  - 응답 리듬: 평균 응답 간격 나 <span class="hljs-number">12</span>분 / 맹구 <span class="hljs-number">4</span>분. 내가 늦는 편
 
-▸ 말투 패턴 (나의)
-<span class="hljs-bullet">  -</span> 평균 길이 1.4문장. 짧음
-<span class="hljs-bullet">  -</span> 말끝: ~임/~ㅇㅇ/~ㄱㄱ 축약형 우세
+▸ 말투 패턴 <span class="hljs-punctuation">(</span>나의<span class="hljs-punctuation">)</span>
+  - 평균 길이 <span class="hljs-number">1</span>.<span class="hljs-number">4</span>문장. 짧음
+  - 말끝: ~임/~ㅇㅇ/~ㄱㄱ 축약형 우세
 
 ▸ 최근 변화
-<span class="hljs-bullet">  -</span> 최근 2주 응답 지연 평균 38분으로 증가. 뭐 있었나?
+  - 최근 <span class="hljs-number">2</span>주 응답 지연 평균 <span class="hljs-number">38</span>분으로 증가. 뭐 있었나?
 
-▸ 답장하지 말아야 할 패턴 (추정)
-<span class="hljs-bullet">  -</span> 계좌/송금 관련
-<span class="hljs-bullet">  -</span> "꿈" 에 대한 긴 서사 (과거 사용자가 안 반응한 이력)
+▸ 답장하지 말아야 할 패턴 <span class="hljs-punctuation">(</span>추정<span class="hljs-punctuation">)</span>
+  - 계좌/송금 관련
+  - <span class="hljs-string">"꿈"</span> 에 대한 긴 서사 <span class="hljs-punctuation">(</span>과거 사용자가 안 반응한 이력<span class="hljs-punctuation">)</span>
 
 이 분석 맞아? 내가 대신 답할 때 어떤 뉘앙스로 가면 좋을까?
 </code></pre>
@@ -138,10 +138,10 @@
 <p>그리고 이게 제가 본 2026년 에이전트 UX의 공통 패턴입니다. 권한을 잘게 쪼개 매번 묻는 에이전트는 결국 안 쓰이고, 권한을 몇 개의 <strong>굵은 합의</strong>로 모아두고 그 안에서 자율성을 주는 에이전트가 실제로 살아남습니다. 굵은 합의는 사용자가 한 번만 버티면 이후 긴 자율이 따라오는 구조인 반면, 잔 합의는 사용자가 매번 버티다 결국 포기하게 되는 구조입니다. 총 자율성이 같아도 UX는 완전히 다릅니다.</p>
 <h2 id="계층은-만들지-않았다">계층은 만들지 않았다</h2>
 <p>이 프로젝트 설계에서 가장 오래 붙들고 있었던 건 4계층 Reflection Stack이었습니다. Reflexion, Voyager, Generative Agents, MemGPT를 인용했고, drift 방어를 세 층으로 짰습니다.</p>
-<pre data-lang="nginx"><code class="hljs"><span class="hljs-attribute">L1</span> Episode     raw 대화 로그
-L2 Reflection  일일 요약
-L3 Lesson      재사용 가능한 규칙
-L4 Persona     실제 스타일 가이드 문서
+<pre data-lang="dart"><code class="hljs"><span class="hljs-title class_">L1</span> <span class="hljs-title class_">Episode</span>     raw 대화 로그
+<span class="hljs-title class_">L2</span> <span class="hljs-title class_">Reflection</span>  일일 요약
+<span class="hljs-title class_">L3</span> <span class="hljs-title class_">Lesson</span>      재사용 가능한 규칙
+<span class="hljs-title class_">L4</span> <span class="hljs-title class_">Persona</span>     실제 스타일 가이드 문서
 </code></pre>
 <p>설계 문서 자체는 근사하게 나왔습니다. 논문 네 개 인용, 4계층 표, drift 방어 세 층까지 갖췄습니다. 그런데 막상 구현에 들어가니 L1 외에는 전부 쓸 일이 생긴 적이 없는 레이어였습니다. L2의 "세션 종료 시 요약"은 뭘 요약해서 뭐에 쓸 건지 답이 안 나왔고, L3의 "여러 reflection 공통 패턴"은 reflection 자체가 없으니 입력 데이터가 존재하지 않았습니다. L4의 "persona 머지 승인"도 머지할 lesson이 없으면 의미가 없었습니다.</p>
 <p>전부 미래에만 존재하는 기능이었습니다. 엄밀히 말하면 기능이 아니라 계획에 가까웠습니다. 계획을 기능으로 착각하는 건 에이전트 시스템 설계에서 흔히 벌어지는 오류이고, 논문 인용은 그 착각을 그럴듯하게 구조화해주는 도구이기도 합니다.</p>
@@ -173,11 +173,11 @@ kakao.<span class="hljs-keyword">sh</span> send <span class="hljs-symbol">&lt;di
 <h2 id="전송은-한쪽으로-몰았다">전송은 한쪽으로 몰았다</h2>
 <p>UI 자동화 전송의 본질적 문제는 되돌릴 수 없다는 것입니다. <code>cliclick</code>으로 글자를 찍고 Enter를 누르면 끝입니다. 한 번 Enter를 누르면 복구가 불가능하고, 최악의 시나리오는 중복 전송입니다.</p>
 <p>"못 보냈다"와 "두 번 보냈다"는 가치가 완전히 다릅니다. 사과 메시지가 두 번 나가면 관계가 더 이상해지지만, 놓친 메시지는 사람이 재전송하면 그만입니다.</p>
-<pre data-lang="scss"><code class="hljs">drafted  <span class="hljs-built_in">--</span>(phase <span class="hljs-number">1</span>: DB commit)--&gt;  sending
-sending  <span class="hljs-built_in">--</span>(phase <span class="hljs-number">2</span>: adapter)----&gt;  sent    (정상)
-sending  <span class="hljs-built_in">--</span>(phase <span class="hljs-number">2</span> fail)---------&gt;  failed
-sending  <span class="hljs-built_in">--</span>(process crash)--------&gt;  (stuck)
-(stuck)  <span class="hljs-built_in">--</span>(next session recover)-&gt;  failed
+<pre data-lang="dns"><code class="hljs">drafted  --<span class="hljs-punctuation">(</span>phase <span class="hljs-number">1</span>: DB commit<span class="hljs-punctuation">)</span>--&gt;  sending
+sending  --<span class="hljs-punctuation">(</span>phase <span class="hljs-number">2</span>: adapter<span class="hljs-punctuation">)</span>----&gt;  sent    <span class="hljs-punctuation">(</span>정상<span class="hljs-punctuation">)</span>
+sending  --<span class="hljs-punctuation">(</span>phase <span class="hljs-number">2</span> fail<span class="hljs-punctuation">)</span>---------&gt;  failed
+sending  --<span class="hljs-punctuation">(</span>process crash<span class="hljs-punctuation">)</span>--------&gt;  <span class="hljs-punctuation">(</span>stuck<span class="hljs-punctuation">)</span>
+<span class="hljs-punctuation">(</span>stuck<span class="hljs-punctuation">)</span>  --<span class="hljs-punctuation">(</span>next session recover<span class="hljs-punctuation">)</span>-&gt;  failed
 </code></pre>
 <p>프로세스가 phase 1과 phase 2 사이에서 죽으면 행이 <code>sending</code>으로 남습니다. 다음 세션이 시작할 때 <code>cycle.sh check</code>가 무조건 <code>failed</code>로 마킹합니다. AppleScript가 Enter까지 성공했는지 알 길이 없으니, 진짜로 보냈다면 다음 poll에서 outbound로 되돌아오고, 안 보냈다면 그대로 실패로 남습니다.</p>
 <p>굳이 이름을 붙이자면 <strong>safety-biased reconciliation</strong>입니다. 어느 실패가 덜 나쁜지를 명시적으로 정하고, 그 방향으로 편향되게 짜는 것입니다. 에이전트가 사람 대신 메시지를 보내는 시스템에서는 이 비대칭을 설계에 박아두는 게 꼭 필요하다고 생각했습니다.</p>

@@ -4,11 +4,20 @@
   "private": true,
   "type": "module",
   "scripts": {
-    "build": "node scripts/build.js"
+    "build": "node scripts/build.js",
+    "build:portfolio": "node scripts/build-portfolio.js",
+    "translate:local": "node scripts/migrate-local-routes.js && node scripts/translate-local.js && node scripts/build-portfolio.js",
+    "test:portfolio": "node scripts/test-portfolio.js",
+    "test:translations": "node scripts/test-translations.js",
+    "dev": "python3 -m http.server 4173 --bind 127.0.0.1"
   },
   "dependencies": {
     "cheerio": "^1.0.0",
     "highlight.js": "^11.9.0",
     "marked": "^18.0.5"
+  },
+  "devDependencies": {
+    "turndown": "^7.2.4",
+    "turndown-plugin-gfm": "^1.0.2"
   }
 }

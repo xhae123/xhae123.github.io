@@ -1,0 +1,201 @@
+<!DOCTYPE html><html lang="en"><head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="google-site-verification" content="sNrpo16A0vUj7vHmVNEmAGZj85cGykaOeHO44krbqDU">
+  <title>woojin kim · 2.7× Request Throughput: Introducing Java Virtual Threads · xhae123's notes</title>
+  <meta name="description" content="A read API hit a p95 latency of seven seconds in a load test. Requests weren't failing.They were just slow. Throughput wouldn't climb past 16.6 requests per sec">
+  <link rel="canonical" href="https://xhae123.github.io/posts/java-virtual-threads/">
+  <meta property="og:type" content="article">
+  <meta property="og:site_name" content="xhae123's notes">
+  <meta property="og:title" content="2.7× Request Throughput: Introducing Java Virtual Threads · xhae123's notes">
+  <meta property="og:description" content="A read API hit a p95 latency of seven seconds in a load test. Requests weren't failing.They were just slow. Throughput wouldn't climb past 16.6 requests per sec">
+  <meta property="og:url" content="https://xhae123.github.io/posts/java-virtual-threads/">
+  <meta property="og:locale" content="en_US">
+  <meta property="og:image" content="https://xhae123.github.io/assets/en/vt-execution.png">
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:title" content="2.7× Request Throughput: Introducing Java Virtual Threads · xhae123's notes">
+  <meta name="twitter:description" content="A read API hit a p95 latency of seven seconds in a load test. Requests weren't failing.They were just slow. Throughput wouldn't climb past 16.6 requests per sec">
+  <meta name="twitter:image" content="https://xhae123.github.io/assets/en/vt-execution.png">
+  <link rel="preconnect" href="https://cdn.jsdelivr.net">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin="">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable.css">
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500&amp;display=swap">
+  <link rel="stylesheet" href="/styles.css?v=lowercase-2">
+  <link rel="stylesheet" href="/navigation.css?v=rose-1">
+  <link rel="icon" type="image/svg+xml" href="/favicon.svg?v=woojin-w-2">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/github.min.css">
+  <link rel="stylesheet" href="/blog.css?v=lowercase-2">
+  <meta property="article:published_time" content="2026-09-16T16:02:59.000Z">
+  <meta property="article:section" content="Backend">
+  <meta property="article:author" content="Woojin Kim">
+  <script type="application/ld+json">{"@context":"https://schema.org","@type":"BlogPosting","headline":"2.7× Request Throughput: Introducing Java Virtual Threads","description":"A read API hit a p95 latency of seven seconds in a load test. Requests weren't failing.They were just slow. Throughput wouldn't climb past 16.6 requests per sec","datePublished":"2026-09-16T16:02:59.000Z","dateModified":"2026-09-16T16:02:59.000Z","author":{"@type":"Person","name":"Woojin Kim"},"url":"https://xhae123.github.io/posts/java-virtual-threads/","mainEntityOfPage":"https://xhae123.github.io/posts/java-virtual-threads/","image":"https://xhae123.github.io/assets/en/vt-execution.png"}</script>
+</head>
+<body>
+  <main class="post-layout">
+    <div class="post-main">
+      <article class="post" id="post">
+        <header class="post-header">
+          <a class="post-top-back" href="/writing/">← all posts</a>
+          <p class="post-meta"><time datetime="2026-09-16">2026.09.16</time><span aria-hidden="true"> · </span><span class="post-category">backend</span></p>
+          <h1 class="post-title">2.7× Request Throughput: Introducing Java Virtual Threads</h1>
+        </header>
+        <div class="post-body" id="post-body">
+<p>A read API hit a p95 latency of seven seconds in a load test. Requests weren't failing.<br>They were just slow. Throughput wouldn't climb past 16.6 requests per second either. Seven seconds wasn't something I could leave alone.</p>
+<p>Since the API queried a database, I suspected the DB first. But its CPU was mostly idle. The congestion was on the application side: up to 36 requests were waiting to borrow connections from a HikariCP pool of four. Thirty-six requests queued for four connections.</p>
+<p>At that point, the diagnosis looked obvious. Too few connections: the database was idle, but the narrow channel was holding requests up. Increasing the pool seemed like the answer.</p>
+<p>Before acting on that diagnosis, something bothered me. If connections were the bottleneck, more connections should let the DB finish more work. But the DB was already idle. There was no guarantee that lending more connections and finishing requests faster would move together. Before changing the pool size, I decided to change one other variable: how we handled requests while they waited.</p>
+<p>That variable was Java 21 virtual threads.</p>
+<p><em>This isn't an introduction to virtual threads from scratch. I'll cover only what the experiment needs. They're worth reading up on separately.</em></p>
+<h2 id="커넥션은-그대로-두고-스레드를-바꿨어요">Same connections, different threads</h2><p>In the existing setup, a request held onto a platform thread while waiting for a connection or a query result. Platform threads map one-to-one to OS threads, so more waiting requests meant more OS threads had to remain alive. Waiting didn't burn CPU by itself, but the request stayed tied to its OS thread. This is the thread-per-request model Java has used for years.</p>
+<p>Virtual threads handle that wait differently. The JVM runs a virtual thread on a platform thread, then detaches it at blocking points it can intercept, such as supported socket and JDBC operations. The platform thread—the <strong>carrier thread</strong>—can run another virtual thread while it waits.</p>
+<p>Our API already spent a lot of time waiting: first for a connection, then for a query result. Could virtual threads let us handle more requests with the same number of connections?</p>
+<p><img src="/assets/en/vt-execution.png" alt="Controlled virtual-thread experiment and supported blocking I/O execution model" loading="lazy"></p>
+<p>We were using Java 21 and Spring Boot 3.5.3, so enabling it took one setting.</p>
+<pre data-lang="properties"><code class="language-properties hljs"><span class="hljs-attr">spring.threads.virtual.enabled</span>=<span class="hljs-string">true</span>
+</code></pre>
+<p>I ran the tests in local Docker containers limited to 0.5 vCPU and 1 GB, matching the production tasks. I wanted to compare one setting, not establish absolute production performance, so I kept the resource limits constant and toggled VT. I tested three different read APIs, called Read A, B, and C below. Each ran for 150 seconds with 40 virtual users.</p>
+<blockquote>
+<p>A VU is a virtual user repeating the same scenario. With the user count fixed, faster responses let the same users send their next requests sooner. I compared throughput and response times under that condition.</p>
+</blockquote>
+<h2 id="처리량은-뛰었는데-기다리는-줄은-그대로였어요">Throughput rose, but the queue stayed</h2><p><img src="/assets/en/vt-performance.png" alt="Throughput and p95 latency with virtual threads disabled and enabled" loading="lazy"></p>
+<p>Read A, the original problem, went from 16.6 to 45.5 RPS: 2.74×. Its p95 dropped from seven seconds to 2.4. The other two roughly doubled throughput and nearly halved p95. The failure rate was 0% both before and after.</p>
+<p><img src="/assets/en/vt-waits.png" alt="Peak platform threads and connection waiters with virtual threads off and on" loading="lazy"></p>
+<p>Internally, platform-thread counts fell. For Read A, the peak dropped from 68 to 33. B and C behaved similarly. But connection wait queues stayed in the thirties for all three APIs. Read A went from 36 to 34—essentially unchanged.</p>
+<p>That contradicted my first diagnosis. The pool still had four connections and the queue was still about the same size, yet throughput rose 2.74×. If nothing changed at the connection-lending layer, that wasn't where the improvement came from.</p>
+<p>Little's law makes the situation clearer. Assuming all four connections stay busy, throughput is inversely proportional to the average time each is held. At 16.6 RPS, that works out to roughly 240 ms per connection; at 45.5 RPS, about 88 ms. We weren't lending more connections. Requests were holding each one for less time.</p>
+<p>Why were they holding connections for less time? I checked CPU. Before and after enabling VT, the application was near its limit of 50%—essentially all of its 0.5 vCPU. Both saturated CPU, but one finished 2.74× as many requests. Each request had become cheaper.</p>
+<p>I didn't directly measure context-switch counts. But the reduction from 68 platform threads to a handful of carriers moved alongside lower CPU cost per request. The most plausible explanation was that scheduling 68 platform threads on half a core was expensive. With VT, fewer OS threads competed to run, and the saved CPU could go toward processing requests.</p>
+<p>So eliminating the connection queue wasn't my success criterion. I wanted to know whether the same pool could process more work with fewer threads. It could. At that point, the ‘connection bottleneck’ diagnosis started to weaken.</p>
+<h2 id="ai-추론을-기다리는-요청">Requests waiting for AI inference</h2><p><img src="/assets/en/vt-ai-path.png" alt="Spring API waiting for a response from an external photo-classification server" loading="lazy"></p>
+<p>I also tested an AI inference path. A separate model server classified photos; our Spring API called it over HTTP and waited for the result.</p>
+<p>Moving model computation outside the API doesn't end the request. The user is still waiting, and our API needs the result before continuing. VT was again about waiting, not speeding up the model: holding pending requests cheaply while the other server computed. Releasing the carrier to another virtual thread also worked for these external calls.</p>
+<p><img src="/assets/en/vt-ai-threads.png" alt="Peak platform-thread counts in the calling API for external AI requests" loading="lazy"></p>
+<p>Here I measured platform threads in the calling API, not model performance. With 80 VUs, the peak fell from 171 to 92; with 150 VUs, from 261 to 112. The external HTTP path showed the same direction as the read APIs.</p>
+<p>There was a catch. VT only made our waiting cheaper; it didn't increase the AI server's capacity. Removing our thread ceiling let more requests reach that server concurrently. After enabling VT, failures rose from 0% to 15–25%, all 503 responses caused by the AI server exceeding its concurrency limit. Throughput increased, but we also pushed more load downstream. This path needs its own concurrency limit, independently of VT. I focused this article on reads and left that as follow-up work.</p>
+<h2 id="그러면-커넥션도-늘리면-더-좋아질까요">Would more connections help too?</h2><p>VT improved throughput. Now it was time to revisit the question I'd postponed. The connection queue was still long. If four connections performed this much better, perhaps more would help.</p>
+<p>This time, I kept VT on and changed only the pool size: 4 → 8 → 16 → 32. The target was Read A, with 64 VUs.</p>
+<p><img src="/assets/en/vt-pool-size.png" alt="Throughput and peak connection waiters as the database pool grows" loading="lazy"></p>
+<p>Increasing the pool from 4 to 32 cut the waiting queue from 59 to 27, but throughput fell from 43.7 to 23.6 RPS. Exactly the opposite of what I'd expected.</p>
+<p>The absolute values varied on half a core. Two runs with a pool of four returned 43.7 and 32.3 RPS. But both runs at 32 were lower—23.6 and 22.6—and the direction remained the same: more connections made things worse.</p>
+<p>Looking only at the waiting queue, I would have called this an improvement. The queue clearly got shorter. But the API wasn't processing requests better.</p>
+<p>This result broke the original diagnosis. If connections were the bottleneck, more should let the DB finish more work. Instead, committed transactions fell from 131 to 75 per second. Borrowed connections peaked at 31, while the DB was executing only about one query at a time. Those numbers didn't fit the hypothesis.</p>
+<p>Throughput peaking and then declining as concurrency rises is a familiar shape: the retrograde region described by the Universal Scalability Law. More parallelism brings more coordination cost, and past a point that cost outweighs the gain. With 0.5 vCPU, that point comes early. In our case, a pool of four was already close to it.</p>
+<h3 id="빌려간-연결-수-옆에-db의-완료량을-놓고-봤어요">Comparing borrowed connections with completed DB work</h3><p>I didn't stop at application metrics. I also checked how much work the database completed. These values came from the pool-size experiments at 4, 8, 16, and 32.</p>
+<table>
+<thead>
+<tr>
+<th>Pool size</th>
+<th align="right">Peak borrowed connections</th>
+<th align="right">DB commits/s</th>
+<th align="right">Average DB CPU</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>4</td>
+<td align="right">4</td>
+<td align="right">131.2</td>
+<td align="right">7.1%</td>
+</tr>
+<tr>
+<td>8</td>
+<td align="right">8</td>
+<td align="right">84.3</td>
+<td align="right">5.7%</td>
+</tr>
+<tr>
+<td>16</td>
+<td align="right">16</td>
+<td align="right">74.7</td>
+<td align="right">6.8%</td>
+</tr>
+<tr>
+<td>32</td>
+<td align="right">31</td>
+<td align="right">74.7</td>
+<td align="right">8.2%</td>
+</tr>
+</tbody></table>
+<p><em>Connection usage is the peak during load. DB commits/s is the increase in <code>xact_commit</code> divided by the observation period.</em></p>
+<p>With a pool of 32, borrowed connections peaked at 31. It wasn't simply a larger setting that went unused. Yet commits fell from 131 to 75 per second, and DB CPU stayed in single digits. Application CPU remained at its 50% limit throughout.</p>
+<p>Borrowed connections and the rate at which the DB finishes work are different measurements. HikariCP counts a connection as active while the application has borrowed it and hasn't returned it. Much of that time was application CPU work—mapping results to objects and building responses—not query execution. That's why 31 borrowed connections could coexist with roughly one executing query, and why more connections didn't mean more completed DB work. Connections were acting less like doors to the DB and more like admission tickets to the application's CPU workbench.</p>
+<h3 id="이걸-보고-vt의-효과를-커넥션-풀까지-늘려서-해석하지-않기로-했어요">Keeping the VT result separate from pool sizing</h3><p>Putting the two experiments side by side made the decision straightforward. With the pool unchanged, enabling VT increased throughput. With VT enabled, increasing the pool decreased it.</p>
+<p>Both settings concern concurrent requests, so it can look as if they should increase together. Here, they moved in opposite directions. VT reduced per-request overhead. A larger pool added more work to an already saturated CPU. Both results pointed to the same constraint: application CPU, not connections.</p>
+<p>I kept the VT improvement and left the pool at four.</p>
+<h2 id="결론-커넥션은-네-개-그대로-처리량은-최대-274배">Conclusion: four connections, up to 2.74× throughput</h2><p>The final choice for the read paths was virtual threads ON and a HikariCP pool of four. Here are the before-and-after results for the three APIs used in that decision.</p>
+<table>
+<thead>
+<tr>
+<th>API</th>
+<th align="right">Throughput (RPS)</th>
+<th align="right">Throughput multiplier</th>
+<th align="right">p95 (s)</th>
+<th align="right">p95 reduction</th>
+<th align="right">Peak platform threads</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>Read A</td>
+<td align="right">16.6 → <strong>45.5</strong></td>
+<td align="right"><strong>2.74×</strong></td>
+<td align="right">6.98 → <strong>2.40</strong></td>
+<td align="right"><strong>65.6%</strong></td>
+<td align="right">68 → <strong>33</strong></td>
+</tr>
+<tr>
+<td>Read B</td>
+<td align="right">68.3 → <strong>134.8</strong></td>
+<td align="right"><strong>1.97×</strong></td>
+<td align="right">1.89 → <strong>0.90</strong></td>
+<td align="right"><strong>52.3%</strong></td>
+<td align="right">65 → <strong>30</strong></td>
+</tr>
+<tr>
+<td>Read C</td>
+<td align="right">39.4 → <strong>79.5</strong></td>
+<td align="right"><strong>2.02×</strong></td>
+<td align="right">2.80 → <strong>1.30</strong></td>
+<td align="right"><strong>53.5%</strong></td>
+<td align="right">65 → <strong>31</strong></td>
+</tr>
+</tbody></table>
+<blockquote>
+<p><em>VT OFF → ON, 40 VUs for 150 seconds per API, identical resource limits and a pool of four.<br>p95 reductions were calculated from unrounded values.</em></p>
+</blockquote>
+<p>Read A, which started at a seven-second p95, ended at 2.4 seconds. Its peak platform-thread count fell from 68 to 33.</p>
+<p>I initially thought four connections were too few. What was lacking wasn't connections, but an efficient way to share half a core across requests. Connections led to an idle database; CPU for processing requests was the scarce resource. Keeping the pool fixed and changing how we handled requests took Read A from 16.6 to 45.5 completed requests per second.</p>
+<p>Increasing concurrency can increase throughput when CPU capacity remains. Once CPU is the bottleneck, it is closer to cutting the same pie into smaller pieces. The connection queue was simply the first conspicuous number in this problem.</p>
+
+        </div>
+      </article>
+    <nav class="post-nav" aria-label="Previous and next posts">
+      <a class="post-nav-item post-nav-item--prev" href="/posts/curriculum-level-learning-diagnostics/">
+        <span class="post-nav-label">previous post</span>
+        <span class="post-nav-title">Turning Coding Test Results into Curriculum-Level Learning Diagnostics</span>
+      </a>
+      <a class="post-nav-item post-nav-item--next" href="/posts/netty-direct-memory-limit/">
+        <span class="post-nav-label">next post</span>
+        <span class="post-nav-title">Contributing to Netty: Why Check the Direct Memory Limit?</span>
+      </a>
+    </nav>
+      <nav class="post-back">
+        <a href="/writing/">← back to posts</a>
+      </nav>
+    </div>
+    <aside class="toc" id="toc" aria-label="Contents">
+      <p class="toc-title">contents</p>
+      <ul class="toc-list">
+        <li class="toc-item toc-item--h2"><a href="#커넥션은-그대로-두고-스레드를-바꿨어요" data-target="커넥션은-그대로-두고-스레드를-바꿨어요">Same connections, different threads</a></li>
+        <li class="toc-item toc-item--h2"><a href="#처리량은-뛰었는데-기다리는-줄은-그대로였어요" data-target="처리량은-뛰었는데-기다리는-줄은-그대로였어요">Throughput rose, but the queue stayed</a></li>
+        <li class="toc-item toc-item--h2"><a href="#ai-추론을-기다리는-요청" data-target="ai-추론을-기다리는-요청">Requests waiting for AI inference</a></li>
+        <li class="toc-item toc-item--h2"><a href="#그러면-커넥션도-늘리면-더-좋아질까요" data-target="그러면-커넥션도-늘리면-더-좋아질까요">Would more connections help too?</a></li>
+        <li class="toc-item toc-item--h3"><a href="#빌려간-연결-수-옆에-db의-완료량을-놓고-봤어요" data-target="빌려간-연결-수-옆에-db의-완료량을-놓고-봤어요">Comparing borrowed connections with completed DB work</a></li>
+        <li class="toc-item toc-item--h3"><a href="#이걸-보고-vt의-효과를-커넥션-풀까지-늘려서-해석하지-않기로-했어요" data-target="이걸-보고-vt의-효과를-커넥션-풀까지-늘려서-해석하지-않기로-했어요">Keeping the VT result separate from pool sizing</a></li>
+        <li class="toc-item toc-item--h2"><a href="#결론-커넥션은-네-개-그대로-처리량은-최대-274배" data-target="결론-커넥션은-네-개-그대로-처리량은-최대-274배">Conclusion: four connections, up to 2.74× throughput</a></li>
+      </ul>
+    </aside>
+  </main>
+  <script src="/app.js?v=391ab9a5"></script>
+
+
+</body></html>

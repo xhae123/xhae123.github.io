@@ -1,0 +1,160 @@
+<!DOCTYPE html><html lang="en"><head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="google-site-verification" content="sNrpo16A0vUj7vHmVNEmAGZj85cGykaOeHO44krbqDU">
+  <title>woojin kim · Why Return to SQL in the Age of Vibe Coding? · xhae123's notes</title>
+  <meta name="description" content="While reviewing AI-generated JPA code, I repeatedly found myself asking: when does this query actually execute?">
+  <link rel="canonical" href="https://xhae123.github.io/posts/sql-in-the-age-of-vibe-coding/">
+  <meta property="og:type" content="article">
+  <meta property="og:site_name" content="xhae123's notes">
+  <meta property="og:title" content="Why Return to SQL in the Age of Vibe Coding? · xhae123's notes">
+  <meta property="og:description" content="While reviewing AI-generated JPA code, I repeatedly found myself asking: when does this query actually execute?">
+  <meta property="og:url" content="https://xhae123.github.io/posts/sql-in-the-age-of-vibe-coding/">
+  <meta property="og:locale" content="en_US">
+  <meta property="og:image" content="https://xhae123.github.io/assets/dacbcbb5-877d-413b-8143-6b28e4352c0f.png">
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:title" content="Why Return to SQL in the Age of Vibe Coding? · xhae123's notes">
+  <meta name="twitter:description" content="While reviewing AI-generated JPA code, I repeatedly found myself asking: when does this query actually execute?">
+  <meta name="twitter:image" content="https://xhae123.github.io/assets/dacbcbb5-877d-413b-8143-6b28e4352c0f.png">
+  <link rel="preconnect" href="https://cdn.jsdelivr.net">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin="">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable.css">
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500&amp;display=swap">
+  <link rel="stylesheet" href="/styles.css?v=lowercase-2">
+  <link rel="stylesheet" href="/navigation.css?v=rose-1">
+  <link rel="icon" type="image/svg+xml" href="/favicon.svg?v=woojin-w-2">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/github.min.css">
+  <link rel="stylesheet" href="/blog.css?v=lowercase-2">
+  <meta property="article:published_time" content="2026-01-23T09:08:47.000Z">
+  <meta property="article:section" content="Backend">
+  <meta property="article:author" content="Woojin Kim">
+  <script type="application/ld+json">{"@context":"https://schema.org","@type":"BlogPosting","headline":"Why Return to SQL in the Age of Vibe Coding?","description":"While reviewing AI-generated JPA code, I repeatedly found myself asking: when does this query actually execute?","datePublished":"2026-01-23T09:08:47.000Z","dateModified":"2026-01-23T09:08:47.000Z","author":{"@type":"Person","name":"Woojin Kim"},"url":"https://xhae123.github.io/posts/sql-in-the-age-of-vibe-coding/","mainEntityOfPage":"https://xhae123.github.io/posts/sql-in-the-age-of-vibe-coding/","image":"https://xhae123.github.io/assets/dacbcbb5-877d-413b-8143-6b28e4352c0f.png"}</script>
+</head>
+<body>
+  <main class="post-layout">
+    <div class="post-main">
+      <article class="post" id="post">
+        <header class="post-header">
+          <a class="post-top-back" href="/writing/">← all posts</a>
+          <p class="post-meta"><time datetime="2026-01-23">2026.01.23</time><span aria-hidden="true"> · </span><span class="post-category">backend</span></p>
+          <h1 class="post-title">Why Return to SQL in the Age of Vibe Coding?</h1>
+        </header>
+        <div class="post-body" id="post-body">
+<h2 id="0-들어가며">0. Introduction</h2><p>While reviewing AI-generated JPA code, I repeatedly found myself asking: when does this query actually execute?</p>
+<p>JPA was productive when people wrote the code themselves. But when reviewing code AI generates without sufficient context, implicit behavior raises verification costs.</p>
+<p>This article explores why Exposed can be a reasonable choice from three perspectives: <strong>I/O predictability, memory usage, and the type system.</strong></p>
+<hr>
+<h2 id="1-io-예측-가능성">1. I/O predictability</h2><p>Much latency comes from I/O. CPU bottlenecks are less common than we might assume.</p>
+<h3 id="11-jpa의-lazy-loading">1.1. JPA lazy loading</h3><p>Lazy loading is convenient: follow an entity graph and queries happen automatically. That convenience assumes the developer has the relationships clearly in mind.</p>
+<p>AI may lack that context. Iterating over <code>List&lt;Order&gt;</code> and calling <code>order.getMember().getName()</code> looks natural. At runtime, though, it can trigger hundreds of database round trips: N+1.</p>
+<p>Problems:</p>
+<ul>
+<li><strong>Accumulated RTT:</strong> even a fast database has nonzero network cost, increasing latency.</li>
+</ul>
+<p><img src="/assets/dacbcbb5-877d-413b-8143-6b28e4352c0f.png" alt="" loading="lazy"></p>
+<ul>
+<li><strong>Connection-pool exhaustion:</strong> in an OSIV setup, business logic can run while a connection remains borrowed. Under load, CPU may sit idle while the pool is exhausted.</li>
+</ul>
+<p><code>Fetch Join</code>, <code>BatchSize</code>, and <code>EntityGraph</code> can address this. But deciding where to apply them requires context, and finding implicit costs in AI-written code is tiring.</p>
+<h3 id="12-exposed의-명시적-join">1.2. Explicit joins in Exposed</h3><p>The Exposed DSL doesn't use proxy-based implicit loading. Fetching related data requires explicitly writing the join.</p>
+<pre data-lang="kotlin"><code class="language-kotlin hljs"><span class="hljs-comment">// Exposed: I/O costs are visible in the code</span>
+(Orders innerJoin Members)
+    .slice(Orders.id, Members.name)
+    .select { Orders.date greaterEq today }
+    .map { ... }
+</code></pre>
+<ul>
+<li><p><strong>Visible costs:</strong> code gets longer, but <code>innerJoin</code> visibly signals a join query.</p>
+</li>
+<li><p><strong>Review efficiency:</strong> no need to hunt through YAML or entity annotations. A reviewer can identify excessive joins directly in the query code.</p>
+</li>
+</ul>
+<hr>
+<h2 id="2-메모리-사용">2. Memory usage</h2><p><img src="/assets/d001538d-5144-4b92-bb3a-3a598584ff0d.png" alt="" loading="lazy"></p>
+<p>How data is loaded into memory affects server resource consumption.</p>
+<h3 id="21-jpa의-persistence-context">2.1. JPA's persistence context</h3><p>JPA provides a first-level cache that makes working with the database feel like manipulating Java collections. That comes at a cost.</p>
+<ol>
+<li><p><strong>Snapshot overhead:</strong> dirty checking retains snapshots on the heap when loading managed data. A 1 GB load can occupy more than 2 GB, contributing to <code>OutOfMemoryError</code> or frequent full GC in large batches.</p>
+</li>
+<li><p><strong>Flush costs:</strong> at transaction completion, current state is compared field by field with snapshots of managed objects. Larger datasets increase this O(N) comparison work and CPU usage.</p>
+</li>
+</ol>
+<h3 id="22-exposed의-dsl-방식">2.2. Exposed's DSL approach</h3><p>Exposed also offers DAO APIs and an EntityCache. Its DSL approach avoids that entity-management overhead.</p>
+<ul>
+<li><p><strong>Direct mapping:</strong> results from <code>Table.select { ... }</code> map from JDBC <code>ResultSet</code> into DTOs or data classes, without entity snapshots or dirty checking.</p>
+</li>
+<li><p><strong>Predictable resources:</strong> memory follows the retrieved data more directly, making resource use easier to reason about and control in cloud environments.</p>
+</li>
+</ul>
+<hr>
+<h2 id="3-타입-시스템">3. The type system</h2><p>Finding AI-generated mistakes at runtime is late. Catching them at compile time is preferable.</p>
+<h3 id="31-jpa의-런타임-검증">3.1. JPA's runtime checks</h3><p>With JPA, including JPQL and QueryDSL, valid code syntax isn't enough. Entity state and configuration must also be correct.</p>
+<ul>
+<li>Suppose AI accesses a <code>FetchType.LAZY</code> association outside a transaction.</li>
+<li>Compilation succeeds. The build succeeds.</li>
+<li>Production traffic then triggers a <code>LazyInitializationException</code>.</li>
+</ul>
+<p>Preventing that requires mentally simulating JPA's lifecycle during review.</p>
+<h3 id="32-exposed의-컴파일-타임-검증">3.2. Compile-time checks in Exposed</h3><p>Exposed uses Kotlin's type system when constructing SQL.</p>
+<ul>
+<li><p><strong>Structural constraints:</strong> a join comparing <code>UserTable.name</code> (String) with <code>TeamTable.id</code> (Long) can produce a compile error because the types differ.</p>
+</li>
+<li><p><strong>A first filter:</strong> compilation checks the DSL's column references and type relationships, letting reviewers spend less attention on query construction and more on business logic.</p>
+</li>
+</ul>
+<hr>
+<h2 id="4-trade-off">4. Trade-off</h2><p>Exposed isn't the answer for every situation.</p>
+<ol>
+<li><p><strong>Dynamic queries:</strong> the JPA ecosystem has QueryDSL. Complex dynamic queries in Exposed can require custom extension functions or DSL wrappers to stay readable.</p>
+</li>
+<li><p><strong>Table-centered thinking:</strong> JPA supports object-oriented domain modeling. Exposed centers database tables. Complex domains with substantial entity collaboration may suit JPA better.</p>
+</li>
+<li><p><strong>Compared with jOOQ:</strong> jOOQ is another type-safe SQL option. Licensing considerations and Java-oriented code-generation setup can add friction; Exposed can be lighter in a Kotlin environment.</p>
+</li>
+<li><p><strong>AI training-data bias:</strong> LLMs are familiar with the widely used JPA ecosystem. Exposed has less training material, so requests for unusual window functions or GroupConcat syntax can produce invented DSL APIs. Providing syntax guidance initially has a cost.</p>
+</li>
+</ol>
+<hr>
+<h2 id="5-결론">5. Conclusion</h2><p>JPA has hidden complexity behind useful abstractions. When AI generates the code, some of that hidden complexity becomes a review risk.</p>
+<p>Exposed brings more of it to the surface. Query execution and I/O costs are more visible in code, and the compiler provides an initial layer of validation.</p>
+<p>If you're working with AI, Exposed is worth considering.</p>
+
+        </div>
+      </article>
+    <nav class="post-nav" aria-label="Previous and next posts">
+      <a class="post-nav-item post-nav-item--prev" href="/posts/six-months-building-a-startup/">
+        <span class="post-nav-label">previous post</span>
+        <span class="post-nav-title">What Six Months of Building a Startup Taught Me</span>
+      </a>
+      <a class="post-nav-item post-nav-item--next" href="/posts/transaction-boundaries-and-outbox/">
+        <span class="post-nav-label">next post</span>
+        <span class="post-nav-title">Choosing Transaction Boundaries: Narrowing Them with the Outbox Pattern</span>
+      </a>
+    </nav>
+      <nav class="post-back">
+        <a href="/writing/">← back to posts</a>
+      </nav>
+    </div>
+    <aside class="toc" id="toc" aria-label="Contents">
+      <p class="toc-title">contents</p>
+      <ul class="toc-list">
+        <li class="toc-item toc-item--h2"><a href="#0-들어가며" data-target="0-들어가며">0. Introduction</a></li>
+        <li class="toc-item toc-item--h2"><a href="#1-io-예측-가능성" data-target="1-io-예측-가능성">1. I/O predictability</a></li>
+        <li class="toc-item toc-item--h3"><a href="#11-jpa의-lazy-loading" data-target="11-jpa의-lazy-loading">1.1. JPA lazy loading</a></li>
+        <li class="toc-item toc-item--h3"><a href="#12-exposed의-명시적-join" data-target="12-exposed의-명시적-join">1.2. Explicit joins in Exposed</a></li>
+        <li class="toc-item toc-item--h2"><a href="#2-메모리-사용" data-target="2-메모리-사용">2. Memory usage</a></li>
+        <li class="toc-item toc-item--h3"><a href="#21-jpa의-persistence-context" data-target="21-jpa의-persistence-context">2.1. JPA's persistence context</a></li>
+        <li class="toc-item toc-item--h3"><a href="#22-exposed의-dsl-방식" data-target="22-exposed의-dsl-방식">2.2. Exposed's DSL approach</a></li>
+        <li class="toc-item toc-item--h2"><a href="#3-타입-시스템" data-target="3-타입-시스템">3. The type system</a></li>
+        <li class="toc-item toc-item--h3"><a href="#31-jpa의-런타임-검증" data-target="31-jpa의-런타임-검증">3.1. JPA's runtime checks</a></li>
+        <li class="toc-item toc-item--h3"><a href="#32-exposed의-컴파일-타임-검증" data-target="32-exposed의-컴파일-타임-검증">3.2. Compile-time checks in Exposed</a></li>
+        <li class="toc-item toc-item--h2"><a href="#4-trade-off" data-target="4-trade-off">4. Trade-off</a></li>
+        <li class="toc-item toc-item--h2"><a href="#5-결론" data-target="5-결론">5. Conclusion</a></li>
+      </ul>
+    </aside>
+  </main>
+  <script src="/app.js?v=391ab9a5"></script>
+
+
+</body></html>

@@ -52,10 +52,11 @@
     }
   }
 
-  // Home category filter (rail on desktop, sticky toolbar on mobile)
+  // Category filtering on the archive; button controls also remain supported.
   const railCats = document.getElementById('rail-cats');
   if (railCats) {
     const buttons = Array.from(railCats.querySelectorAll('button'));
+    const select = railCats.querySelector('select');
     const items = Array.from(document.querySelectorAll('.item'));
     const emptyEl = document.getElementById('feed-empty');
 
@@ -76,7 +77,11 @@
         }
       });
       if (emptyEl) emptyEl.hidden = visible !== 0;
-      buttons.forEach((b) => b.classList.toggle('is-on', b.dataset.cat === cat));
+      if (select) select.value = cat;
+      buttons.forEach((b) => {
+        b.classList.toggle('is-on', b.dataset.cat === cat);
+        b.setAttribute('aria-pressed', String(b.dataset.cat === cat));
+      });
     };
 
     const syncUrl = (cat) => {
@@ -93,9 +98,15 @@
         syncUrl(cat);
       });
     });
+    if (select) {
+      select.addEventListener('change', () => {
+        applyFilter(select.value);
+        syncUrl(select.value);
+      });
+    }
 
     const initial = new URLSearchParams(window.location.search).get('cat');
-    const validCats = buttons.map((b) => b.dataset.cat);
+    const validCats = select ? Array.from(select.options, option => option.value) : buttons.map((b) => b.dataset.cat);
     if (initial && validCats.includes(initial)) applyFilter(initial);
   }
 })();

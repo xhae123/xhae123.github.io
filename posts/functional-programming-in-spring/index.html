@@ -1,0 +1,644 @@
+<!DOCTYPE html><html lang="en"><head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="google-site-verification" content="sNrpo16A0vUj7vHmVNEmAGZj85cGykaOeHO44krbqDU">
+  <title>woojin kim · Essential and Accidental Complexity: How Far Can Functional Programming Go in Spring? · xhae123's notes</title>
+  <meta name="description" content="An order service built with Kotlin and Spring usually looks something like this.">
+  <link rel="canonical" href="https://xhae123.github.io/posts/functional-programming-in-spring/">
+  <meta property="og:type" content="article">
+  <meta property="og:site_name" content="xhae123's notes">
+  <meta property="og:title" content="Essential and Accidental Complexity: How Far Can Functional Programming Go in Spring? · xhae123's notes">
+  <meta property="og:description" content="An order service built with Kotlin and Spring usually looks something like this.">
+  <meta property="og:url" content="https://xhae123.github.io/posts/functional-programming-in-spring/">
+  <meta property="og:locale" content="en_US">
+  <meta property="og:image" content="https://xhae123.github.io/assets/en/fp-core.png">
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:title" content="Essential and Accidental Complexity: How Far Can Functional Programming Go in Spring? · xhae123's notes">
+  <meta name="twitter:description" content="An order service built with Kotlin and Spring usually looks something like this.">
+  <meta name="twitter:image" content="https://xhae123.github.io/assets/en/fp-core.png">
+  <link rel="preconnect" href="https://cdn.jsdelivr.net">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin="">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable.css">
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500&amp;display=swap">
+  <link rel="stylesheet" href="/styles.css?v=lowercase-2">
+  <link rel="stylesheet" href="/navigation.css?v=rose-1">
+  <link rel="icon" type="image/svg+xml" href="/favicon.svg?v=woojin-w-2">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/github.min.css">
+  <link rel="stylesheet" href="/blog.css?v=lowercase-2">
+  <meta property="article:published_time" content="2026-03-22T12:53:33.000Z">
+  <meta property="article:section" content="Backend">
+  <meta property="article:author" content="Woojin Kim">
+  <script type="application/ld+json">{"@context":"https://schema.org","@type":"BlogPosting","headline":"Essential and Accidental Complexity: How Far Can Functional Programming Go in Spring?","description":"An order service built with Kotlin and Spring usually looks something like this.","datePublished":"2026-03-22T12:53:33.000Z","dateModified":"2026-03-22T12:53:33.000Z","author":{"@type":"Person","name":"Woojin Kim"},"url":"https://xhae123.github.io/posts/functional-programming-in-spring/","mainEntityOfPage":"https://xhae123.github.io/posts/functional-programming-in-spring/","image":"https://xhae123.github.io/assets/en/fp-core.png"}</script>
+</head>
+<body>
+  <main class="post-layout">
+    <div class="post-main">
+      <article class="post" id="post">
+        <header class="post-header">
+          <a class="post-top-back" href="/writing/">← all posts</a>
+          <p class="post-meta"><time datetime="2026-03-22">2026.03.22</time><span aria-hidden="true"> · </span><span class="post-category">backend</span></p>
+          <h1 class="post-title">Essential and Accidental Complexity: How Far Can Functional Programming Go in Spring?</h1>
+        </header>
+        <div class="post-body" id="post-body">
+<h2 id="0-익숙한-코드에서-시작한다">0. Start with familiar code</h2><p>An order service built with Kotlin and Spring usually looks something like this.</p>
+<pre data-lang="kotlin"><code class="language-kotlin hljs"><span class="hljs-meta">@Transactional</span>
+<span class="hljs-function"><span class="hljs-keyword">fun</span> <span class="hljs-title">create</span><span class="hljs-params">(request: <span class="hljs-type">OrderRequest</span>)</span></span>: OrderResponse {
+    <span class="hljs-keyword">val</span> order = GoodsOrder()
+    <span class="hljs-keyword">for</span> (itemRequest <span class="hljs-keyword">in</span> request.items) {
+        <span class="hljs-keyword">val</span> goods = goodsService.getGoods(itemRequest.goodsId)
+        goods.decreaseStock(itemRequest.quantity)
+        <span class="hljs-keyword">val</span> subtotal = goods.calculateTotalPrice(itemRequest.quantity)
+        <span class="hljs-keyword">val</span> discount = discountService.calculateDiscount(goods, quantity, subtotal)
+        <span class="hljs-keyword">val</span> orderItem = OrderItem(
+            goods = goods,
+            quantity = itemRequest.quantity,
+            unitPrice = goods.price,
+            subtotal = subtotal,
+            discountAmount = discount
+        )
+        order.addItem(orderItem)
+    }
+    order.calculatePrices()
+    <span class="hljs-keyword">return</span> OrderResponse.from(orderRepository.save(order))
+}
+</code></pre>
+<p>It works. It works well. But look closely, and side effects are hiding throughout it.</p>
+<p>Start with <code>decreaseStock()</code>. It changes state, but its signature doesn't tell us that.</p>
+<pre data-lang="kotlin"><code class="language-kotlin hljs"><span class="hljs-function"><span class="hljs-keyword">fun</span> <span class="hljs-title">decreaseStock</span><span class="hljs-params">(quantity: <span class="hljs-type">Int</span>)</span></span> {
+    <span class="hljs-keyword">if</span> (stock &lt; quantity) <span class="hljs-keyword">throw</span> OutOfStockException(...)
+    stock -= quantity
+}
+</code></pre>
+<p>Its return type is <code>Unit</code>. You have to open the implementation to discover that it modifies <code>Goods.stock</code>. <code>cancel()</code> goes further: a method on <code>GoodsOrder</code> also changes inventory on <code>Goods</code>.</p>
+<pre data-lang="kotlin"><code class="language-kotlin hljs"><span class="hljs-function"><span class="hljs-keyword">fun</span> <span class="hljs-title">cancel</span><span class="hljs-params">()</span></span> {
+    changeStatus(OrderStatus.CANCELLED)
+    items.forEach { it.goods.increaseStock(it.quantity) }
+}
+</code></pre>
+<p>Next, a single loop mixes database access, stock validation, price calculation, discounts, and mutation. Testing only the business logic looks like this.</p>
+<pre data-lang="kotlin"><code class="language-kotlin hljs"><span class="hljs-keyword">val</span> goodsService = mock&lt;GoodsService&gt;()
+<span class="hljs-keyword">val</span> discountService = mock&lt;DiscountService&gt;()
+<span class="hljs-keyword">val</span> orderRepository = mock&lt;OrderRepository&gt;()
+whenever(goodsService.getGoods(<span class="hljs-number">1L</span>)).thenReturn(goods)
+whenever(discountService.calculateDiscount(any(), any(), any())).thenReturn(<span class="hljs-number">1000</span>)
+whenever(orderRepository.save(any())).thenAnswer { it.arguments[<span class="hljs-number">0</span>] }
+</code></pre>
+<p>Three mocks before the test even begins. All I wanted to check was whether ordering two items at KRW 10,000 each produces a total of KRW 20,000.</p>
+<p>Finally, <code>decreaseStock()</code> throws when stock is insufficient. But is that really exceptional? In an order service, insufficient stock is an expected business outcome.</p>
+<p>Why does this matter in practice? Hidden side effects are hard to catch in review. A new teammate calling <code>cancel()</code> without knowing it affects inventory can introduce bugs. Mixing I/O and calculation makes tests expensive; enough time spent setting up mocks makes skipping tests feel faster.</p>
+<p>Exception-based errors don't expose possible failures in the signature. A caller can ship without handling one and discover it through a production incident. Each issue looks small, but together they affect development speed and reliability as the service grows.</p>
+<hr>
+<p>Eventually, these frustrations lead you toward FP: immutable data, pure functions, and typed errors. They seem to target exactly these problems.</p>
+<p>I tried pushing FP as far as I could in a Kotlin/Spring order service. I turned JPA entities into <code>data class</code> instances, replaced exceptions with sealed classes, made discount policies higher-order functions, and introduced Arrow's <code>Either</code>. I'll call the conventional code above iteration 1 and the FP version iteration 2.</p>
+<p>Some changes worked; others didn't. The interesting part was that the obstacles fell into two different categories.</p>
+<p>One was a limitation of the tools: JPA resisting <code>val</code>, or <code>@Transactional</code> not recognizing <code>Either</code>. Different tools can remove those obstacles.</p>
+<p>The other came from the problem itself: tracking change requires state, and loosening encapsulation weakens a safety boundary. These trade-offs remain regardless of the tools.</p>
+<p>In his 1986 essay <em>No Silver Bullet</em>, Fred Brooks distinguishes accidental complexity from essential complexity. That distinction matters because the responses are different.</p>
+<p>An accidental barrier is a choice: change tools, or respect their conventions and work around it. An essential barrier requires compromise. There is no perfect answer, so you have to design the trade-off deliberately.</p>
+<p>This is a record of pushing FP into a Kotlin/Spring order service and asking, for each obstacle: is this essential or accidental?</p>
+<h2 id="1-jpa-엔티티를-immutable로-만들-수-있을까--우연적-벽">1. Can JPA entities be immutable? An accidental barrier</h2><p>If mutable state causes side effects, immutability seems the obvious answer. Kotlin gives us <code>data class</code> and <code>val</code>, so I tried applying them directly to JPA entities.</p>
+<pre data-lang="kotlin"><code class="language-kotlin hljs"><span class="hljs-comment">// Before: mutable entity</span>
+<span class="hljs-meta">@Entity</span>
+<span class="hljs-keyword">class</span> <span class="hljs-title class_">GoodsOrder</span>(
+    <span class="hljs-meta">@OneToMany(mappedBy = <span class="hljs-string">"order"</span>, cascade = [CascadeType.ALL])</span>
+    <span class="hljs-keyword">var</span> items: MutableList&lt;OrderItem&gt; = mutableListOf(),
+
+    <span class="hljs-meta">@Enumerated(EnumType.STRING)</span>
+    <span class="hljs-keyword">var</span> status: OrderStatus = OrderStatus.PENDING,
+
+    <span class="hljs-keyword">var</span> totalPrice: <span class="hljs-built_in">Int</span> = <span class="hljs-number">0</span>,
+    <span class="hljs-keyword">var</span> totalDiscount: <span class="hljs-built_in">Int</span> = <span class="hljs-number">0</span>,
+    <span class="hljs-keyword">var</span> finalPrice: <span class="hljs-built_in">Int</span> = <span class="hljs-number">0</span>,
+
+    <span class="hljs-meta">@Id</span> <span class="hljs-meta">@GeneratedValue(strategy = GenerationType.IDENTITY)</span>
+    <span class="hljs-keyword">var</span> id: <span class="hljs-built_in">Long</span> = <span class="hljs-number">0</span>
+) {
+    <span class="hljs-function"><span class="hljs-keyword">fun</span> <span class="hljs-title">addItem</span><span class="hljs-params">(item: <span class="hljs-type">OrderItem</span>)</span></span> {
+        items.add(item)
+        item.order = <span class="hljs-keyword">this</span>
+    }
+
+    <span class="hljs-function"><span class="hljs-keyword">fun</span> <span class="hljs-title">changeStatus</span><span class="hljs-params">(newStatus: <span class="hljs-type">OrderStatus</span>)</span></span> {
+        <span class="hljs-keyword">if</span> (!status.canTransitionTo(newStatus)) <span class="hljs-keyword">throw</span> InvalidStatusException(...)
+        <span class="hljs-keyword">this</span>.status = newStatus
+    }
+}
+</code></pre>
+<pre data-lang="kotlin"><code class="language-kotlin hljs"><span class="hljs-comment">// After: an immutable entity experiment</span>
+<span class="hljs-meta">@Entity</span>
+<span class="hljs-keyword">data</span> <span class="hljs-keyword">class</span> <span class="hljs-title class_">GoodsOrder</span>(
+    <span class="hljs-meta">@OneToMany(mappedBy = <span class="hljs-string">"order"</span>, cascade = [CascadeType.ALL])</span>
+    <span class="hljs-keyword">val</span> items: List&lt;OrderItem&gt; = emptyList(),
+
+    <span class="hljs-meta">@Enumerated(EnumType.STRING)</span>
+    <span class="hljs-keyword">val</span> status: OrderStatus = OrderStatus.PENDING,
+
+    <span class="hljs-keyword">val</span> totalPrice: <span class="hljs-built_in">Int</span> = <span class="hljs-number">0</span>,
+    <span class="hljs-keyword">val</span> totalDiscount: <span class="hljs-built_in">Int</span> = <span class="hljs-number">0</span>,
+    <span class="hljs-keyword">val</span> finalPrice: <span class="hljs-built_in">Int</span> = <span class="hljs-number">0</span>,
+
+    <span class="hljs-meta">@Id</span> <span class="hljs-meta">@GeneratedValue(strategy = GenerationType.IDENTITY)</span>
+    <span class="hljs-keyword">val</span> id: <span class="hljs-built_in">Long</span> = <span class="hljs-number">0</span>
+)
+
+<span class="hljs-comment">// Return a new object with copy() instead of mutating</span>
+<span class="hljs-function"><span class="hljs-keyword">fun</span> GoodsOrder.<span class="hljs-title">withItem</span><span class="hljs-params">(item: <span class="hljs-type">OrderItem</span>)</span></span>: GoodsOrder =
+    copy(items = items + item)
+
+<span class="hljs-function"><span class="hljs-keyword">fun</span> GoodsOrder.<span class="hljs-title">withStatus</span><span class="hljs-params">(newStatus: <span class="hljs-type">OrderStatus</span>)</span></span>: GoodsOrder =
+    copy(status = newStatus)
+</code></pre>
+<p><code>var</code> became <code>val</code>, and mutation methods disappeared. Chains such as <code>order.withItem(item).withCalculatedPrices()</code> express intent without manually sequencing mutations. It compiles. The app starts. INSERT works.</p>
+<p>But UPDATE doesn't.</p>
+<pre data-lang="kotlin"><code class="language-kotlin hljs"><span class="hljs-keyword">val</span> updated = order.withStatus(OrderStatus.CONFIRMED)
+orderRepository.save(updated)
+<span class="hljs-comment">// In the DB: status = PENDING. Unchanged.</span>
+<span class="hljs-comment">// No exception or error log. A silent failure.</span>
+</code></pre>
+<p>Collections are worse.</p>
+<pre data-lang="kotlin"><code class="language-kotlin hljs"><span class="hljs-keyword">val</span> order = orderRepository.findById(<span class="hljs-number">1L</span>).<span class="hljs-keyword">get</span>()
+println(order.items.size)
+<span class="hljs-comment">// Output: 0</span>
+<span class="hljs-comment">// Three items were inserted. No 500: a successful response with an empty array.</span>
+</code></pre>
+<p>Not a compilation error—a silent runtime failure. That's more dangerous than a straightforward rejection: without tests, the first report could be a production user saying their order status never changed.</p>
+<h3 id="왜-이런-일이-벌어지는가">Why does this happen?</h3><p>This experiment ran into four assumptions in Hibernate's model.</p>
+<p><strong>Dirty checking:</strong> Hibernate detects changes to managed entity fields at transaction completion and generates UPDATE statements. With no changes to the original fields, it sees nothing to update.</p>
+<p><strong><code>copy()</code> and the persistence context:</strong> <code>copy()</code> creates another JVM object, not the instance Hibernate was managing. Calling <code>save()</code> doesn't make that copy a mutation of the original managed object; in this experiment, it led toward insertion rather than the intended update.</p>
+<p><strong><code>PersistentBag</code>:</strong> Hibernate replaces <code>@OneToMany</code> collections with its own implementation. In this setup, the immutable property prevented that replacement, leaving the constructor's <code>emptyList()</code> in place.</p>
+<p><strong>Generated <code>equals()</code> and <code>hashCode()</code>:</strong> a data class derives them from its properties, whereas entity identity is tied to its ID. Changing status can change equality and hashing—an awkward fit for managed entity identity and collections.</p>
+<h3 id="그런데-왜-컴파일은-되는가">Then why does it compile?</h3><p>Kotlin's <code>kotlin("plugin.jpa")</code> generates a no-argument constructor, and <code>kotlin("plugin.spring")</code> opens the relevant classes. With those framework requirements satisfied at build time, the <code>data class</code> plus <code>val</code> experiment builds without a warning about its persistence behavior.</p>
+<p>A warning about the risks of declaring a JPA entity as a data class would have helped. There wasn't one. It's natural to assume something that compiles will work.</p>
+<h3 id="판정-우연적-복잡성">Verdict: accidental complexity</h3><p>This barrier comes from JPA/Hibernate's design choices.</p>
+<p>Other persistence tools accommodate immutable data. With Exposed or jOOQ, <code>val</code> and data classes fit naturally into the surrounding model. Hibernate's mutable-entity approach is a historical design, not a requirement of persistence itself.</p>
+<p>There is an essential ingredient mixed in, though: tracking changes requires a representation of state. Dirty checking is one accidental implementation; modifying existing state is part of the underlying problem. I'll return to that distinction in section 4.</p>
+<h2 id="2-벽을-돌아가다--도메인-모델-분리">2. Work around the barrier: separate the domain model</h2><p>If immutable JPA entities aren't a good fit, change the approach. Rather than applying FP to the entity itself, create a separate model and move business logic into it.</p>
+<p>Leave JPA entities as Hibernate expects: <code>var</code>, ordinary classes, and <code>MutableList</code>. Extract only the data needed for business calculations into an immutable model.</p>
+<pre data-lang="kotlin"><code class="language-kotlin hljs"><span class="hljs-comment">/** Immutable domain model: no JPA dependency */</span>
+<span class="hljs-keyword">data</span> <span class="hljs-keyword">class</span> <span class="hljs-title class_">GoodsSnapshot</span>(
+    <span class="hljs-keyword">val</span> id: <span class="hljs-built_in">Long</span>,
+    <span class="hljs-keyword">val</span> name: String,
+    <span class="hljs-keyword">val</span> price: <span class="hljs-built_in">Int</span>,
+    <span class="hljs-keyword">val</span> stock: <span class="hljs-built_in">Int</span>,
+    <span class="hljs-keyword">val</span> categoryDiscountRate: <span class="hljs-built_in">Int</span>
+)
+</code></pre>
+<p>Then write pure functions over that model. They know nothing about the database or Spring, and don't throw business exceptions.</p>
+<pre data-lang="kotlin"><code class="language-kotlin hljs"><span class="hljs-comment">/** Functional Core: pure input-to-output calculation */</span>
+<span class="hljs-keyword">object</span> OrderCalculator {
+    <span class="hljs-function"><span class="hljs-keyword">fun</span> <span class="hljs-title">calculate</span><span class="hljs-params">(
+        inputs: <span class="hljs-type">List</span>&lt;<span class="hljs-type">OrderItemInput</span>&gt;,
+        goodsMap: <span class="hljs-type">Map</span>&lt;<span class="hljs-type">Long</span>, GoodsSnapshot&gt;,
+        discountPolicy: (<span class="hljs-type">GoodsSnapshot</span>, <span class="hljs-type">Int</span>, <span class="hljs-type">Int</span>) -&gt; <span class="hljs-type">Int</span>
+    )</span></span>: OrderResult {
+        <span class="hljs-keyword">val</span> aggregated = inputs.groupBy { it.goodsId }
+            .map { (goodsId, group) -&gt; OrderItemInput(goodsId, group.sumOf { it.quantity }) }
+
+        <span class="hljs-keyword">for</span> (input <span class="hljs-keyword">in</span> aggregated) {
+            <span class="hljs-keyword">val</span> goods = goodsMap[input.goodsId]
+                ?: <span class="hljs-keyword">return</span> OrderResult.Failed(listOf(OrderError.GoodsNotFound(input.goodsId)))
+
+            <span class="hljs-keyword">if</span> (goods.stock &lt; input.quantity)
+                <span class="hljs-keyword">return</span> OrderResult.Failed(listOf(OrderError.OutOfStock(goods.id, goods.stock, input.quantity)))
+
+            <span class="hljs-keyword">val</span> subtotal = goods.price * input.quantity
+            <span class="hljs-keyword">val</span> discount = discountPolicy(goods, input.quantity, subtotal)
+            <span class="hljs-comment">// ... assemble the result</span>
+        }
+        <span class="hljs-comment">// ... result assembly omitted</span>
+        <span class="hljs-keyword">return</span> OrderResult.Success(OrderCalculation(items, totalPrice, totalDiscount, finalPrice, stockDeductions))
+    }
+}
+</code></pre>
+<p>Return errors as sealed-class values rather than exceptions.</p>
+<pre data-lang="kotlin"><code class="language-kotlin hljs"><span class="hljs-keyword">sealed</span> <span class="hljs-keyword">class</span> <span class="hljs-title class_">OrderError</span> {
+    <span class="hljs-keyword">data</span> <span class="hljs-keyword">class</span> <span class="hljs-title class_">OutOfStock</span>(<span class="hljs-keyword">val</span> goodsId: <span class="hljs-built_in">Long</span>, <span class="hljs-keyword">val</span> available: <span class="hljs-built_in">Int</span>, <span class="hljs-keyword">val</span> requested: <span class="hljs-built_in">Int</span>) : OrderError()
+    <span class="hljs-keyword">data</span> <span class="hljs-keyword">class</span> <span class="hljs-title class_">GoodsNotFound</span>(<span class="hljs-keyword">val</span> goodsId: <span class="hljs-built_in">Long</span>) : OrderError()
+}
+
+<span class="hljs-keyword">sealed</span> <span class="hljs-keyword">class</span> <span class="hljs-title class_">OrderResult</span> {
+    <span class="hljs-keyword">data</span> <span class="hljs-keyword">class</span> <span class="hljs-title class_">Success</span>(<span class="hljs-keyword">val</span> calculation: OrderCalculation) : OrderResult()
+    <span class="hljs-keyword">data</span> <span class="hljs-keyword">class</span> <span class="hljs-title class_">Failed</span>(<span class="hljs-keyword">val</span> errors: List&lt;OrderError&gt;) : OrderResult()
+}
+</code></pre>
+<p>The service coordinates I/O: fetch entities, convert them to snapshots, call the core, then assemble and persist entities from the result.</p>
+<pre data-lang="kotlin"><code class="language-kotlin hljs"><span class="hljs-comment">/** Imperative Shell: coordinate I/O */</span>
+<span class="hljs-meta">@Transactional</span>
+<span class="hljs-function"><span class="hljs-keyword">fun</span> <span class="hljs-title">create</span><span class="hljs-params">(request: <span class="hljs-type">OrderRequest</span>)</span></span>: OrderResponse {
+    <span class="hljs-comment">// 1. I/O: fetch goods from the database</span>
+    <span class="hljs-keyword">val</span> goodsEntities = request.items.map { it.goodsId }.distinct()
+        .associateWith { goodsService.getGoods(it) }
+
+    <span class="hljs-comment">// 2. Convert JPA entities to immutable snapshots</span>
+    <span class="hljs-keyword">val</span> snapshots = goodsEntities.mapValues { (_, g) -&gt; g.toSnapshot() }
+
+    <span class="hljs-comment">// 3. Call the core: pure computation, no DB or business exceptions</span>
+    <span class="hljs-keyword">val</span> inputs = request.items.map { OrderItemInput(it.goodsId, it.quantity) }
+    <span class="hljs-keyword">val</span> result = OrderCalculator.calculate(inputs, snapshots, discountPolicy)
+
+    <span class="hljs-comment">// 4. Throw on failure; assemble and persist entities on success</span>
+    <span class="hljs-keyword">return</span> <span class="hljs-keyword">when</span> (result) {
+        <span class="hljs-keyword">is</span> OrderResult.Failed -&gt; <span class="hljs-keyword">throw</span> result.errors.first().toException()
+        <span class="hljs-keyword">is</span> OrderResult.Success -&gt; {
+            <span class="hljs-keyword">val</span> calc = result.calculation
+            <span class="hljs-keyword">for</span> (deduction <span class="hljs-keyword">in</span> calc.stockDeductions) {
+                goodsEntities[deduction.goodsId]!!.applyStockDeduction(deduction.quantity)
+            }
+            <span class="hljs-keyword">val</span> order = GoodsOrder()
+            <span class="hljs-keyword">for</span> (itemCalc <span class="hljs-keyword">in</span> calc.items) {
+                order.addItem(OrderItem(
+                    goods = goodsEntities[itemCalc.goodsId]!!,
+                    quantity = itemCalc.quantity,
+                    unitPrice = itemCalc.unitPrice,
+                    subtotal = itemCalc.subtotal,
+                    discountAmount = itemCalc.discountAmount
+                ))
+            }
+            order.totalPrice = calc.totalPrice
+            order.totalDiscount = calc.totalDiscount
+            order.finalPrice = calc.finalPrice
+            OrderResponse.from(orderRepository.save(order))
+        }
+    }
+}
+</code></pre>
+<p>This structure has a name: Functional Core / Imperative Shell, presented by Gary Bernhardt in his 2012 talk <em>Boundaries</em>. The core computes through pure functions; the shell orchestrates I/O.</p>
+<p><img src="/assets/en/fp-core.png" alt="Before and after separating a functional core from an imperative shell" loading="lazy"></p>
+<h3 id="이-구조에서-테스트는-어떻게-달라지는가">How does testing change?</h3><p>This was the most immediately noticeable improvement.</p>
+<pre data-lang="kotlin"><code class="language-kotlin hljs"><span class="hljs-comment">// Before: three mocks</span>
+<span class="hljs-keyword">val</span> goodsService = mock&lt;GoodsService&gt;()
+<span class="hljs-keyword">val</span> discountService = mock&lt;DiscountService&gt;()
+<span class="hljs-keyword">val</span> orderRepository = mock&lt;OrderRepository&gt;()
+whenever(goodsService.getGoods(<span class="hljs-number">1L</span>)).thenReturn(goods)
+whenever(discountService.calculateDiscount(any(), any(), any())).thenReturn(<span class="hljs-number">1000</span>)
+whenever(orderRepository.save(any())).thenAnswer { it.arguments[<span class="hljs-number">0</span>] }
+<span class="hljs-keyword">val</span> service = OrderService(orderRepository, goodsService, discountService)
+<span class="hljs-comment">// Only now can the test begin</span>
+
+
+<span class="hljs-comment">// After: zero mocks</span>
+<span class="hljs-keyword">val</span> result = OrderCalculator.calculate(
+    inputs = listOf(OrderItemInput(<span class="hljs-number">1L</span>, <span class="hljs-number">2</span>)),
+    goodsMap = mapOf(<span class="hljs-number">1L</span> to GoodsSnapshot(<span class="hljs-number">1L</span>, <span class="hljs-string">"T-shirt"</span>, <span class="hljs-number">10000</span>, <span class="hljs-number">5</span>, <span class="hljs-number">10</span>)),
+    discountPolicy = { _, _, subtotal -&gt; (subtotal * <span class="hljs-number">0.10</span>).toInt() }
+)
+assert(result <span class="hljs-keyword">is</span> OrderResult.Success)
+assertEquals(<span class="hljs-number">18000</span>, (result <span class="hljs-keyword">as</span> OrderResult.Success).calculation.finalPrice)
+<span class="hljs-comment">// Done. No DB, Spring context, or mocks.</span>
+</code></pre>
+<p>Without a database, tests run in milliseconds. Identical inputs produce identical outputs. Instead of investigating environmental reasons for failure, I can inspect the inputs.</p>
+<h3 id="대가-shell이-뚱뚱해졌다">The cost: a larger shell</h3><p>Iteration 1's <code>create()</code> was 15 lines. After FC/IS, it was 35. Mapping from entities to snapshots and back from core results added code.</p>
+<p>But much of that extra code made previously implicit behavior explicit.</p>
+<p>For example, aggregating quantities when the same product appears twice. Iteration 1 happened to work through instance identity in JPA's first-level cache. Iteration 2 explicitly aggregates with <code>groupBy</code>. One extra line removed a dependency on JPA internals.</p>
+<p>Pure mapping—<code>toSnapshot</code> and entity assembly—is genuine overhead. Separate models necessarily introduce it. Whether testability pays for that cost depends on the project. As business logic grows more complex, the core's benefit grows while much of the mapping cost stays fixed.</p>
+<p>With FC/IS in place, I looked for more logic to move into the core: stock validation and discount policies. What friction would each introduce, and was it essential or accidental?</p>
+<h2 id="3-pure-function의-영역을-넓히다">3. Expand the territory of pure functions</h2><h3 id="3-1-재고-검증--본질적-긴장-encapsulation-vs-composition">3-1. Stock validation: the essential tension between encapsulation and composition</h3><p>In iteration 1, stock deduction was a method on <code>Goods</code>.</p>
+<pre data-lang="kotlin"><code class="language-kotlin hljs"><span class="hljs-keyword">class</span> <span class="hljs-title class_">Goods</span> {
+    <span class="hljs-function"><span class="hljs-keyword">fun</span> <span class="hljs-title">decreaseStock</span><span class="hljs-params">(quantity: <span class="hljs-type">Int</span>)</span></span> {
+        <span class="hljs-keyword">if</span> (stock &lt; quantity) <span class="hljs-keyword">throw</span> OutOfStockException(
+            <span class="hljs-string">"Insufficient stock. Available: <span class="hljs-variable">$stock</span>, requested: <span class="hljs-variable">$quantity</span>"</span>
+        )
+        stock -= quantity
+    }
+}
+</code></pre>
+<p>That method does two things: validate availability and deduct stock. From an OOP perspective, that's natural: the object protects its own invariant, <code>stock &gt;= 0</code>.</p>
+<p>But iteration 2 already validates stock in <code>OrderCalculator</code>. Calling <code>decreaseStock()</code> in the shell validates twice. The core returns sealed-class errors; the entity throws exceptions. The two patterns conflict.</p>
+<p>I separated validation from execution.</p>
+<pre data-lang="kotlin"><code class="language-kotlin hljs"><span class="hljs-comment">// Core: a pure function of two integers</span>
+<span class="hljs-function"><span class="hljs-keyword">fun</span> <span class="hljs-title">validateStock</span><span class="hljs-params">(stock: <span class="hljs-type">Int</span>, quantity: <span class="hljs-type">Int</span>)</span></span>: StockValidation =
+    <span class="hljs-keyword">if</span> (stock &gt;= quantity) StockValidation.Sufficient
+    <span class="hljs-keyword">else</span> StockValidation.Insufficient(available = stock, requested = quantity)
+
+<span class="hljs-comment">// Entity: deduct only. The core validates first.</span>
+<span class="hljs-keyword">class</span> <span class="hljs-title class_">Goods</span> {
+    <span class="hljs-function"><span class="hljs-keyword">fun</span> <span class="hljs-title">applyStockDeduction</span><span class="hljs-params">(quantity: <span class="hljs-type">Int</span>)</span></span> {
+        stock -= quantity
+    }
+}
+</code></pre>
+<p><code>validateStock(10, 3)</code> returns <code>StockValidation.Sufficient</code>. No mocks, no database—one function call.</p>
+<p>This also removed <code>OutOfStockException</code> from the entity's imports. The domain entity no longer depended on a Spring HTTP exception hierarchy through <code>BusinessException</code> and <code>HttpStatus</code>.</p>
+<p>There is a trade-off. <code>applyStockDeduction()</code> doesn't validate. Someone bypassing the core could create negative stock. Iteration 1's method defended itself regardless of the caller.</p>
+<p>Verdict: essential complexity.</p>
+<p>This isn't a tool limitation. Encapsulation—objects protecting themselves—and composition—separating validation from execution—trade off in any language or framework. Looser encapsulation makes composition and testing easier but weakens the guard. FC/IS relies on the flow: the shell calls the core first and executes only its successful result. The compiler doesn't enforce that boundary; review must.</p>
+<h3 id="3-2-할인-정책--우연적-벽만-있는-곳">3-2. Discount policies: only an accidental barrier</h3><p>After the tension around stock validation, converting discount policies offered a sharp contrast.</p>
+<p>Iteration 1 used the Strategy pattern.</p>
+<pre data-lang="kotlin"><code class="language-kotlin hljs"><span class="hljs-keyword">interface</span> <span class="hljs-title class_">DiscountPolicy</span> {
+    <span class="hljs-function"><span class="hljs-keyword">fun</span> <span class="hljs-title">calculate</span><span class="hljs-params">(goods: <span class="hljs-type">Goods</span>, quantity: <span class="hljs-type">Int</span>, subtotal: <span class="hljs-type">Int</span>)</span></span>: <span class="hljs-built_in">Int</span>
+}
+
+<span class="hljs-meta">@Component</span>
+<span class="hljs-keyword">class</span> <span class="hljs-title class_">QuantityDiscountPolicy</span> : <span class="hljs-type">DiscountPolicy</span> {
+    <span class="hljs-keyword">override</span> <span class="hljs-function"><span class="hljs-keyword">fun</span> <span class="hljs-title">calculate</span><span class="hljs-params">(goods: <span class="hljs-type">Goods</span>, quantity: <span class="hljs-type">Int</span>, subtotal: <span class="hljs-type">Int</span>)</span></span>: <span class="hljs-built_in">Int</span> =
+        <span class="hljs-keyword">if</span> (quantity &gt;= <span class="hljs-number">3</span>) (subtotal * <span class="hljs-number">0.10</span>).toInt() <span class="hljs-keyword">else</span> <span class="hljs-number">0</span>
+}
+
+<span class="hljs-meta">@Component</span>
+<span class="hljs-keyword">class</span> <span class="hljs-title class_">CategoryDiscountPolicy</span> : <span class="hljs-type">DiscountPolicy</span> {
+    <span class="hljs-keyword">override</span> <span class="hljs-function"><span class="hljs-keyword">fun</span> <span class="hljs-title">calculate</span><span class="hljs-params">(goods: <span class="hljs-type">Goods</span>, quantity: <span class="hljs-type">Int</span>, subtotal: <span class="hljs-type">Int</span>)</span></span>: <span class="hljs-built_in">Int</span> {
+        <span class="hljs-keyword">if</span> (goods.category.discountRate &lt;= <span class="hljs-number">0</span>) <span class="hljs-keyword">return</span> <span class="hljs-number">0</span>
+        <span class="hljs-keyword">return</span> (subtotal * goods.category.discountRate / <span class="hljs-number">100.0</span>).toInt()
+    }
+}
+
+<span class="hljs-meta">@Service</span>
+<span class="hljs-keyword">class</span> <span class="hljs-title class_">DiscountService</span>(<span class="hljs-keyword">private</span> <span class="hljs-keyword">val</span> policies: List&lt;DiscountPolicy&gt;) {
+    <span class="hljs-function"><span class="hljs-keyword">fun</span> <span class="hljs-title">calculateDiscount</span><span class="hljs-params">(goods: <span class="hljs-type">Goods</span>, quantity: <span class="hljs-type">Int</span>, subtotal: <span class="hljs-type">Int</span>)</span></span>: <span class="hljs-built_in">Int</span> =
+        policies.maxOfOrNull { it.calculate(goods, quantity, subtotal) } ?: <span class="hljs-number">0</span>
+}
+</code></pre>
+<p>One interface, two implementations, and a service: four classes across two files.</p>
+<p>But <code>DiscountPolicy</code> has only one method, <code>calculate()</code>. It's essentially a function of type <code>(Goods, Int, Int) -&gt; Int</code>.</p>
+<pre data-lang="kotlin"><code class="language-kotlin hljs"><span class="hljs-keyword">typealias</span> DiscountPolicy = (GoodsSnapshot, <span class="hljs-built_in">Int</span>, <span class="hljs-built_in">Int</span>) -&gt; <span class="hljs-built_in">Int</span>
+
+<span class="hljs-keyword">val</span> quantityDiscount: DiscountPolicy = { _, quantity, subtotal -&gt;
+    <span class="hljs-keyword">if</span> (quantity &gt;= <span class="hljs-number">3</span>) (subtotal * <span class="hljs-number">0.10</span>).toInt() <span class="hljs-keyword">else</span> <span class="hljs-number">0</span>
+}
+
+<span class="hljs-keyword">val</span> categoryDiscount: DiscountPolicy = { goods, _, subtotal -&gt;
+    <span class="hljs-keyword">if</span> (goods.categoryDiscountRate &lt;= <span class="hljs-number">0</span>) <span class="hljs-number">0</span>
+    <span class="hljs-keyword">else</span> (subtotal * goods.categoryDiscountRate / <span class="hljs-number">100.0</span>).toInt()
+}
+
+<span class="hljs-function"><span class="hljs-keyword">fun</span> <span class="hljs-title">bestDiscount</span><span class="hljs-params">(policies: <span class="hljs-type">List</span>&lt;<span class="hljs-type">DiscountPolicy</span>&gt;)</span></span>: DiscountPolicy =
+    { goods, quantity, subtotal -&gt;
+        policies.maxOfOrNull { it(goods, quantity, subtotal) } ?: <span class="hljs-number">0</span>
+    }
+
+<span class="hljs-keyword">val</span> defaultDiscountPolicy = bestDiscount(listOf(quantityDiscount, categoryDiscount))
+</code></pre>
+<p>Four classes became three functions and one higher-order function. Two files became one. <code>@Component</code> and <code>@Service</code> disappeared, along with the dependency on the JPA entity. Accepting <code>GoodsSnapshot</code> made the policy usable directly in the core.</p>
+<p>The shell's awkward adapter disappeared too. Previously, the discount service expected <code>Goods</code> while the core used snapshots, requiring a function wrapper. Once the policy itself accepted snapshots, there was nothing to adapt.</p>
+<p>The lack of friction has a simple explanation: discounts here involve no I/O, database reads, or mutation. Product information, quantity, and subtotal go in; a discount amount comes out. Pure computation naturally fits a pure function.</p>
+<p>Verdict: accidental complexity.</p>
+<p>Implementing a single-abstract-method interface through classes and DI was a Spring convention. The Strategy pattern means making behavior replaceable, which function values accomplish too. Interfaces in OOP and function types in FP are different routes to treating behavior as a value.</p>
+<p>If a policy read discount rates from a database, things would change. The shell would need to fetch those values before injecting them into the core. Hardcoded rates made this implementation a fortunate, simple case.</p>
+<h3 id="두-전환의-대비에서-보이는-패턴">What the contrast reveals</h3><p>Stock validation introduced an essential tension; discounts didn't. What's different?</p>
+<p>Does the logic involve I/O? Discounts were pure computation. Stock validation was pure too, but deduction changes state; separating the two introduced tension with encapsulation.</p>
+<p>Here, I/O determined the difficulty of the FP transition. Without it, there was little resistance. With it, separation exposed an essential trade-off. That was section 3's main finding.</p>
+<h2 id="4-벽에-부딪히다--본질과-우연이-동시에-오는-구간">4. Hit the barriers: essential and accidental together</h2><p>Up to section 3, ordinary Kotlin features improved the structure without fighting Spring. From here, the story changes.</p>
+<h3 id="4-1-cancel은-왜-core로-빠지지-않는가--본질적-벽">4-1. Why doesn't cancel() move cleanly into the core? An essential barrier</h3><p>FC/IS worked well for <code>create()</code>. Could it do the same for <code>cancel()</code>?</p>
+<p>Here's iteration 1's cancellation code.</p>
+<pre data-lang="kotlin"><code class="language-kotlin hljs"><span class="hljs-function"><span class="hljs-keyword">fun</span> <span class="hljs-title">cancel</span><span class="hljs-params">()</span></span> {
+    changeStatus(OrderStatus.CANCELLED)
+    items.forEach { it.goods.increaseStock(it.quantity) }
+}
+</code></pre>
+<p>Status-transition validation could become a pure function.</p>
+<pre data-lang="kotlin"><code class="language-kotlin hljs"><span class="hljs-function"><span class="hljs-keyword">fun</span> <span class="hljs-title">validateStatusTransition</span><span class="hljs-params">(from: <span class="hljs-type">OrderStatus</span>, to: <span class="hljs-type">OrderStatus</span>)</span></span>: StatusTransitionResult =
+    <span class="hljs-keyword">if</span> (from.canTransitionTo(to)) StatusTransitionResult.Allowed(from, to)
+    <span class="hljs-keyword">else</span> StatusTransitionResult.Denied(from, to)
+</code></pre>
+<p><code>validateStatusTransition(PENDING, CANCELLED)</code> needs neither mocks nor a database. So far, so good.</p>
+<p>The problem was restoring inventory: <code>items.forEach { it.goods.increaseStock(it.quantity) }</code>. I tried producing commands in the core, adding <code>CancelCommand</code>, <code>StockRestoration</code>, <code>OrderItemSnapshot</code>, and <code>buildStockRestorations</code>.</p>
+<p>Then I deleted all of them.</p>
+<p>The shell still had to execute through the JPA entity graph. A command saying ‘restore two units to goods ID 1’ merely added a translation step before traversing the same relationships again. It was YAGNI.</p>
+<p>The key difference between <code>create()</code> and <code>cancel()</code> is this:</p>
+<p><img src="/assets/en/fp-core.png" alt="Before and after separating a functional core from an imperative shell" loading="lazy"></p>
+<p>Verdict: essential complexity.</p>
+<p>This isn't caused by JPA. Exposed or jOOQ would still require changing persisted state. Pure functions can validate or plan that change, but execution is necessarily stateful. This is the essential ingredient from section 1: modifying something that already exists entails a state transition. Dirty checking is just one implementation.</p>
+<p>In this design, constructing new data favored FP; modifying existing managed objects favored OOP. That difference came from the use case, not merely the tool.</p>
+<p>After cancellation, I pushed in another direction: what if I removed exceptions altogether?</p>
+<h3 id="4-2-예외를-제거하면-무엇을-잃는가--우연적-벽의-집중포화">4-2. What do we lose without exceptions? A cluster of accidental barriers</h3><p>The core returned sealed-class errors, but the shell converted them back into exceptions for <code>@ControllerAdvice</code>. I removed that conversion: the service returned <code>Either&lt;OrderError, OrderResponse&gt;</code>, and the controller mapped it to HTTP.</p>
+<pre data-lang="kotlin"><code class="language-kotlin hljs"><span class="hljs-comment">// Before: service throws; @ControllerAdvice handles globally</span>
+<span class="hljs-meta">@RestController</span>
+<span class="hljs-keyword">class</span> <span class="hljs-title class_">OrderController</span> {
+    <span class="hljs-meta">@PostMapping</span> <span class="hljs-meta">@ResponseStatus(HttpStatus.CREATED)</span>
+    <span class="hljs-function"><span class="hljs-keyword">fun</span> <span class="hljs-title">create</span><span class="hljs-params">(<span class="hljs-meta">@RequestBody</span> request: <span class="hljs-type">OrderRequest</span>)</span></span>: OrderResponse {
+        <span class="hljs-keyword">return</span> orderService.create(request)  <span class="hljs-comment">// One line</span>
+    }
+}
+
+<span class="hljs-comment">// After: service returns Either; controller folds it</span>
+<span class="hljs-meta">@RestController</span>
+<span class="hljs-keyword">class</span> <span class="hljs-title class_">OrderController</span> {
+    <span class="hljs-meta">@PostMapping</span>
+    <span class="hljs-function"><span class="hljs-keyword">fun</span> <span class="hljs-title">create</span><span class="hljs-params">(<span class="hljs-meta">@RequestBody</span> request: <span class="hljs-type">OrderRequest</span>)</span></span>: ResponseEntity&lt;Any&gt; {
+        <span class="hljs-keyword">return</span> orderService.create(request).fold(
+            ifLeft = { it.toResponseEntity() },
+            ifRight = { ResponseEntity.status(HttpStatus.CREATED).body(it) }
+        )
+    }
+}
+</code></pre>
+<p>Several losses appeared immediately.</p>
+<p>Centralized handling through <code>@ControllerAdvice</code> disappeared. Previously, controllers simply called business logic while one handler mapped errors to HTTP. Now every controller method repeated a <code>fold</code> branch.</p>
+<p><code>ResponseEntity&lt;Any&gt;</code> also caused trouble. Success contained <code>OrderResponse</code>; failure contained <code>ErrorResponse</code>. The compiler saw only <code>Any</code>, and automatic Swagger documentation lost its useful response shape.</p>
+<p>The project became inconsistent: orders used sealed-class errors, while products and categories still used exceptions. Two error-handling styles coexisted.</p>
+<p>Then I noticed something ironic.</p>
+<blockquote>
+<p><code>@ControllerAdvice</code> was not just a global exception handler. It was already providing the separation of concerns I wanted from FP.</p>
+</blockquote>
+<p>It separated error handling from business logic and centralized it through AOP. Replacing it with controller-level sealed-class handling scattered that concern again.</p>
+<p>FP doesn't automatically improve separation of concerns. Replacing a framework's existing mechanism can do the opposite.</p>
+<p>Verdict: accidental complexity. Spring's exception-oriented handler is a design choice; a different framework, such as Ktor with <code>StatusPages</code>, offers different handling options. But replacing the mechanism within this Spring project cost more than the original problem. Accidental doesn't mean impossible—it can mean too expensive.</p>
+<h2 id="5-transactional의-함정--바이트코드를-까보다">5. The @Transactional trap: inspect the bytecode</h2><p>Although section 4-2 showed diminishing returns, I went one step further. The handwritten <code>OrderResult</code> started the experiment; propagating value-based errors through services and controllers led me to Arrow's <code>Either&lt;OrderError, T&gt;</code> and Raise DSL, using <code>raise()</code> and <code>bind()</code>.</p>
+<p>One question remained: when a <code>@Transactional</code> method returns <code>Either.Left</code>, does it roll back or commit?</p>
+<p>It commits. To see why, open Arrow's implementation.</p>
+<h3 id="arrow-raise의-정체">What Arrow Raise actually does</h3><p>Inside <code>either { }</code>, <code>raise(error)</code> throws internally.</p>
+<pre data-lang="dart"><code class="language-dart hljs"><span class="hljs-title function_">raise</span>(error)
+  → <span class="hljs-keyword">throw</span> <span class="hljs-title class_">NoTrace</span>(error, raise)
+      <span class="hljs-keyword">extends</span> <span class="hljs-title class_">RaiseCancellationException</span>
+          <span class="hljs-keyword">extends</span> <span class="hljs-title class_">CancellationException</span>
+              <span class="hljs-keyword">extends</span> <span class="hljs-title class_">IllegalStateException</span>
+                  <span class="hljs-keyword">extends</span> <span class="hljs-title class_">RuntimeException</span>
+</code></pre>
+<p>The exception belongs to the runtime exception hierarchy. Spring normally rolls back on unchecked exceptions. Shouldn't this roll back too?</p>
+<h3 id="실행-순서가-답이다">Execution order is the answer</h3><p><code>either { }</code> is an inline Kotlin function. Its try-catch is inlined into the method's bytecode.</p>
+<pre data-lang="dart"><code class="language-dart hljs"><span class="hljs-meta">@Transactional</span> AOP proxy (outer)
+  └ actual method call
+      └ either { } <span class="hljs-keyword">try</span>-<span class="hljs-keyword">catch</span> (inner)
+          └ <span class="hljs-title function_">raise</span>(error)
+          └ → <span class="hljs-keyword">throw</span> <span class="hljs-title class_">NoTrace</span>
+          └ <span class="hljs-keyword">catch</span> (e: <span class="hljs-title class_">RaiseCancellationException</span>) → <span class="hljs-keyword">return</span> <span class="hljs-title class_">Either</span>.<span class="hljs-title class_">Left</span>(error)
+      └ method returns <span class="hljs-title class_">Either</span>.<span class="hljs-title class_">Left</span> normally
+  └ proxy sees a normal <span class="hljs-keyword">return</span>, not an exception → commit
+</code></pre>
+<p>The inner <code>either</code> catch converts the exception to <code>Either.Left</code> before the transaction proxy can see it. The proxy observes a normal return and commits.</p>
+<h3 id="왜-이게-위험한가">Why is that dangerous?</h3><p>Our current flow is safe because pure calculation happens before I/O. A failed calculation returns Left without reaching inventory deduction.</p>
+<p>But what if someone changes the order?</p>
+<pre data-lang="kotlin"><code class="language-kotlin hljs"><span class="hljs-meta">@Transactional</span>
+<span class="hljs-function"><span class="hljs-keyword">fun</span> <span class="hljs-title">dangerousCreate</span><span class="hljs-params">(request: <span class="hljs-type">OrderRequest</span>)</span></span>: Either&lt;OrderError, OrderResponse&gt; = either {
+    <span class="hljs-comment">// I/O: deduct stock first</span>
+    goodsEntities[goodsId]!!.applyStockDeduction(quantity)
+
+    <span class="hljs-comment">// Core: calculate afterward</span>
+    <span class="hljs-keyword">val</span> calc = OrderCalculator.calculateEither(inputs, snapshots, policy).bind()
+    <span class="hljs-comment">//                                                                   ^^^^</span>
+    <span class="hljs-comment">// Left: raise() -&gt; exception -&gt; caught by either -&gt; Either.Left</span>
+    <span class="hljs-comment">// @Transactional commits</span>
+    <span class="hljs-comment">// Stock deducted, no order created: inconsistent data.</span>
+}
+</code></pre>
+<p>With exception-based errors, an exception escaping the method triggers rollback even after earlier I/O, under the transaction's rollback rules.</p>
+<p>Returning <code>Either</code> removes that automatic safety net. This isn't an Arrow bug; it's a structural mismatch between value-based errors and exception-based transaction management.</p>
+<h3 id="spring-팀의-공식-입장">The Spring team's position</h3><p>Spring Framework issue <a href="https://github.com/spring-projects/spring-framework/issues/27323" target="_blank" rel="noopener noreferrer">#27323, ‘Result return types for @Transactional Kotlin functions’</a>, was declined.</p>
+<p>The team declined to add recognition of value-based errors such as Result to <code>@Transactional</code>. A returned error value in this flow does not trigger exception-based rollback.</p>
+<p>Verdict: accidental complexity. Rollback based on a return value is technically implementable; it isn't the mechanism chosen here.</p>
+<p>But this is no isolated choice. <code>@Transactional</code>, <code>@ControllerAdvice</code>, and the HTTP response model fit an exception-oriented framework. Changing one crosses assumptions shared by the others.</p>
+<blockquote>
+<p>Enough accidental complexity can feel essential. One barrier is manageable; barriers across every layer approach the cost of replacing the framework. Pushing value-based error handling throughout Spring means fighting its surrounding conventions.</p>
+</blockquote>
+<h2 id="6-벽의-지도--어디서-싸우고-어디서-돌아가는가">6. A map of the barriers: where to push and where to work around</h2><p>Here's the journey in one place.</p>
+<h3 id="판별-결과-종합">Summary of the classifications</h3><table>
+<thead>
+<tr>
+<th>Transition</th>
+<th>Barrier</th>
+<th>Response</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>Immutable JPA entities (§1)</td>
+<td>Accidental</td>
+<td>Work around: separate the domain model</td>
+</tr>
+<tr>
+<td>FC/IS (§2)</td>
+<td>—</td>
+<td>Structure around the accidental barrier</td>
+</tr>
+<tr>
+<td>Separate stock validation (§3-1)</td>
+<td>Essential</td>
+<td>Compromise: guard through execution flow</td>
+</tr>
+<tr>
+<td>Discount policies (§3-2)</td>
+<td>Accidental</td>
+<td>Remove: pure computation fits naturally</td>
+</tr>
+<tr>
+<td>Move cancellation into the core (§4-1)</td>
+<td>Essential</td>
+<td>Compromise: validate in core, execute in shell</td>
+</tr>
+<tr>
+<td>Remove exceptions (§4-2)</td>
+<td>Accidental</td>
+<td>Work around: cost exceeds benefit</td>
+</tr>
+<tr>
+<td>@Transactional + Either (§5)</td>
+<td>Accidental</td>
+<td>Work around: preserve the rollback safety net</td>
+</tr>
+</tbody></table>
+<p>A pattern emerges.</p>
+<p>In pure computation—discounts, stock checks, and order totals—FP was natural and useful. Accidental barriers were easy to bypass; essential trade-offs were manageable.</p>
+<p>At framework boundaries, several accidental barriers appeared together. Each was individually negotiable, but their shared exception-oriented assumptions meant changing one disturbed the others.</p>
+<h3 id="최적-멈춤-지점">Where to stop</h3><p><img src="/assets/en/fp-benefit.png" alt="Conceptual benefit curve as functional programming adoption expands into framework infrastructure" loading="lazy"></p>
+<p>The practical boundary was between pure computation and framework infrastructure. Push into the former; beyond that, you're negotiating the framework's conventions.</p>
+<h3 id="실무-구조-core에서-fp-shell에서-oop-경계에서-변환">A practical structure: FP in the core, OOP in the shell, conversion at the boundary</h3><pre data-lang="kotlin"><code class="language-kotlin hljs"><span class="hljs-comment">// Core: pure functions, Either errors, no mocks required</span>
+<span class="hljs-keyword">object</span> OrderCalculator {
+    <span class="hljs-function"><span class="hljs-keyword">fun</span> <span class="hljs-title">calculate</span><span class="hljs-params">(
+        inputs: <span class="hljs-type">List</span>&lt;<span class="hljs-type">OrderItemInput</span>&gt;,
+        goodsMap: <span class="hljs-type">Map</span>&lt;<span class="hljs-type">Long</span>, GoodsSnapshot&gt;,
+        discountPolicy: <span class="hljs-type">DiscountPolicy</span>
+    )</span></span>: Either&lt;OrderError, OrderCalculation&gt; = either {
+        <span class="hljs-comment">// Pure computation only: no DB or business exceptions</span>
+    }
+}
+
+<span class="hljs-comment">// Domain model: immutable, independent of JPA</span>
+<span class="hljs-keyword">data</span> <span class="hljs-keyword">class</span> <span class="hljs-title class_">GoodsSnapshot</span>(<span class="hljs-keyword">val</span> id: <span class="hljs-built_in">Long</span>, <span class="hljs-keyword">val</span> price: <span class="hljs-built_in">Int</span>, <span class="hljs-keyword">val</span> stock: <span class="hljs-built_in">Int</span>, ...)
+
+<span class="hljs-comment">// Discount policies: function types and higher-order functions</span>
+<span class="hljs-keyword">typealias</span> DiscountPolicy = (GoodsSnapshot, <span class="hljs-built_in">Int</span>, <span class="hljs-built_in">Int</span>) -&gt; <span class="hljs-built_in">Int</span>
+<span class="hljs-keyword">val</span> defaultPolicy = bestDiscount(listOf(quantityDiscount, categoryDiscount))
+
+<span class="hljs-comment">// Shell: follow Spring conventions; convert Either to exceptions</span>
+<span class="hljs-meta">@Service</span>
+<span class="hljs-keyword">class</span> <span class="hljs-title class_">OrderService</span>(...) {
+    <span class="hljs-meta">@Transactional</span>
+    <span class="hljs-function"><span class="hljs-keyword">fun</span> <span class="hljs-title">create</span><span class="hljs-params">(request: <span class="hljs-type">OrderRequest</span>)</span></span>: OrderResponse {
+        <span class="hljs-keyword">val</span> calc = OrderCalculator.calculate(inputs, snapshots, defaultPolicy)
+            .getOrElse { error -&gt; <span class="hljs-keyword">throw</span> error.toException() }
+        <span class="hljs-comment">// Boundary conversion preserves transactional rollback</span>
+        <span class="hljs-comment">// I/O: deduct stock, assemble entities, persist</span>
+        ...
+    }
+}
+
+<span class="hljs-comment">// Controller: delegate; @ControllerAdvice handles errors</span>
+<span class="hljs-meta">@RestController</span>
+<span class="hljs-keyword">class</span> <span class="hljs-title class_">OrderController</span>(<span class="hljs-keyword">private</span> <span class="hljs-keyword">val</span> orderService: OrderService) {
+    <span class="hljs-meta">@PostMapping</span> <span class="hljs-meta">@ResponseStatus(HttpStatus.CREATED)</span>
+    <span class="hljs-function"><span class="hljs-keyword">fun</span> <span class="hljs-title">create</span><span class="hljs-params">(<span class="hljs-meta">@RequestBody</span> request: <span class="hljs-type">OrderRequest</span>)</span></span>: OrderResponse =
+        orderService.create(request)
+}
+</code></pre>
+<p>What does this structure accomplish?</p>
+<ul>
+<li><strong>Core:</strong> pure functions, Either, and sealed classes, independently testable.</li>
+<li><strong>Shell:</strong> Spring services, transactions, and exception-based handling, without fighting the framework.</li>
+<li><strong>Boundary:</strong> <code>getOrElse { throw it.toException() }</code> connects the two. Transactions retain rollback behavior, <code>@ControllerAdvice</code> handles errors centrally, and controllers remain simple delegates. The core stays easy to test without discarding the framework's safety mechanisms.</li>
+</ul>
+<h2 id="7-결론">7. Conclusion</h2><p>One question ran through the experiment: is this barrier essential or accidental?</p>
+<p>Essential barriers demand deliberate compromise. Looser encapsulation increases flexibility but weakens protection. Constructing new data and modifying existing state favor different structures in this design. No tool eliminates the trade-off.</p>
+<p>Accidental barriers are choices. Separate models can avoid JPA's immutable-entity difficulties. Centralized value-based HTTP handling is possible too—but when its cost exceeds its benefit, working around the barrier is better.</p>
+<p>Pushing the experiment made those distinctions concrete. Otherwise I would have stopped at ‘FC/IS sounds good.’ Trying it revealed how <code>raise()</code> interacts with transactions and how much separation <code>@ControllerAdvice</code> already provided.</p>
+<p>Finally, FP versus OOP may be the wrong framing. The more useful distinction here was pure versus impure.</p>
+<ul>
+<li>Pure computation without I/O is easy to test and reason about, regardless of paradigm.</li>
+<li>Impure code introduces external dependencies and testing complexity, regardless of paradigm. FC/IS is fundamentally about separating pure computation from effects, not merely adopting FP. That boundary is where FP found a useful home in this Spring service.</li>
+</ul>
+<p>This article concerns layers within one service. Error propagation between services—gRPC Status, failures in event-driven systems—and distributed transactions introduce another set of problems. Their essential and accidental components deserve separate treatment.</p>
+<blockquote>
+<p><em>"No single development... by itself promises even one order of magnitude improvement."</em> — Fred Brooks, "No Silver Bullet" (1986)</p>
+</blockquote>
+<p>Forty years later, FP isn't a silver bullet either. But knowing which kind of barrier you're facing helps you decide where to push and where to work around.</p>
+
+        </div>
+      </article>
+    <nav class="post-nav" aria-label="Previous and next posts">
+      <a class="post-nav-item post-nav-item--prev" href="/posts/transaction-boundaries-and-outbox/">
+        <span class="post-nav-label">previous post</span>
+        <span class="post-nav-title">Choosing Transaction Boundaries: Narrowing Them with the Outbox Pattern</span>
+      </a>
+      <a class="post-nav-item post-nav-item--next" href="/posts/specifications-as-code/">
+        <span class="post-nav-label">next post</span>
+        <span class="post-nav-title">A Sufficiently Detailed Specification Is Indistinguishable from Code</span>
+      </a>
+    </nav>
+      <nav class="post-back">
+        <a href="/writing/">← back to posts</a>
+      </nav>
+    </div>
+    <aside class="toc" id="toc" aria-label="Contents">
+      <p class="toc-title">contents</p>
+      <ul class="toc-list">
+        <li class="toc-item toc-item--h2"><a href="#0-익숙한-코드에서-시작한다" data-target="0-익숙한-코드에서-시작한다">0. Start with familiar code</a></li>
+        <li class="toc-item toc-item--h2"><a href="#1-jpa-엔티티를-immutable로-만들-수-있을까--우연적-벽" data-target="1-jpa-엔티티를-immutable로-만들-수-있을까--우연적-벽">1. Can JPA entities be immutable? An accidental barrier</a></li>
+        <li class="toc-item toc-item--h3"><a href="#왜-이런-일이-벌어지는가" data-target="왜-이런-일이-벌어지는가">Why does this happen?</a></li>
+        <li class="toc-item toc-item--h3"><a href="#그런데-왜-컴파일은-되는가" data-target="그런데-왜-컴파일은-되는가">Then why does it compile?</a></li>
+        <li class="toc-item toc-item--h3"><a href="#판정-우연적-복잡성" data-target="판정-우연적-복잡성">Verdict: accidental complexity</a></li>
+        <li class="toc-item toc-item--h2"><a href="#2-벽을-돌아가다--도메인-모델-분리" data-target="2-벽을-돌아가다--도메인-모델-분리">2. Work around the barrier: separate the domain model</a></li>
+        <li class="toc-item toc-item--h3"><a href="#이-구조에서-테스트는-어떻게-달라지는가" data-target="이-구조에서-테스트는-어떻게-달라지는가">How does testing change?</a></li>
+        <li class="toc-item toc-item--h3"><a href="#대가-shell이-뚱뚱해졌다" data-target="대가-shell이-뚱뚱해졌다">The cost: a larger shell</a></li>
+        <li class="toc-item toc-item--h2"><a href="#3-pure-function의-영역을-넓히다" data-target="3-pure-function의-영역을-넓히다">3. Expand the territory of pure functions</a></li>
+        <li class="toc-item toc-item--h3"><a href="#3-1-재고-검증--본질적-긴장-encapsulation-vs-composition" data-target="3-1-재고-검증--본질적-긴장-encapsulation-vs-composition">3-1. Stock validation: the essential tension between encapsulation and composition</a></li>
+        <li class="toc-item toc-item--h3"><a href="#3-2-할인-정책--우연적-벽만-있는-곳" data-target="3-2-할인-정책--우연적-벽만-있는-곳">3-2. Discount policies: only an accidental barrier</a></li>
+        <li class="toc-item toc-item--h3"><a href="#두-전환의-대비에서-보이는-패턴" data-target="두-전환의-대비에서-보이는-패턴">What the contrast reveals</a></li>
+        <li class="toc-item toc-item--h2"><a href="#4-벽에-부딪히다--본질과-우연이-동시에-오는-구간" data-target="4-벽에-부딪히다--본질과-우연이-동시에-오는-구간">4. Hit the barriers: essential and accidental together</a></li>
+        <li class="toc-item toc-item--h3"><a href="#4-1-cancel은-왜-core로-빠지지-않는가--본질적-벽" data-target="4-1-cancel은-왜-core로-빠지지-않는가--본질적-벽">4-1. Why doesn't cancel() move cleanly into the core? An essential barrier</a></li>
+        <li class="toc-item toc-item--h3"><a href="#4-2-예외를-제거하면-무엇을-잃는가--우연적-벽의-집중포화" data-target="4-2-예외를-제거하면-무엇을-잃는가--우연적-벽의-집중포화">4-2. What do we lose without exceptions? A cluster of accidental barriers</a></li>
+        <li class="toc-item toc-item--h2"><a href="#5-transactional의-함정--바이트코드를-까보다" data-target="5-transactional의-함정--바이트코드를-까보다">5. The @Transactional trap: inspect the bytecode</a></li>
+        <li class="toc-item toc-item--h3"><a href="#arrow-raise의-정체" data-target="arrow-raise의-정체">What Arrow Raise actually does</a></li>
+        <li class="toc-item toc-item--h3"><a href="#실행-순서가-답이다" data-target="실행-순서가-답이다">Execution order is the answer</a></li>
+        <li class="toc-item toc-item--h3"><a href="#왜-이게-위험한가" data-target="왜-이게-위험한가">Why is that dangerous?</a></li>
+        <li class="toc-item toc-item--h3"><a href="#spring-팀의-공식-입장" data-target="spring-팀의-공식-입장">The Spring team's position</a></li>
+        <li class="toc-item toc-item--h2"><a href="#6-벽의-지도--어디서-싸우고-어디서-돌아가는가" data-target="6-벽의-지도--어디서-싸우고-어디서-돌아가는가">6. A map of the barriers: where to push and where to work around</a></li>
+        <li class="toc-item toc-item--h3"><a href="#판별-결과-종합" data-target="판별-결과-종합">Summary of the classifications</a></li>
+        <li class="toc-item toc-item--h3"><a href="#최적-멈춤-지점" data-target="최적-멈춤-지점">Where to stop</a></li>
+        <li class="toc-item toc-item--h3"><a href="#실무-구조-core에서-fp-shell에서-oop-경계에서-변환" data-target="실무-구조-core에서-fp-shell에서-oop-경계에서-변환">A practical structure: FP in the core, OOP in the shell, conversion at the boundary</a></li>
+        <li class="toc-item toc-item--h2"><a href="#7-결론" data-target="7-결론">7. Conclusion</a></li>
+      </ul>
+    </aside>
+  </main>
+  <script src="/app.js?v=391ab9a5"></script>
+
+
+</body></html>

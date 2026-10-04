@@ -1,0 +1,625 @@
+<!DOCTYPE html><html lang="en"><head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="google-site-verification" content="sNrpo16A0vUj7vHmVNEmAGZj85cGykaOeHO44krbqDU">
+  <title>woojin kim · Refactoring an LLM Pipeline: Finding Where Tokens Leak · xhae123's notes</title>
+  <meta name="description" content="I have a pipeline that reads English technical articles and turns them into Korean introduction cards. It checks feeds from 178 vendors, selects useful material">
+  <link rel="canonical" href="https://xhae123.github.io/posts/llm-pipeline-token-optimization/">
+  <meta property="og:type" content="article">
+  <meta property="og:site_name" content="xhae123's notes">
+  <meta property="og:title" content="Refactoring an LLM Pipeline: Finding Where Tokens Leak · xhae123's notes">
+  <meta property="og:description" content="I have a pipeline that reads English technical articles and turns them into Korean introduction cards. It checks feeds from 178 vendors, selects useful material">
+  <meta property="og:url" content="https://xhae123.github.io/posts/llm-pipeline-token-optimization/">
+  <meta property="og:locale" content="en_US">
+  <meta property="og:image" content="https://xhae123.github.io/assets/llm-pipeline-09-served-cards.png?v=1">
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:title" content="Refactoring an LLM Pipeline: Finding Where Tokens Leak · xhae123's notes">
+  <meta name="twitter:description" content="I have a pipeline that reads English technical articles and turns them into Korean introduction cards. It checks feeds from 178 vendors, selects useful material">
+  <meta name="twitter:image" content="https://xhae123.github.io/assets/llm-pipeline-09-served-cards.png?v=1">
+  <link rel="preconnect" href="https://cdn.jsdelivr.net">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin="">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable.css">
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500&amp;display=swap">
+  <link rel="stylesheet" href="/styles.css?v=lowercase-2">
+  <link rel="stylesheet" href="/navigation.css?v=rose-1">
+  <link rel="icon" type="image/svg+xml" href="/favicon.svg?v=woojin-w-2">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/github.min.css">
+  <link rel="stylesheet" href="/blog.css?v=lowercase-2">
+  <meta property="article:published_time" content="2026-07-22T15:54:18.000Z">
+  <meta property="article:section" content="AI">
+  <meta property="article:author" content="Woojin Kim">
+  <script type="application/ld+json">{"@context":"https://schema.org","@type":"BlogPosting","headline":"Refactoring an LLM Pipeline: Finding Where Tokens Leak","description":"I have a pipeline that reads English technical articles and turns them into Korean introduction cards. It checks feeds from 178 vendors, selects useful material","datePublished":"2026-07-22T15:54:18.000Z","dateModified":"2026-07-22T15:54:18.000Z","author":{"@type":"Person","name":"Woojin Kim"},"url":"https://xhae123.github.io/posts/llm-pipeline-token-optimization/","mainEntityOfPage":"https://xhae123.github.io/posts/llm-pipeline-token-optimization/","image":"https://xhae123.github.io/assets/llm-pipeline-09-served-cards.png?v=1"}</script>
+</head>
+<body>
+  <main class="post-layout">
+    <div class="post-main">
+      <article class="post" id="post">
+        <header class="post-header">
+          <a class="post-top-back" href="/writing/">← all posts</a>
+          <p class="post-meta"><time datetime="2026-07-22">2026.07.22</time><span aria-hidden="true"> · </span><span class="post-category">ai</span></p>
+          <h1 class="post-title">Refactoring an LLM Pipeline: Finding Where Tokens Leak</h1>
+        </header>
+        <div class="post-body" id="post-body">
+<p>I have a pipeline that reads English technical articles and turns them into Korean introduction cards. It checks feeds from 178 vendors, selects useful material, writes cards, and serves them automatically. The output looks like this.</p>
+<p><img src="/assets/llm-pipeline-09-served-cards.png?v=1" alt="Illustration: Refactoring an LLM Pipeline: Finding Where Tokens Leak" loading="lazy"></p>
+<p>Writing and assembly needed no human review. But I still had to inspect every selection and card. Is that automation, or has the work merely moved one step sideways?</p>
+<p>I took the pipeline apart, starting with a simple question: why does one card cost so many tokens? There were 929 sources awaiting triage. Writing all of them would take over 40 million tokens. Even a small per-card saving would matter.</p>
+<p>I went looking for savings and found two different problems: one in four generated cards was silently disappearing from the usable output, and I'd been optimizing only one of three cost dimensions. Neither was what I set out to find. Neither would have surfaced without measurement.</p>
+<p>Let's start with the results.</p>
+<p><img src="/assets/en/llm-pipeline-10-results.svg" alt="Measured results: tokens per article 72,136 to 45,788 (-37%); tool calls 13 to 5; duration 282s to 121s; corruption 25% to 0; triage agreement 80% to 93%. Refactoring also revealed that 25% of written cards were silently disappearing." loading="lazy"></p>
+<p>A note on how I worked: this refactoring was done with a Claude Code session. The session performed most execution and measurement; I chose directions and questioned results. ‘I’ here records that joint work. Both the session's mistakes and mine appear below. I haven't edited either out. All reported figures are measured.</p>
+<hr>
+<h2 id="전체-구조">Overall structure</h2><p><img src="/assets/en/llm-pipeline-00-architecture.svg" alt="Four-stage pipeline: ingestion, triage, writing, assembly; output files represent state, with humans at review points" loading="lazy"></p>
+<p>Four stages, only two using LLMs.</p>
+<table>
+<thead>
+<tr>
+<th>Layer</th>
+<th>Actor</th>
+<th>Work</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><strong>[1] Ingestion</strong></td>
+<td>Scripts, no LLM</td>
+<td>Check feeds, download and extract sources</td>
+</tr>
+<tr>
+<td><strong>[2] Triage</strong></td>
+<td>Haiku, batched</td>
+<td>Apply gates and decide bring/skip</td>
+</tr>
+<tr>
+<td><strong>[3] Writing</strong></td>
+<td>Sonnet, one agent per article</td>
+<td>Read the source and write a card</td>
+</tr>
+<tr>
+<td><strong>[4] Assembly</strong></td>
+<td>Scripts, no LLM</td>
+<td>Upsert the DB and export serving files</td>
+</tr>
+</tbody></table>
+<h3 id="핵심-설계--파일-존재가-곧-상태다">Core design: file existence is state</h3><p>There is no separate progress record. Each article has a directory; the files in it determine its state.</p>
+<pre data-lang="dns"><code class="language-dns hljs">content/&lt;id&gt;/
+  meta.json → original.md → triage.json → card.md → inclusion <span class="hljs-type">in</span> cards.json = served
+ <span class="hljs-punctuation">(</span>ingestion<span class="hljs-punctuation">)</span>   <span class="hljs-punctuation">(</span>source<span class="hljs-punctuation">)</span>      <span class="hljs-punctuation">(</span>triage<span class="hljs-punctuation">)</span>     <span class="hljs-punctuation">(</span>writing<span class="hljs-punctuation">)</span>          <span class="hljs-punctuation">(</span>serving<span class="hljs-punctuation">)</span>
+</code></pre>
+<p>Without a progress ledger, recorded progress can't diverge from files. After interruption, processing resumes where the next file is missing.</p>
+<p>That principle broke twice during this work. More on that below.</p>
+<h3 id="왜-이-구조인가--안-고른-길들">Why this structure: paths I didn't take</h3><p>Four layers and two LLM stages weren't predetermined. They came from painful experience.</p>
+<p>One agent can fetch feeds, select articles, and write cards in a demo. But if it dies at item 40 in a batch of 60, progress living only in its context goes with it. No disk checkpoint means no resume. Separate stages contain failure to one article and let us restart at that boundary.</p>
+<p>Ingestion and assembly don't require judgment. Extracting feed URLs and inserting cards into a database shouldn't need a model. Adding one makes the work expensive and nondeterministic, undermining reproduction and debugging. I reserved models for selection and writing and made the rest scripted.</p>
+<p>I also avoided a workflow framework. State here is simply which files exist; many frameworks add a checkpoint database or execution graph. That creates two sources of truth and reconciliation code when they diverge. I removed state instead of adding it. Inspection is <code>ls</code>; resumption is ‘process the missing next file.’ That simplicity mattered more than framework convenience.</p>
+<p>Layers also have different resource profiles: network I/O for ingestion, cheap batched inference for triage, isolated expensive inference for writing, and deterministic assembly. Combining them can bind cheap work to expensive resources.</p>
+<hr>
+<h2 id="1-수급--원문이-토대다">[1] Ingestion: the source is the foundation</h2><p>Scripts inspect 178 vendors' feeds, discover URLs, and extract source articles into Markdown. No LLM is involved.</p>
+<p>One rule: no source, no card. Writers cannot fetch the web again, because changing source material would make repeated runs incomparable.</p>
+<p>This stage determines downstream quality. Extracted site menus at the start of articles caused triage to reject good material. That's the next section.</p>
+<p>Another issue: 22 of 33 served cards have no preserved source. They predate source storage, so rewriting and fact comparison aren't possible. I exposed that with a ‘missing source’ badge in the admin interface.</p>
+<hr>
+<h2 id="2-선별--안목이-상품이다">[2] Triage: selection is the product</h2><p>A low acceptance rate isn't inherently bad. Not covering everything defines the product. An article must pass five gates to receive bring.</p>
+<table>
+<thead>
+<tr>
+<th></th>
+<th>Gate</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>G1</td>
+<td>Form: an article grounded in facts or concepts?</td>
+</tr>
+<tr>
+<td>G2</td>
+<td>Usefulness: substance usable in practice?</td>
+</tr>
+<tr>
+<td>G3</td>
+<td>Discovery: something readers may not have known?</td>
+</tr>
+<tr>
+<td>G4</td>
+<td>Graspability: digestible in a short read?</td>
+</tr>
+<tr>
+<td>G5</td>
+<td>Duplication: overlap with existing cards?</td>
+</tr>
+</tbody></table>
+<p>I still had to judge whether those decisions were correct. I reviewed 40 articles to investigate.</p>
+<h3 id="8라운드-40건">Eight rounds, 40 articles</h3><p>Rather than build first and measure later, I ran a feedback loop immediately.</p>
+<ul>
+<li>Each round used one article from each of five different vendors to reduce source bias.</li>
+<li>The session judged, I reviewed, disagreements produced feedback, and the next round used five unseen articles.</li>
+</ul>
+<p>Revised criteria were applied to new articles, separating feedback material from subsequent evaluation.</p>
+<p><img src="/assets/en/llm-pipeline-08-rounds.svg" alt="Eight rounds, 40 articles: agreement increased from 80% to 93% after switching from 60-line excerpts to full-text reading; most errors involved reading scope" loading="lazy"></p>
+<h4>Classifying five disagreements</h4><p>Among the first 25 articles, five decisions differed from mine. Three weren't rubric problems.</p>
+<table>
+<thead>
+<tr>
+<th>Article</th>
+<th>Decision</th>
+<th>Reality</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>Brendan Gregg — No More Blue Fridays</td>
+<td>Extraction failed</td>
+<td>Intact body, 7,206 characters</td>
+</tr>
+<tr>
+<td>Slack Engineering — Agent context</td>
+<td>No substance</td>
+<td>Intact body, 21,758 characters</td>
+</tr>
+<tr>
+<td>Google SRE Book — Eliminating Toil</td>
+<td>Extraction failed</td>
+<td>Intact body, 13,726 characters</td>
+</tr>
+</tbody></table>
+<p>All three were exactly the kind of sources we wanted, rejected for the same reason. The judge was instructed to read only the first 60 lines, which these sites filled with menus or chapter contents. It saw navigation and declared extraction failure. It followed the instruction correctly; the instruction was the trap.</p>
+<p>Treating all three as rubric feedback would have added rules to the wrong gates while leaving the real cause untouched.</p>
+<h4>First fix: the extractor. It failed</h4><p>I expanded content-container candidates, removed elements whose <code>class</code> matched <code>sidebar|toc|related</code>, and removed link-dense <code>&lt;ul&gt;</code> elements.</p>
+<p>Unit tests passed. Menus disappeared while prose lists remained.</p>
+<p>On real sites, improvement was only 1.3%.</p>
+<table>
+<thead>
+<tr>
+<th>Site</th>
+<th>Menu lines among the first 60</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>Brendan Gregg</td>
+<td>29 → <strong>30</strong></td>
+</tr>
+<tr>
+<td>Slack</td>
+<td>24 → 24</td>
+</tr>
+<tr>
+<td>Google SRE Book</td>
+<td>26 → 26</td>
+</tr>
+</tbody></table>
+<p>The actual HTML didn't match what I'd imagined. Those sites didn't implement their menus as <code>&lt;ul class="sidebar"&gt;</code>. I reverted the change.</p>
+<blockquote>
+<p>Something more embarrassing emerged: our claim that the body began at line 159 was based on the <code>&gt; source:</code> URL we prepend. The detector counted lines over 80 characters as prose. We'd measured the problem with a broken ruler, then built a solution on top of it.</p>
+</blockquote>
+<h4>Remove the 60-line limit</h4><p>If extraction wasn't the answer, the reading limit was next. <code>original.md</code> contained the full article, but the judge read only 60 lines to save costs. I'd never actually measured those costs.</p>
+<p>Here was the estimate:</p>
+<table>
+<thead>
+<tr>
+<th>Reading scope</th>
+<th>Judgment input, 60-article batch</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>First 60 lines</td>
+<td>44K tokens</td>
+</tr>
+<tr>
+<td>Full text</td>
+<td>314K tokens, 7.1×</td>
+</tr>
+</tbody></table>
+<p>Sevenfold sounds large, but compare it with a wrong decision. A wrong bring wastes about 45K writing tokens; a wrong skip loses a valuable source. Avoiding six wrong decisions in 60 articles would recoup the added input. Our observed disagreement rate was 20%, or twelve per 60.</p>
+<p>I set a 400-line cap per article rather than an unlimited read—an outlier was 340 KB—and reduced batches from 60 to 30.</p>
+<h4>Rejudgment: recovering the three articles</h4><table>
+<thead>
+<tr>
+<th>Article</th>
+<th>60-line decision</th>
+<th>After broader reading</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>Brendan Gregg</td>
+<td>SKIP: extraction failed</td>
+<td><strong>BRING</strong>: eBPF verification mechanisms</td>
+</tr>
+<tr>
+<td>Slack Engineering</td>
+<td>SKIP: no substance</td>
+<td><strong>BRING</strong>: multi-agent context</td>
+</tr>
+<tr>
+<td>Google SRE Book</td>
+<td>SKIP: extraction failed</td>
+<td>SKIP: <strong>insufficient discovery under G3</strong></td>
+</tr>
+</tbody></table>
+<p>The third matters especially. It was still skipped, but because its content was familiar, not unreadable. Judgment finally rested on the article itself.</p>
+<p>Agreement also improved.</p>
+<table>
+<thead>
+<tr>
+<th>Condition</th>
+<th>Sample</th>
+<th>Agreement</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>60-line limit, R1–5</td>
+<td>25</td>
+<td><strong>80%</strong></td>
+</tr>
+<tr>
+<td>Broader reading, R6–8</td>
+<td>15</td>
+<td><strong>93%</strong></td>
+</tr>
+</tbody></table>
+<p>Actual cost grew much less than estimated: about 40–46K to 54–58K per round, roughly 25%. The judge read only what it needed within the 400-line cap. The sevenfold estimate was wrong too.</p>
+<h4>Three things the loop accomplished</h4><p>We hadn't changed a single rubric line, yet the loop had already paid off three ways.</p>
+<p>First, it found a silent failure. The judge returned ‘extraction failed’ normally, with no error or warning. Without human inspection, those high-quality sources would have kept disappearing.</p>
+<p>Three of 40 experimental articles, 7.5%, suffered this issue. Extrapolated to 929 queued articles, roughly 70 might be rejected for the same reason. They weren't random sources, either: long navigation disproportionately affected older, well-organized technical sites.</p>
+<p>Second, it prevented a bad rubric revision. I drafted feedback to reject an AWS Builders' Library caching article as generic advice without numbers. The session challenged me:</p>
+<blockquote>
+<p>‘Is that criterion right? Principles and advice should pass when they fit our purpose.’</p>
+</blockquote>
+<p>It was right. The rubric already accepted explanations of classic concepts and why they work. My new criterion was wrong. Adding ‘skip without numbers’ could have filtered out classic system-design articles that the product explicitly includes.</p>
+<p>Feedback-loop risk isn't just overfitting. The feedback itself can be wrong, and this time the human supplied the mistake.</p>
+<p>Third, the overfitting guard worked. The revision tool refuses fewer than three feedback items. At two, it wouldn't run. Manufacturing a third item would have bypassed our own safeguard.</p>
+<p>That guard came from an earlier incident: writing policy v0.1 overfit one example, making every card follow ‘odd pattern → paradox → solution.’ One or two examples can distort a whole policy.</p>
+<h4>Then we revised—and measured the effect</h4><p>At three feedback items, the gate opened. The revision tool added one line to G1.</p>
+<pre data-lang="diff"><code class="language-diff hljs"><span class="hljs-addition">+ skip: reactions to others' articles or announcements—extended quotation or</span>
+<span class="hljs-addition">+ commentary on news/policy. Substance remains in the original; a card becomes a summary of a summary.</span>
+</code></pre>
+<p>Two examples, charity and cloudflare, supported the change; an event recap was deferred for insufficient evidence.</p>
+<p>The evaluation was:</p>
+<ul>
+<li>Rejudge the two supporting examples: does the new rule catch them?</li>
+<li>Judge three new articles: does it wrongly reject unrelated material?</li>
+</ul>
+<table>
+<thead>
+<tr>
+<th>Article</th>
+<th>Before revision</th>
+<th>After</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>charity: commentary on Mat Duggan</td>
+<td><strong>BRING</strong></td>
+<td><strong>SKIP</strong></td>
+</tr>
+<tr>
+<td>cloudflare: commentary on an executive order</td>
+<td><strong>BRING</strong></td>
+<td><strong>SKIP</strong></td>
+</tr>
+<tr>
+<td>Three new articles</td>
+<td>—</td>
+<td>BRING 2 / SKIP 1, as expected</td>
+</tr>
+</tbody></table>
+<p>The decisions explicitly cited the new rule.</p>
+<blockquote>
+<p>‘A reaction quoting Mat Duggan extensively. <strong>The substance is in the original source; the card would summarize a summary.</strong>’</p>
+<p>‘Policy commentary interpreting a White House executive order through Cloudflare's position. <strong>The substance is the policy itself.</strong>’</p>
+</blockquote>
+<p>Language from my comment returned as a judgment rationale. The loop had completed a cycle.</p>
+<p>There is a limitation: the two changed decisions were the examples used to revise the rule, effectively evaluating on training material. A genuinely new reaction article would be stronger evidence; none appeared among these three new articles.</p>
+<p>The defensible claim is limited: the rule behaved as intended on those examples, with no regression in this small check. How well it absorbs editorial judgment needs more rounds.</p>
+<h4>The conclusion of this experiment</h4><p>The loop's main success wasn't rewriting a rubric. It was discovering that the rubric wasn't what needed fixing.</p>
+<p>Adding rules for every disagreement would have been natural. It would have added three clauses, left the reading limit untouched, and kept agreement around 80%. Classifying causes instead led to a one-line change and 93% agreement in the later sample.</p>
+<p>The loop's value was telling us where to change, not merely changing criteria.</p>
+<hr>
+<h2 id="3-집필--크래프트가-해자다">[3] Writing: craft is the moat</h2><p>Each article gets one subagent to read its source and write a card. That isolates failure: one failed article doesn't take others down, and only that article needs rerunning.</p>
+<p>This stage consumed the most tokens, so it got the most attention.</p>
+<h3 id="모델을-내려도-입력은-그대로다">A cheaper model still reads the same input</h3><p>Sonnet handled writing. I first considered switching to cheaper Haiku, but measured the workload before doing so.</p>
+<pre data-lang="dns"><code class="language-dns hljs">Average source: <span class="hljs-number">13</span>,<span class="hljs-number">331</span> bytes <span class="hljs-punctuation">(</span>median <span class="hljs-number">10</span>,<span class="hljs-number">440</span><span class="hljs-comment">; p90 25,422)</span>
+   ↓
+Output body: <span class="hljs-number">2</span>,<span class="hljs-number">000</span> characters
+</code></pre>
+<p>This was read-heavy: input was five to ten times output. A cheaper model still reads the same 13 KB. The token price falls, not the token count.</p>
+<p>I ran Haiku several times to test it. The observations shaped everything that followed.</p>
+<table>
+<thead>
+<tr>
+<th>Constraint</th>
+<th>Result</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>Use a polite conversational Korean register</td>
+<td><strong>Failed:</strong> only 1 of 3 cards</td>
+</tr>
+<tr>
+<td>Bullet format</td>
+<td><strong>Succeeded:</strong> 100%</td>
+</tr>
+<tr>
+<td>Do not calculate new numbers</td>
+<td><strong>Succeeded</strong></td>
+</tr>
+<tr>
+<td>No length cap</td>
+<td><strong>Overshot:</strong> 2,000 characters</td>
+</tr>
+</tbody></table>
+<p>The pattern: Haiku followed prohibitions and structural slots better than sustained writing-style instructions.</p>
+<p>A writing register must be reapplied sentence by sentence; maintaining it over hundreds of sentences was difficult. A structural constraint, once set, tended to persist.</p>
+<p>I split the task into three calls: <code>extract → lay out → restyle</code>. One job per call stabilized structure in 3/3 runs and reached 100% style conversion.</p>
+<p>But the writing wasn't good.</p>
+<p>Here are translated versions of sentences from the two models on the same source.</p>
+<blockquote>
+<p><strong>Sonnet:</strong> They don't trust the cache and ask the origin every time, while making actual data transfers almost unnecessary.</p>
+<p><strong>Haiku:</strong> A 304 Not Modified response means the artifact hasn't changed, so it is served directly from the proxy cache.</p>
+</blockquote>
+<p>Same fact, but the first explains why the design is clever; the second lists behavior. Haiku also left ‘artifact’ untranslated twenty times, while Sonnet explained it once as a build output.</p>
+<p>I kept Sonnet. Writing quality was the product's moat; sacrificing it wasn't optimization. I changed direction and searched for waste instead.</p>
+<hr>
+<h3 id="측정-방법을-바꾸다--파일-크기는-답이-아니었다">Change the measurement: file size wasn't the answer</h3><p>I had been counting file size: reducing a policy from 11.7 KB to 5.5 KB, for example. Total tokens barely moved.</p>
+<p>I inspected actual usage in the agent's <code>jsonl</code> execution logs. Each request records:</p>
+<ul>
+<li><code>cache_creation_input_tokens</code>: newly charged input.</li>
+<li><code>cache_read_input_tokens</code>: cached input, over ten times cheaper.</li>
+<li><code>output_tokens</code>: output.</li>
+</ul>
+<blockquote>
+<p>A trap: content blocks sharing the same <code>message.id</code> repeat usage records. Without deduplication, I overcounted fivefold. That fooled me once.</p>
+</blockquote>
+<p>Then I ran a decisive experiment: launch an agent that does nothing.</p>
+<pre data-lang="makefile"><code class="language-makefile hljs"><span class="hljs-section">Prompt: ‘Reply only ok. Do not use tools.’</span>
+<span class="hljs-section">Result: 25,559 fresh input tokens</span>
+</code></pre>
+<p>Receiving two characters, <code>ok</code>, cost 25,559 input tokens. The system prompt, tool schemas, and project configuration arrived as soon as the agent launched.</p>
+<p><img src="/assets/en/llm-pipeline-01-cost-breakdown.svg" alt="Of 48,932 input tokens per writing task, 25,559 (52%) are fixed overhead" loading="lazy"></p>
+<p>Fixed overhead accounted for 52% of writing cost. The six KB I'd carefully removed from the policy were only a small part of that total.</p>
+<p>First lesson: inspect billed usage, not file size, and measure fixed overhead with an empty task. If overhead is half the cost, shaving small documents won't move the total much.</p>
+<hr>
+<h3 id="진짜-레버--프리픽스-캐시는-바이트-단위다">The real lever: exact prefix reuse</h3><p>I couldn't eliminate the 25.6K launch overhead, but I could serve it from cache.</p>
+<p>Two measurements:</p>
+<table>
+<thead>
+<tr>
+<th>Prompt</th>
+<th>Fresh input</th>
+<th>Cache reads</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>Differs by <strong>even one byte</strong></td>
+<td>27,223</td>
+<td>15,783</td>
+</tr>
+<tr>
+<td><strong>Exactly identical</strong></td>
+<td><strong>0</strong></td>
+<td><strong>43,006</strong></td>
+</tr>
+</tbody></table>
+<p>The cached prefix needed an exact match up to the breakpoint. My prompt put the assigned article path at the very beginning.</p>
+<pre data-lang="bash"><code class="language-bash hljs">&lt;<span class="hljs-built_in">dir</span>&gt; = content/cloudflare--hyper-bug
+</code></pre>
+<p>That line differed for every article, invalidating reuse afterward. I paid again for a 43,006-token prefix per article.</p>
+<p><img src="/assets/en/llm-pipeline-02-prefix-cache.svg" alt="A one-byte prompt difference invalidates the entire 43,006-token prefix before the cache breakpoint" loading="lazy"></p>
+<p>The solution was structural: move the variable out of the prompt and into a file.</p>
+<pre data-lang="css"><code class="language-css hljs"><span class="hljs-attribute">content</span>/_state/write-queue/
+  <span class="hljs-number">01</span><span class="hljs-selector-class">.todo</span>   → <span class="hljs-attribute">content</span>/cloudflare<span class="hljs-attr">--hyper-bug</span>
+  <span class="hljs-number">02</span><span class="hljs-selector-class">.todo</span>   → <span class="hljs-attribute">content</span>/uber<span class="hljs-attr">--modernizing-artifact-storage</span>
+</code></pre>
+<p>A writer claims a <code>.todo</code> file by moving it to <code>.taken</code> with <code>mv</code>, then processes the path inside. The pipeline uses the rename as its claim operation. Every writer receives identical instructions.</p>
+<p>At normalized pricing, the equivalent cost fell from 72,136 to 45,788 tokens, a 37% reduction.</p>
+<p>One trap remained: starting all workers together makes them cold before the first fills the cache. I ran one first to warm it, then launched the others in parallel.</p>
+<blockquote>
+<p>Another finding: changing parameters such as <code>effort</code> invalidated reuse, dropping <code>cache_read</code> from 15,783 to zero. Don't mistake that one-time transition cost for steady-state option cost in an A/B test. I made that mistake again later.</p>
+</blockquote>
+<hr>
+<h3 id="도구-왕복--13콜이-5콜이-되다">Tool round trips: thirteen calls became five</h3><p>Usage inspection revealed thirteen tool calls during rewriting.</p>
+<pre data-lang="pgsql"><code class="language-pgsql hljs"><span class="hljs-keyword">Write</span> card.json
+  → error: File has <span class="hljs-keyword">not</span> been <span class="hljs-keyword">read</span> yet
+<span class="hljs-keyword">Read</span> card.json      ← forced <span class="hljs-keyword">to</span> <span class="hljs-keyword">read</span> the previous <span class="hljs-keyword">version</span>
+Edit card.json
+</code></pre>
+<p>The harness prevents writing an existing file before reading it. Rewriting became Write failure → Read → Edit. Edit carries both old and new text, effectively paying for the body twice.</p>
+<p>The fix was one step: remove the previous output before rewriting.</p>
+<p>An unexpected finding followed: the forced old-version read contaminated the new card.</p>
+<table>
+<thead>
+<tr>
+<th>Version</th>
+<th>Title, translated</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>Original</td>
+<td>They send a request every time, but don't download</td>
+</tr>
+<tr>
+<td>First rewrite</td>
+<td>Moving from legacy storage to managed SaaS plus a validation proxy reduced egress 99%</td>
+</tr>
+<tr>
+<td>Second rewrite</td>
+<td>A validation proxy reduced SaaS artifact-store egress by over 99%</td>
+</tr>
+</tbody></table>
+<p>The second rewrite copied the first instead of resembling the original. ‘Write afresh’ didn't prevent anchoring when the old result entered context. The Uber card shown above is this article; the surviving title was ultimately the original one.</p>
+<p>Deletion addressed quality as well as tokens.</p>
+<p>I found another redundant sequence: despite an explicit field contract, the agent inspected other cards via <code>find → Read → cat</code> to check formatting. One instruction against using other cards as examples removed three calls.</p>
+<p>Thirteen calls became five—four parallel reads and one write, the theoretical minimum here—and time fell from 282 to 121 seconds.</p>
+<hr>
+<h3 id="그러다-발견한-것--4장-중-1장이-사라지고-있었다">Then I found one in four outputs was unusable</h3><p>While inspecting outputs from option experiments, I noticed something wrong.</p>
+<pre data-lang="pgsql"><code class="language-pgsql hljs"><span class="hljs-type">json</span>.decoder.JSONDecodeError: Invalid control <span class="hljs-type">character</span> at <span class="hljs-type">line</span> <span class="hljs-number">5</span> <span class="hljs-keyword">column</span> <span class="hljs-number">675</span>
+</code></pre>
+<p>Of eight outputs inspected, two—25%—were broken. It happened with both Sonnet and Haiku, independent of the option being tested.</p>
+<p>The body mixes multiline Markdown, Korean text, and quotation marks. Embedding it in a JSON string requires escaping everything, and the model didn't do that consistently.</p>
+<p>What happened afterward was worse.</p>
+<pre data-lang="python"><code class="language-python hljs"><span class="hljs-keyword">def</span> <span class="hljs-title function_">read_json</span>(<span class="hljs-params">path</span>):
+    <span class="hljs-keyword">try</span>:
+        <span class="hljs-keyword">return</span> json.load(...)
+    <span class="hljs-keyword">except</span> (FileNotFoundError, json.JSONDecodeError, ...):
+        <span class="hljs-keyword">return</span> <span class="hljs-literal">None</span>      <span class="hljs-comment"># the silent failure is here</span>
+</code></pre>
+<p>The pipeline used file existence as state: a card file meant written, no file meant waiting. But an existing unreadable file was treated like a missing file, pushing it back to waiting.</p>
+<p>A 60K-token job could exist on disk yet vanish from the admin interface. Nobody would know.</p>
+<p><img src="/assets/en/llm-pipeline-03-silent-loss.svg" alt="Swallowed JSON parse failures reset the derived state, silently hiding completed writing" loading="lazy"></p>
+<h4>Why change the format instead of adding validation?</h4><p>I could parse-check after writing and retry failures, or choose a format that didn't require escaping the body.</p>
+<p>Validation reduces failures rather than removing the failure mode, and retries cost more. Haiku's self-validation loop reached sixteen tool calls.</p>
+<p>I changed the format. Put the body where body text belongs, and it no longer needs JSON-string escaping.</p>
+<pre data-lang="markdown"><code class="language-markdown hljs">---
+slug: cloudflare-hyper-flush-race
+title: The logs said everything was fine; only the kernel knew
+<span class="hljs-section">tags: concurrency, networking, observability
+---</span>
+
+<span class="hljs-section">## 200 OK, but only half the photo arrived</span>
+
+Quotation marks and line breaks in the body need no JSON escaping.
+</code></pre>
+<p>That removes this particular escaping failure structurally. I also exposed parse exceptions as flags in the admin interface instead of swallowing them.</p>
+<blockquote>
+<p>The format change saved essentially no tokens: 66.1K versus 65.5K for the same article. It was a reliability change, not a cost optimization.</p>
+</blockquote>
+<hr>
+<h3 id="이번엔-세션이-틀렸다--그리고-저는-믿을-뻔했다">This time the session was wrong—and I almost believed it</h3><p>The first <code>effort: low</code> test showed a 40% increase. The session rejected it, explaining that weaker reasoning produced trial-and-error loops. It sounded plausible, and I almost accepted it.</p>
+<p>But lower reasoning effort consuming more tokens seemed odd. I asked whether the prompt needed adapting. Reexamining the experiment revealed two errors.</p>
+<p>We hadn't changed the prompt. The lower-effort mode still had a self-gating instruction that encouraged validation loops rather than explicitly avoiding them.</p>
+<p>We also counted cache invalidation as an option failure. Although we knew parameter changes invalidated the prefix, we charged that one-time transition against normal operations.</p>
+<p>Removing those effects produced a 10% reduction instead.</p>
+<p>But the rerun uncovered the 25% output corruption. The supposedly wasteful self-debugging loop had actually been catching that problem.</p>
+<p>I still rejected the option. The 10% difference came from one fewer request; raw tokens were effectively the same. It was the right conclusion reached for the wrong reason, and the rerun found something much more important.</p>
+<p>When results conflict with expectations, inspect the experiment first. The model supplied a plausible explanation, and the person nearly stopped questioning it.</p>
+<hr>
+<h3 id="집필-계층--결과">Writing-stage results</h3><p><img src="/assets/en/llm-pipeline-04-before-after.svg" alt="Before and after: tokens fell 37%, from 72,136 to 45,788; tool calls 13 to 5; corruption 25% to 0" loading="lazy"></p>
+<p>Quality held on the compared article: all nine key facts covered, with zero numbers absent from the source.</p>
+<p>I also found the floor. The remaining roughly 45K breaks down like this:</p>
+<table>
+<thead>
+<tr>
+<th>Component</th>
+<th>Tokens or equivalent cost</th>
+<th>Can it shrink?</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>Prefix</td>
+<td>43K, equivalent to <strong>4.3K</strong> through caching</td>
+<td>Already about 90% discounted</td>
+</tr>
+<tr>
+<td>Fresh input</td>
+<td>18K: source reading and returned output</td>
+<td>Less source reading harms coverage</td>
+</tr>
+<tr>
+<td>Output</td>
+<td>10K: reasoning and card</td>
+<td>Lower settings harm quality</td>
+</tr>
+</tbody></table>
+<p>The last two trade directly against quality. That was the floor for per-item optimization.</p>
+<hr>
+<h2 id="4-조립--llm-0">[4] Assembly: no LLM</h2><p>Scripts collect cards, upsert the DB, and export serving files. Neither a person nor an LLM is involved.</p>
+<p>I fixed one defect: a rewritten card with a new slug left its old version served too. The DB used slugs as primary keys without linking cards back to sources. An internal tracking field now identifies and removes the source's old row.</p>
+<hr>
+<h2 id="사람의-자리--검수를-기준으로-흡수시키기">The human's role: absorb review into criteria</h2><h3 id="비용은-한-축이-아니었다">Cost isn't one-dimensional</h3><p>Near the end, I added a requirement: comments on selection decisions should accumulate into criteria revisions. It sounds like a separate feature, but it addresses the same cost problem.</p>
+<p><strong>Total cost = cost per item × number of items × rework factor</strong></p>
+<p>I'd focused only on cost per item. Reducing 45K to 28K helps once, but doesn't change which work happens. It's a constant-factor improvement.</p>
+<p><img src="/assets/en/llm-pipeline-05-three-axes.svg" alt="Total cost equals unit cost times volume times rework rate; unit-cost improvements are fixed factors, better decisions compound" loading="lazy"></p>
+<p>I measured the other two dimensions.</p>
+<pre data-lang="erlang-repl"><code class="language-erlang-repl hljs"><span class="hljs-number">294</span> decisions: bring <span class="hljs-number">78</span> / skip <span class="hljs-number">216</span>
+  Acceptance rate: <span class="hljs-number">26.5</span><span class="hljs-comment">%</span>
+  Bring precision: <span class="hljs-number">71.8</span><span class="hljs-comment">% — accepted cards not rejected afterward</span>
+</code></pre>
+<p>Of 78 accepted articles, 22—28%—were rejected or deferred after writing. We'd already spent roughly 45K each, about one million tokens on rework.</p>
+<p>That's costlier than a triage rejection. A mistaken skip wastes judgment effort; a mistaken bring also wastes the full writing cost.</p>
+<p>Improved judgment compounds. Fixing one type of mistaken acceptance prevents future work of that type. Per-item savings happen once; better selection accumulates value.</p>
+<hr>
+<h3 id="사람을-루프-안에-두되-매번-부르지는-않는다">Keep humans in the loop without calling them every time</h3><p>I built a feedback loop. Treating it only as a token-saving mechanism would miss the design. Its purpose is to accumulate human judgment; savings are a result.</p>
+<p><img src="/assets/en/llm-pipeline-06-feedback-loop.svg" alt="Human comments accumulate in files; a manually triggered skill revises criteria in a human-on-the-loop workflow" loading="lazy"></p>
+<p>Several details mattered.</p>
+<p>Comments sit beside decisions in triage, writing, and serving lists. They accumulate in per-article files, not a new log table that would duplicate state.</p>
+<p>The screen determines the feedback stage automatically: <code>triage</code> from selection, <code>write</code> from serving. Asking users to select it creates avoidable mistakes.</p>
+<p>One article can receive both kinds. Correct selection but poor writing is common; one comment type per article couldn't express that.</p>
+<p>A human explicitly triggers revision. Comments don't automatically change criteria, and fewer than three comments are rejected to reduce overfitting. That guard came from the real v0.1 incident where one example made all writing converge on the same structure.</p>
+<p>I separated revision tools for selection gates and writing craft—style, structure, and voice. Combining them bloats the prompt and mixes different jobs, contradicting the measured benefit of one job per call.</p>
+<hr>
+<h3 id="개정이-개선인지-어떻게-아나--계측-먼저">Is a revision an improvement? Measure first</h3><p>How would we distinguish improvement from damage?</p>
+<p>If revised criteria reduce precision, we should roll back. Without measurement, we only have shifting preferences.</p>
+<p>Instrumentation needs to precede revision. Add it later, and there's no baseline.</p>
+<p>The earlier work taught exactly that: file sizes misled me; usage records revealed the real cost. To avoid repeating it, I needed metrics first.</p>
+<p>I chose three metrics and recorded a baseline.</p>
+<p><img src="/assets/en/llm-pipeline-07-baseline.svg" alt="Measured baseline: triage pass rate 26.5%, bring precision 71.8%, writing acceptance 42.3%" loading="lazy"></p>
+<p>Bring precision is central. A low acceptance rate isn't automatically bad; filtering is the job. Low bring precision means paying to write and then discarding the result—the most expensive failure.</p>
+<p>Snapshots go into an append-only file. Overwriting a baseline defeats measurement. Revision tools automatically capture before-and-after snapshots, so records remain even if a person forgets.</p>
+<hr>
+<h2 id="정리">Conclusion</h2><p><strong>On measurement</strong></p>
+<ol>
+<li>Inspect billed usage, not file sizes. Fresh input and cache reads have very different prices.</li>
+<li>Measure fixed cost with an empty task before optimizing smaller components.</li>
+<li>Question experimental design when results contradict expectations. Models can generate plausible explanations too.</li>
+<li>Record a baseline before changing the system.</li>
+</ol>
+<p><strong>On LLM pipelines</strong></p>
+<ol start="5">
+<li>Exact prefix reuse matters more than shaving a small file. Move variables out of shared prompts.</li>
+<li>Measure waste before downgrading the model. Tool round trips alone fell from thirteen to five.</li>
+<li>Avoid asking LLMs to escape long bodies into JSON strings; two of eight outputs broke here.</li>
+<li>Don't swallow parse failures. <code>except: return None</code> can silently erase usable work.</li>
+</ol>
+<p><strong>On cost structure</strong></p>
+<ol start="9">
+<li>Per-item optimization is a constant factor; better judgment prevents repeated unnecessary work.</li>
+<li>Writing and then rejecting is expensive. A false acceptance pays the entire downstream cost.</li>
+</ol>
+<hr>
+<p>I started with token optimization. The two findings that mattered most weren't optimizations: one in four outputs had been unusable without me knowing, and I'd been working along only one cost axis.</p>
+<p>Neither would have surfaced without measurement. Neither was what I'd set out to find.</p>
+
+        </div>
+      </article>
+    <nav class="post-nav" aria-label="Previous and next posts">
+      <a class="post-nav-item post-nav-item--prev" href="/posts/ai-era-team-projects/">
+        <span class="post-nav-label">previous post</span>
+        <span class="post-nav-title">Where Do University Team Projects Go in the AI Transition?</span>
+      </a>
+      <a class="post-nav-item post-nav-item--next" href="/posts/curriculum-level-learning-diagnostics/">
+        <span class="post-nav-label">next post</span>
+        <span class="post-nav-title">Turning Coding Test Results into Curriculum-Level Learning Diagnostics</span>
+      </a>
+    </nav>
+      <nav class="post-back">
+        <a href="/writing/">← back to posts</a>
+      </nav>
+    </div>
+    <aside class="toc" id="toc" aria-label="Contents">
+      <p class="toc-title">contents</p>
+      <ul class="toc-list">
+        <li class="toc-item toc-item--h2"><a href="#전체-구조" data-target="전체-구조">Overall structure</a></li>
+        <li class="toc-item toc-item--h3"><a href="#핵심-설계--파일-존재가-곧-상태다" data-target="핵심-설계--파일-존재가-곧-상태다">Core design: file existence is state</a></li>
+        <li class="toc-item toc-item--h3"><a href="#왜-이-구조인가--안-고른-길들" data-target="왜-이-구조인가--안-고른-길들">Why this structure: paths I didn't take</a></li>
+        <li class="toc-item toc-item--h2"><a href="#1-수급--원문이-토대다" data-target="1-수급--원문이-토대다">[1] Ingestion: the source is the foundation</a></li>
+        <li class="toc-item toc-item--h2"><a href="#2-선별--안목이-상품이다" data-target="2-선별--안목이-상품이다">[2] Triage: selection is the product</a></li>
+        <li class="toc-item toc-item--h3"><a href="#8라운드-40건" data-target="8라운드-40건">Eight rounds, 40 articles</a></li>
+        <li class="toc-item toc-item--h2"><a href="#3-집필--크래프트가-해자다" data-target="3-집필--크래프트가-해자다">[3] Writing: craft is the moat</a></li>
+        <li class="toc-item toc-item--h3"><a href="#모델을-내려도-입력은-그대로다" data-target="모델을-내려도-입력은-그대로다">A cheaper model still reads the same input</a></li>
+        <li class="toc-item toc-item--h3"><a href="#측정-방법을-바꾸다--파일-크기는-답이-아니었다" data-target="측정-방법을-바꾸다--파일-크기는-답이-아니었다">Change the measurement: file size wasn't the answer</a></li>
+        <li class="toc-item toc-item--h3"><a href="#진짜-레버--프리픽스-캐시는-바이트-단위다" data-target="진짜-레버--프리픽스-캐시는-바이트-단위다">The real lever: exact prefix reuse</a></li>
+        <li class="toc-item toc-item--h3"><a href="#도구-왕복--13콜이-5콜이-되다" data-target="도구-왕복--13콜이-5콜이-되다">Tool round trips: thirteen calls became five</a></li>
+        <li class="toc-item toc-item--h3"><a href="#그러다-발견한-것--4장-중-1장이-사라지고-있었다" data-target="그러다-발견한-것--4장-중-1장이-사라지고-있었다">Then I found one in four outputs was unusable</a></li>
+        <li class="toc-item toc-item--h3"><a href="#이번엔-세션이-틀렸다--그리고-저는-믿을-뻔했다" data-target="이번엔-세션이-틀렸다--그리고-저는-믿을-뻔했다">This time the session was wrong—and I almost believed it</a></li>
+        <li class="toc-item toc-item--h3"><a href="#집필-계층--결과" data-target="집필-계층--결과">Writing-stage results</a></li>
+        <li class="toc-item toc-item--h2"><a href="#4-조립--llm-0" data-target="4-조립--llm-0">[4] Assembly: no LLM</a></li>
+        <li class="toc-item toc-item--h2"><a href="#사람의-자리--검수를-기준으로-흡수시키기" data-target="사람의-자리--검수를-기준으로-흡수시키기">The human's role: absorb review into criteria</a></li>
+        <li class="toc-item toc-item--h3"><a href="#비용은-한-축이-아니었다" data-target="비용은-한-축이-아니었다">Cost isn't one-dimensional</a></li>
+        <li class="toc-item toc-item--h3"><a href="#사람을-루프-안에-두되-매번-부르지는-않는다" data-target="사람을-루프-안에-두되-매번-부르지는-않는다">Keep humans in the loop without calling them every time</a></li>
+        <li class="toc-item toc-item--h3"><a href="#개정이-개선인지-어떻게-아나--계측-먼저" data-target="개정이-개선인지-어떻게-아나--계측-먼저">Is a revision an improvement? Measure first</a></li>
+        <li class="toc-item toc-item--h2"><a href="#정리" data-target="정리">Conclusion</a></li>
+      </ul>
+    </aside>
+  </main>
+  <script src="/app.js?v=391ab9a5"></script>
+
+
+</body></html>

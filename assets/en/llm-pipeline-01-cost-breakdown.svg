@@ -1,0 +1,39 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 720 300" width="720" height="300" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', sans-serif" role="img" aria-label="Of 48,932 input tokens per writing task, 25,559 (52%) are fixed overhead">
+  <rect width="720" height="300" fill="#fcfcfb"/>
+
+  <text x="32" y="38" font-size="17" font-weight="600" fill="#1a1a19">Where do the input tokens go?</text>
+  <text x="32" y="60" font-size="13" fill="#5c5b55">48,932 measured tokens · about half are fixed overhead</text>
+
+  <!-- stacked bar: total width 656 for 48932 -->
+  <!-- 25559 -> 342.7 | 11000 -> 147.5 | 10500 -> 140.8 | 1873 -> 25.1  (2px gaps) -->
+  <g>
+    <rect x="32"    y="92" width="340.7" height="46" rx="4" fill="#2a78d6"/>
+    <rect x="374.7" y="92" width="145.5" height="46" rx="4" fill="#eb6834"/>
+    <rect x="522.2" y="92" width="138.8" height="46" rx="4" fill="#4a3aa7"/>
+    <rect x="663"   y="92" width="25.1"  height="46" rx="4" fill="#1baf7a"/>
+  </g>
+
+  <!-- in-bar labels -->
+  <text x="46" y="121" font-size="14" font-weight="600" fill="#ffffff">25,559 · 52%</text>
+  <text x="388" y="121" font-size="13" font-weight="600" fill="#ffffff">11,000</text>
+  <text x="535" y="121" font-size="13" font-weight="600" fill="#ffffff">10,500</text>
+
+  <!-- legend -->
+  <g font-size="13">
+    <rect x="32" y="176" width="11" height="11" rx="2" fill="#2a78d6"/>
+    <text x="51" y="186" fill="#1a1a19" font-weight="600">Fixed overhead</text>
+    <text x="51" y="205" fill="#5c5b55">System prompt · tools · CLAUDE.md</text>
+    <text x="51" y="223" fill="#5c5b55">— charged even for an &quot;ok&quot; reply</text>
+
+    <rect x="330" y="176" width="11" height="11" rx="2" fill="#eb6834"/>
+    <text x="349" y="186" fill="#1a1a19" font-weight="600">File reads</text>
+    <text x="349" y="205" fill="#5c5b55">Source 17.5KB + policy 5.5KB</text>
+
+    <rect x="330" y="235" width="11" height="11" rx="2" fill="#4a3aa7"/>
+    <text x="349" y="245" fill="#1a1a19" font-weight="600">Output fed back</text>
+    <text x="349" y="264" fill="#5c5b55">Written card billed again as next-turn input</text>
+
+    <rect x="32" y="248" width="11" height="11" rx="2" fill="#1baf7a"/>
+    <text x="51" y="258" fill="#1a1a19" font-weight="600">My prompt <tspan fill="#5c5b55" font-weight="400">1,873 (4%)</tspan></text>
+  </g>
+</svg>

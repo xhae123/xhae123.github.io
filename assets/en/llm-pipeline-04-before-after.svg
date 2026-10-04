@@ -1,0 +1,38 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 720 320" width="720" height="320" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', sans-serif" role="img" aria-label="Before and after: tokens fell 37%, from 72,136 to 45,788; tool calls 13 to 5; corruption 25% to 0">
+  <rect width="720" height="320" fill="#fcfcfb"/>
+
+  <text x="32" y="34" font-size="17" font-weight="600" fill="#1a1a19">Before and after — writing one article</text>
+  <text x="32" y="56" font-size="13" fill="#5c5b55">Quality unchanged: coverage 9/9 · fabricated figures 0</text>
+
+  <!-- row 1: tokens -->
+  <text x="32" y="96" font-size="13" font-weight="600" fill="#1a1a19">Tokens <tspan fill="#5c5b55" font-weight="400">(base-price equivalent)</tspan></text>
+  <g>
+    <text x="55" y="126" text-anchor="end" font-size="11" fill="#5c5b55">Before</text>
+    <rect x="60" y="112" width="520" height="20" rx="4" fill="#8a8980" opacity="0.35"/>
+    <text x="590" y="127" font-size="13" fill="#5c5b55" font-weight="600">72,136</text>
+
+    <text x="55" y="156" text-anchor="end" font-size="11" fill="#5c5b55">After</text>
+    <rect x="60" y="142" width="330" height="20" rx="4" fill="#2a78d6"/>
+    <text x="400" y="157" font-size="13" fill="#1a1a19" font-weight="600">45,788</text>
+    <text x="470" y="157" font-size="12.5" fill="#0d6b4a" font-weight="600">−37%</text>
+  </g>
+
+  <!-- row 2: tool calls -->
+  <text x="32" y="200" font-size="13" font-weight="600" fill="#1a1a19">Tool calls</text>
+  <g>
+    <text x="55" y="230" text-anchor="end" font-size="11" fill="#5c5b55">Before</text>
+    <rect x="60" y="216" width="520" height="20" rx="4" fill="#8a8980" opacity="0.35"/>
+    <text x="590" y="231" font-size="13" fill="#5c5b55" font-weight="600">13 calls</text>
+
+    <text x="55" y="260" text-anchor="end" font-size="11" fill="#5c5b55">After</text>
+    <rect x="60" y="246" width="200" height="20" rx="4" fill="#eb6834"/>
+    <text x="270" y="261" font-size="13" fill="#1a1a19" font-weight="600">5 calls</text>
+    <text x="320" y="261" font-size="12.5" fill="#5c5b55">4 parallel Reads + 1 Write — minimum</text>
+  </g>
+
+  <!-- row 3: corruption -->
+  <g>
+    <rect x="32" y="284" width="656" height="24" rx="4" fill="#f2f1ec"/>
+    <text x="48" y="301" font-size="12.5" fill="#1a1a19">Output corruption <tspan font-weight="600" fill="#8f2b2a">25%</tspan> <tspan fill="#5c5b55">(2 of 8 runs silently lost)</tspan> → <tspan font-weight="600" fill="#0d6b4a">0%</tspan> <tspan fill="#5c5b55">· failures visible in console</tspan></text>
+  </g>
+</svg>

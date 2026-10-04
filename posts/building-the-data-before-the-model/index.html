@@ -1,0 +1,148 @@
+<!DOCTYPE html><html lang="en"><head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="google-site-verification" content="sNrpo16A0vUj7vHmVNEmAGZj85cGykaOeHO44krbqDU">
+  <title>woojin kim · An ML Project Where We Decided Not to Build the ML Yet · xhae123's notes</title>
+  <meta name="description" content="For a semester-long team project, we built an Android app called Zansol. Open YouTube or Instagram during a study session, and a nudging popup appears within 0.">
+  <link rel="canonical" href="https://xhae123.github.io/posts/building-the-data-before-the-model/">
+  <meta property="og:type" content="article">
+  <meta property="og:site_name" content="xhae123's notes">
+  <meta property="og:title" content="An ML Project Where We Decided Not to Build the ML Yet · xhae123's notes">
+  <meta property="og:description" content="For a semester-long team project, we built an Android app called Zansol. Open YouTube or Instagram during a study session, and a nudging popup appears within 0.">
+  <meta property="og:url" content="https://xhae123.github.io/posts/building-the-data-before-the-model/">
+  <meta property="og:locale" content="en_US">
+  <meta property="og:image" content="https://xhae123.github.io/assets/c276cbc19d848bab.png">
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:title" content="An ML Project Where We Decided Not to Build the ML Yet · xhae123's notes">
+  <meta name="twitter:description" content="For a semester-long team project, we built an Android app called Zansol. Open YouTube or Instagram during a study session, and a nudging popup appears within 0.">
+  <meta name="twitter:image" content="https://xhae123.github.io/assets/c276cbc19d848bab.png">
+  <link rel="preconnect" href="https://cdn.jsdelivr.net">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin="">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable.css">
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500&amp;display=swap">
+  <link rel="stylesheet" href="/styles.css?v=lowercase-2">
+  <link rel="stylesheet" href="/navigation.css?v=rose-1">
+  <link rel="icon" type="image/svg+xml" href="/favicon.svg?v=woojin-w-2">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/github.min.css">
+  <link rel="stylesheet" href="/blog.css?v=lowercase-2">
+  <meta property="article:published_time" content="2026-06-20T00:00:00.000Z">
+  <meta property="article:section" content="Product">
+  <meta property="article:author" content="Woojin Kim">
+  <script type="application/ld+json">{"@context":"https://schema.org","@type":"BlogPosting","headline":"An ML Project Where We Decided Not to Build the ML Yet","description":"For a semester-long team project, we built an Android app called Zansol. Open YouTube or Instagram during a study session, and a nudging popup appears within 0.","datePublished":"2026-06-20T00:00:00.000Z","dateModified":"2026-06-20T00:00:00.000Z","author":{"@type":"Person","name":"Woojin Kim"},"url":"https://xhae123.github.io/posts/building-the-data-before-the-model/","mainEntityOfPage":"https://xhae123.github.io/posts/building-the-data-before-the-model/","image":"https://xhae123.github.io/assets/c276cbc19d848bab.png"}</script>
+</head>
+<body>
+  <main class="post-layout">
+    <div class="post-main">
+      <article class="post" id="post">
+        <header class="post-header">
+          <a class="post-top-back" href="/writing/">← all posts</a>
+          <p class="post-meta"><time datetime="2026-06-20">2026.06.20</time><span aria-hidden="true"> · </span><span class="post-category">product</span></p>
+          <h1 class="post-title">An ML Project Where We Decided Not to Build the ML Yet</h1>
+        </header>
+        <div class="post-body" id="post-body">
+<p>For a semester-long team project, we built an Android app called Zansol. Open YouTube or Instagram during a study session, and a nudging popup appears within 0.2 seconds. Return to studying, and your character earns coins. Ignore it, and the character loses health.</p>
+<p><img src="/assets/c276cbc19d848bab.png" alt="Image" loading="lazy"><img src="/assets/9c1a64e1546cd7ce.png" alt="Image" loading="lazy"></p>
+<p><em>Left: a nudge overlay four seconds after distraction detection. Right: the home screen.</em></p>
+<p>It was a course project that originally had a place for ML. We decided to remove that part at the start of the semester. Looking back, that was the best decision we made.</p>
+<p>I usually build servers. What appeared on a screen was mostly someone else's job. This semester, I started by putting popups on top of a phone screen.</p>
+<h2 id="왜-하필-잔소리인가">Why nudging?</h2><p>There are already plenty of focus apps, and I've tried them. Forest is good, but it requires me to start a session. On days I have that resolve, I can usually study without it. Screen-time reports tell me tomorrow morning about today's escape: an autopsy, not an intervention. Blocking apps are powerful, but when they feel suffocating, I find a workaround or uninstall them. Uninstalling takes three seconds.</p>
+<p>Different apps, same failure point: <strong>they give people struggling with self-regulation a tool that assumes self-regulation.</strong></p>
+<p>Zansol drops that assumption. Willpower isn't a prerequisite for intervention. The system notices first and speaks first. Software takes the observer's role that a neighboring seat in a library provides, even when you're alone at home. Before building it, we surveyed 34 university students; 85.3% said they escaped into their phones while studying. The problem was real, and the moment of escape was underserved.</p>
+<h2 id="만들고-싶었던-것-사람을-가려-긁는-잔소리">What we wanted: nudges that work for each person</h2><p>Different nudges get through to different people. Some return when reassured: ‘Feeling stuck? Write just one line.’ Others respond to a sharper question: ‘Will tomorrow's you regret this?’ The same sentence is a reminder for one person and notification noise for another.</p>
+<p>What I really wanted wasn't a nagging app, but <strong>a model that learns which nudges work for each user and chooses accordingly.</strong> Contextual bandits seemed to fit precisely: learning choices from user responses as reward signals. The problem and technique lined up.</p>
+<p>We estimated that meaningful nudge personalization would require at least 30 observations per user: show a message, then record whether they returned or ignored it.</p>
+<p>There was nowhere to get that data. We had zero observations.</p>
+<h2 id="그래서-ml을-뺐습니다">So we took the ML out</h2><p>This wall has a name: cold start. Recommendation systems have wrestled with it for decades. We added another constraint: submit a working product within 16 weeks.</p>
+<p>University projects often take one of two routes here: borrow a public dataset and approximate a similar problem, or squeeze in a model and write that performance is expected to improve once data accumulates. I've tried both. Neither left much behind.</p>
+<p>This time, we reversed the problem. <strong>Instead of finding the optimal nudge now, we'd first build a system that would let us determine it later.</strong></p>
+<p>V1 has no model. It's all rules. But from day one, its logs were designed as training data for the future model. V1 isn't an unfinished version; it's V2's data-collection pipeline. We didn't abandon ML. We changed the order.</p>
+<h2 id="규칙은-회의실에서-정하면-안-된다">Rules shouldn't come from a meeting room</h2><p>Without a model, rules fill the gap. Where should those rules come from? If four teammates decide in a room that ‘30 seconds sounds right,’ that's our intuition, not a grounded rule.</p>
+<p>We spoke to experts already solving this manually: learning counselors and teachers supervising high-school self-study. In what order do they intervene? What brings a student back, and what makes them resist?</p>
+<p>The answers were surprisingly consistent. Nobody started by scolding. We translated that into three-stage escalation.</p>
+<ul>
+<li><strong>Immediately:</strong> ‘Look up just one source’—a concrete action to get moving.</li>
+<li><strong>After 30 seconds:</strong> ‘Feeling stuck? Write just one line’—empathy and a smaller task.</li>
+<li><strong>After two minutes:</strong> ‘Will tomorrow's you regret this?’—a more forceful, full-screen intervention.</li>
+</ul>
+<p>The timing wasn't arbitrary either. Immediate intervention had to arrive within a second, before attention shifted to the video. Thirty seconds reflected research on screenertia: the longer you stay, the harder it becomes to disengage. At two minutes, attention is already deeply captured, so a gentle message may not be enough.</p>
+<p>The order also mattered. Distracted students often know what they should do but can't get themselves to do it. Opening with ‘Having a hard time?’ can feel like another interruption rather than comfort. A failed action suggestion signals a possible emotional obstacle; that's when empathy comes in. Pressure came last because scolding from the start seemed likely to get the app deleted.</p>
+<h2 id="02초--서버가-죽어도-잔소리는-뜬다">0.2 seconds: nudges still appear when the server is down</h2><p>Perhaps it's a server developer's habit, but I started with failure scenarios. The worst failure for a nudging app isn't a server outage. It's an outage stopping the nudge from appearing.</p>
+<p>So I removed the server from the intervention path. Detection → decision → overlay runs entirely on the phone. The server receives logs; it has no say in whether an intervention occurs. Nudges still appear when it's down. Anyone who's operated a service through an outage will understand that choice.</p>
+<p>Detection has two layers. AccessibilityService screen-change events catch entry into a distracting app, backed by polling every 30 seconds. Events are fast but can be missed; polling is slower but returns. Together, they normally respond immediately and recover within 30 seconds in the worst case. That interval reflects battery constraints and aligns with the second intervention. Rule-based decisions also avoid model-inference latency. That's how we arrived at 0.2 seconds.</p>
+<h2 id="보상은-복귀-버튼이-아니라-버틴-시간에-걸었다">Reward sustained focus, not the return button</h2><p>The character and coins weren't just decorative gamification. Three decisions went into them.</p>
+<p>First, rewards and penalties were asymmetric. Returning earns coins; ignoring the nudge reduces character health. Prospect theory suggests losses can feel roughly twice as painful as equivalent gains. With a small student-app reward budget, putting some weight on loss could go further.</p>
+<p>Second, rewards accumulate with time spent back in focus without reopening a distracting app, rather than with pressing ‘return.’ Incentives need to account for abuse. Reward the button, and someone can farm coins by closing a popup and reopening YouTube three seconds later. Reward sustained time, and that trick no longer qualifies.</p>
+<p>Finally, sessions have no target duration. A Pomodoro countdown can turn ‘didn't finish 25 minutes’ into a failure, raising the barrier to starting again. Our metric is returning to study, not completing a timer, so the screen shows elapsed time instead.</p>
+<h2 id="진짜-설계는-화면이-아니라-로그였다">The real design was in the logs, not the screens</h2><p>My backend habits showed up most clearly elsewhere. While the team sketched screens, I sketched table schemas. If I had to name the design I worked hardest on, it wasn't the messages or character. It was the logging schema.</p>
+<p>We made 600 messages across three stages and three tones—gentle, neutral, and harsh—and encoded those coordinates in message IDs. For example, <code>s1t2_034</code> identifies the second stage, harsh tone, and message 34. Every intervention records which message appeared, at what stage, over which app, and how the user responded after how many seconds.</p>
+<p>The key field is <code>outcome</code>. The system automatically records whether the user returned to studying (<code>returned</code>) or dismissed the nudge (<code>dismissed</code>). <strong>Labels appear without manual labeling.</strong> Ordinary app usage produces reward signals for the future bandit.</p>
+<img width="3420" height="2214" alt="Image" src="/assets/511785cac4cfceea.png" loading="lazy"><p>A side note: AI drafted the 600 messages, and the team reviewed every one. We reassigned incorrect tones, removed lines that went too far, and shortened anything over 26 characters because it made the overlay ugly. After reading 600 nagging messages all day, you start feeling guilty without knowing what you did.</p>
+<h2 id="배포-팀-넷에서-152명으로">Deployment: from four teammates to 152 users</h2><p>We shipped through Google Play internal testing and first dogfooded with our four-person team. The return rate was 73.4%, but it mostly reflected one heavy user. Creators complying with their own app is affection, not convincing data.</p>
+<p>We brought in external users. Final totals: <strong>152 registered users, 91 who received at least one intervention, and 47 weekly active users. Over four weeks, 9,214 interventions produced 6,493 returns—a 70.5% return rate.</strong></p>
+<p>The return rate fell from dogfooding, and that's what I like about it. Among 152 users, some scoff at nudges and others disable notifications altogether. A more diverse sample should change the number; a growing sample that only improved it would deserve scrutiny. The number didn't become worse so much as more honest.</p>
+<img width="1950" height="975" alt="Intervention exposures and return rates by escalation stage" src="/assets/en/zansol-stages.png" loading="lazy"><p>The distribution was interesting. 93.9% of interventions ended at stage one. The carefully designed full-screen third stage appeared only 93 times out of 9,214. What we'd suspected while dogfooding held up at a larger scale: much distraction was forgetfulness, not a collapse of willpower. A popup prompted ‘Oh, right,’ and a return. Many nudges were alarms, not punishments.</p>
+<p>There's a trap here. Stage two returned 41.2%, roughly half of stage one's 72.2%. I initially thought our second-stage messages were poor. That was the wrong interpretation. People responsive to stage one had already returned. Reaching stage two means ignoring the first nudge and staying attached to the screen. The remaining users are inherently harder to bring back. This is survivor bias: a different sample, not necessarily worse wording. Miss that distinction, and you waste effort rewriting stage two.</p>
+<h2 id="ㅋㅋ-공부한다고-해놓고--문구가-승부를-가른다">‘Weren't you supposed to be studying?’: wording matters</h2><p>Breaking results down by message got more interesting. Even within the same stage and tone, individual messages performed differently.</p>
+<img width="2250" height="975" alt="Top and bottom message return rates within the same stage and tone" src="/assets/en/zansol-messages.png" loading="lazy"><p>‘Weren't you supposed to be studying? lol’ had 142 exposures and an 89% return rate. ‘Your competition is solving problems right now’ also ranked highly. At the other end, sarcastic praise such as ‘Amazing job not studying’ sank to 31%. Direct mockery didn't move people; an uncomfortable observation like ‘Same regret, same routine, every day’ did. Mockery seems to turn nudging into picking a fight.</p>
+<p>But there's a boundary: these are observational rankings, not causal effects. A good message may have happened to appear at better moments. The solid takeaway is that observed return rates vary threefold among messages under the same broad conditions, making message selection worth investigating. Optimizing it is V2's task.</p>
+<h2 id="낚일-뻔한-그래프-석-장">Three charts that nearly fooled me</h2><p>A larger service produces more charts, and more charts produce more plausible stories. Here are three I rejected in this analysis.</p>
+<img width="2100" height="930" alt="Share of intervention events accounted for by the ten most active users" src="/assets/en/zansol-user-share.png" loading="lazy"><p>First, the ‘average’ return rate of 70.5%. The top ten users account for 41% of events. Heavy users drive the average. That's common in apps; the mistake is claiming it describes a typical user. An average hides its denominator. User-level metrics need distributions. During dogfooding, one person accounted for about 80%, so this was still a substantial improvement in balance.</p>
+<img width="2100" height="930" alt="Tone exposure and return rates with a warning about self-selection bias" src="/assets/en/zansol-tones.png" loading="lazy"><p>Second, tone: gentle 74.1%, neutral 71.3%, harsh 69.2%. ‘Gentle nudges work better!’ would look great on a slide. We couldn't claim that. Users choose tone during onboarding, and 58% of our 152 users chose harsh. People install an app to be strict with themselves, pick blunt messages, and regret it three days later. They may also be more distracted to begin with. With self-selection, 9,214 events don't make the comparison valid. <strong>A larger sample doesn't remove selection bias. Randomization does.</strong> We excluded that comparison from the report.</p>
+<p>Only 507 of 600 messages got onstage</p>
+<p>Third: of 600 carefully written messages, only 507 were shown. The remaining 93 never appeared in four weeks. Even among those shown, the median was just 14 exposures. Individual-message results are hypotheses, not conclusions. Random selection from the pool still produced this pattern because exposure concentrated in certain stage–tone combinations.</p>
+<p>All three charts point in one direction: <strong>exploration can't be left to people and chance.</strong> Users stay in one tone, exposure concentrates, and comparisons get contaminated. The system needs to decide how to distribute exposure. That's exactly what a bandit does.</p>
+<h2 id="사람은-자기에게-먹히는-잔소리를-모른다">People don't know which nudges work for them</h2><p>Was V2's bandit worth building? Real-data tone comparisons were contaminated by self-selection, so simulation was the place to compare policies fairly. We created a hypothetical user-type matrix—empathetic users responding to gentle tones, pressure-responsive users responding to harsh ones—and simulated 10,000 interventions for 200 users. <strong>Every number in this section comes from synthetic simulation, not live-service performance.</strong></p>
+<p>We compared three policies: random tone selection, a fixed onboarding-selected tone, and per-user learning with Thompson Sampling.</p>
+<img width="2945" height="1763" alt="Simulated policy comparison of rolling return rates across intervention count" src="/assets/en/zansol-policy-returns.png" loading="lazy"><p>The bandit winning—72.0%, 6.7 percentage points above random, and 94.9% of the theoretical upper bound—was expected. The real surprise was the race for second place.</p>
+<p><strong>The user-selected tone, at 65.6%, was effectively tied with random selection at 65.3%.</strong></p>
+<p>That happened even though each simulated user had a clearly optimal tone. Self-perception errors—an empathy-responsive user believing they need pressure, for example—canceled the advantage of choosing. People don't necessarily know which nudges work for them. If 58% choosing harsh at onboarding was the observation, this simulation explored how that pattern could reduce system performance. It gave us a reason not to leave personalization entirely to a settings screen.</p>
+<p>I also checked whether learning was actually occurring.</p>
+<img width="4090" height="1695" alt="Simulated early and late tone-selection distributions by user type" src="/assets/en/zansol-tone-heatmap.png" loading="lazy"><p>In the first 1,000 interventions, tones were distributed similarly across user types. In the final 1,000, empathetic users received gentle tones 58% of the time, and pressure-responsive users received harsh tones 48%. User type was a hidden simulation variable; the system didn't know it. It learned from returns and dismissals. That convergence demonstrated personalization within the simulation.</p>
+<p>One more metric: cumulative regret—the accumulated reward missed relative to always choosing the best option. An apt name.</p>
+<img width="2960" height="1762" alt="Simulated policy comparison of cumulative regret" src="/assets/en/zansol-policy-regret.png" loading="lazy"><p>Random selection's regret grows linearly: at the ten-thousandth decision, it still makes mistakes with the same probability as at the first. The learning policy's curve flattens. The more it learns, the less it regrets.</p>
+<p>We also took two practical leads from simulation. An optimistic prior, <code>Beta(5,2)</code>, noticeably accelerated early learning, suggesting we needn't spend a new user's entire first experience on exploration. Personalization also started to matter around 20 interventions per user. At roughly 100 events per user in our dataset, we had enough interaction density for the next experiment.</p>
+<h2 id="남은-것">What remains</h2><p>Our V2 gates were 1,500 accumulated events and 50 weekly active users. We passed one sixfold with 9,214 events and missed the other by three users at 47. The bottleneck was still people, not technology. Heavy users can produce events, but a bandit needs to learn differences between people. Event volume can't replace headcount.</p>
+<p>The observational-data limitation remains. Without an A/B test, we don't know whether the 70.5% return rate reflects the nudges or people who would have returned anyway.</p>
+<p>Still, I think our early decision was right: with zero data, build a place for the model before squeezing a model in. By the end of the semester, our ‘ML project without ML’ had nearly ten thousand labeled events, a working collection pipeline, and a next step explored through simulation.</p>
+<p>We don't yet have the model. We do have a foundation for it.</p>
+<p>When we fill that space, there's one thing I want to find out first: what kind of nudge will the trained model choose for me?</p>
+
+        </div>
+      </article>
+    <nav class="post-nav" aria-label="Previous and next posts">
+      <a class="post-nav-item post-nav-item--prev" href="/posts/production-database-migration/">
+        <span class="post-nav-label">previous post</span>
+        <span class="post-nav-title">Moving a Production Database: Pressing a Button You Can't Undo</span>
+      </a>
+      <a class="post-nav-item post-nav-item--next" href="/posts/design-context-to-code/">
+        <span class="post-nav-label">next post</span>
+        <span class="post-nav-title">Turning ‘Make It Look Good’ into Code</span>
+      </a>
+    </nav>
+      <nav class="post-back">
+        <a href="/writing/">← back to posts</a>
+      </nav>
+    </div>
+    <aside class="toc" id="toc" aria-label="Contents">
+      <p class="toc-title">contents</p>
+      <ul class="toc-list">
+        <li class="toc-item toc-item--h2"><a href="#왜-하필-잔소리인가" data-target="왜-하필-잔소리인가">Why nudging?</a></li>
+        <li class="toc-item toc-item--h2"><a href="#만들고-싶었던-것-사람을-가려-긁는-잔소리" data-target="만들고-싶었던-것-사람을-가려-긁는-잔소리">What we wanted: nudges that work for each person</a></li>
+        <li class="toc-item toc-item--h2"><a href="#그래서-ml을-뺐습니다" data-target="그래서-ml을-뺐습니다">So we took the ML out</a></li>
+        <li class="toc-item toc-item--h2"><a href="#규칙은-회의실에서-정하면-안-된다" data-target="규칙은-회의실에서-정하면-안-된다">Rules shouldn't come from a meeting room</a></li>
+        <li class="toc-item toc-item--h2"><a href="#02초--서버가-죽어도-잔소리는-뜬다" data-target="02초--서버가-죽어도-잔소리는-뜬다">0.2 seconds: nudges still appear when the server is down</a></li>
+        <li class="toc-item toc-item--h2"><a href="#보상은-복귀-버튼이-아니라-버틴-시간에-걸었다" data-target="보상은-복귀-버튼이-아니라-버틴-시간에-걸었다">Reward sustained focus, not the return button</a></li>
+        <li class="toc-item toc-item--h2"><a href="#진짜-설계는-화면이-아니라-로그였다" data-target="진짜-설계는-화면이-아니라-로그였다">The real design was in the logs, not the screens</a></li>
+        <li class="toc-item toc-item--h2"><a href="#배포-팀-넷에서-152명으로" data-target="배포-팀-넷에서-152명으로">Deployment: from four teammates to 152 users</a></li>
+        <li class="toc-item toc-item--h2"><a href="#ㅋㅋ-공부한다고-해놓고--문구가-승부를-가른다" data-target="ㅋㅋ-공부한다고-해놓고--문구가-승부를-가른다">‘Weren't you supposed to be studying?’: wording matters</a></li>
+        <li class="toc-item toc-item--h2"><a href="#낚일-뻔한-그래프-석-장" data-target="낚일-뻔한-그래프-석-장">Three charts that nearly fooled me</a></li>
+        <li class="toc-item toc-item--h2"><a href="#사람은-자기에게-먹히는-잔소리를-모른다" data-target="사람은-자기에게-먹히는-잔소리를-모른다">People don't know which nudges work for them</a></li>
+        <li class="toc-item toc-item--h2"><a href="#남은-것" data-target="남은-것">What remains</a></li>
+      </ul>
+    </aside>
+  </main>
+  <script src="/app.js?v=391ab9a5"></script>
+
+
+</body></html>

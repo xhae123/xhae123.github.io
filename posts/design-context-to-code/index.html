@@ -1,0 +1,130 @@
+<!DOCTYPE html><html lang="en"><head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="google-site-verification" content="sNrpo16A0vUj7vHmVNEmAGZj85cGykaOeHO44krbqDU">
+  <title>woojin kim · Turning ‘Make It Look Good’ into Code · xhae123's notes</title>
+  <meta name="description" content="Making Instagram carousel posts by hand for a service I operated had become tedious. I wanted to automate it with AI.">
+  <link rel="canonical" href="https://xhae123.github.io/posts/design-context-to-code/">
+  <meta property="og:type" content="article">
+  <meta property="og:site_name" content="xhae123's notes">
+  <meta property="og:title" content="Turning ‘Make It Look Good’ into Code · xhae123's notes">
+  <meta property="og:description" content="Making Instagram carousel posts by hand for a service I operated had become tedious. I wanted to automate it with AI.">
+  <meta property="og:url" content="https://xhae123.github.io/posts/design-context-to-code/">
+  <meta property="og:locale" content="en_US">
+  <meta property="og:image" content="https://xhae123.github.io/assets/7d826d56-4578-4622-9a68-29251bd16dfc.png">
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:title" content="Turning ‘Make It Look Good’ into Code · xhae123's notes">
+  <meta name="twitter:description" content="Making Instagram carousel posts by hand for a service I operated had become tedious. I wanted to automate it with AI.">
+  <meta name="twitter:image" content="https://xhae123.github.io/assets/7d826d56-4578-4622-9a68-29251bd16dfc.png">
+  <link rel="preconnect" href="https://cdn.jsdelivr.net">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin="">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable.css">
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500&amp;display=swap">
+  <link rel="stylesheet" href="/styles.css?v=lowercase-2">
+  <link rel="stylesheet" href="/navigation.css?v=rose-1">
+  <link rel="icon" type="image/svg+xml" href="/favicon.svg?v=woojin-w-2">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/github.min.css">
+  <link rel="stylesheet" href="/blog.css?v=lowercase-2">
+  <meta property="article:published_time" content="2026-07-08T17:20:36.000Z">
+  <meta property="article:section" content="AI">
+  <meta property="article:author" content="Woojin Kim">
+  <script type="application/ld+json">{"@context":"https://schema.org","@type":"BlogPosting","headline":"Turning ‘Make It Look Good’ into Code","description":"Making Instagram carousel posts by hand for a service I operated had become tedious. I wanted to automate it with AI.","datePublished":"2026-07-08T17:20:36.000Z","dateModified":"2026-07-08T17:20:36.000Z","author":{"@type":"Person","name":"Woojin Kim"},"url":"https://xhae123.github.io/posts/design-context-to-code/","mainEntityOfPage":"https://xhae123.github.io/posts/design-context-to-code/","image":"https://xhae123.github.io/assets/7d826d56-4578-4622-9a68-29251bd16dfc.png"}</script>
+</head>
+<body>
+  <main class="post-layout">
+    <div class="post-main">
+      <article class="post" id="post">
+        <header class="post-header">
+          <a class="post-top-back" href="/writing/">← all posts</a>
+          <p class="post-meta"><time datetime="2026-07-08">2026.07.08</time><span aria-hidden="true"> · </span><span class="post-category">ai</span></p>
+          <h1 class="post-title">Turning ‘Make It Look Good’ into Code</h1>
+        </header>
+        <div class="post-body" id="post-body">
+<p><img src="/assets/7d826d56-4578-4622-9a68-29251bd16dfc.png" alt="" loading="lazy"></p>
+<p>Making Instagram carousel posts by hand for a service I operated had become tedious. I wanted to automate it with AI.</p>
+<p>I'm fairly optimistic about Claude's capabilities, so I started casually one weekend, thinking this would be quick. It ended up taking weeks.</p>
+<p>The process made me reconsider what it actually means to delegate work to AI. Here's that story.</p>
+<h2 id="카드뉴스-생각보다-까다롭습니다">Carousel posts are harder than they look</h2><p>Before trying, I thought I just needed to generate a few images. I was wrong.</p>
+<p>A carousel isn't usually one image. It's a cover, several content slides, and a final call to action. They all need to look like the same brand. Slightly different accent colors or a logo shifting by three pixels are enough for viewers to notice and conclude that it was thrown together.</p>
+<p>The real goal wasn't one pretty image. It was a coherent series. I realized that much later.</p>
+<h2 id="1차-시도-이미지를-통째로-뽑기">First attempt: generate the entire image</h2><p>I started simply: prompt an image model and receive a finished PNG. In 2026, I assumed this should work.</p>
+<p>Maybe because I had little image-generation experience, the designs fell far short of what I'd expected.</p>
+<p>More specifically, the text broke. Carousels depend on typography, but copy came back as mangled characters. Korean was worse: a call to apply turned into something barely resembling the intended word. Short words sometimes survived; sentences didn't.</p>
+<p>I first blamed my prompt and tried rewriting it, without success. Later, I found this was a limitation of the model architecture.</p>
+<p>Readable lettering is a known challenge for diffusion-based image models. Their text encoders learn meaning rather than precise strokes, so accuracy declines as text gets longer. Research has reported reliability problems beyond roughly 20 characters (<a href="https://arxiv.org/pdf/2504.21682" target="_blank" rel="noopener noreferrer">Visual Text Processing review, arXiv 2025</a>). Korean's compositional characters make the problem harder.</p>
+<p>I'd asked a tool that struggled to draw text to do a task made almost entirely of text. A hundred prompt revisions wouldn't fix that.</p>
+<h2 id="방향-전환-그림-말고-문서">Change of direction: a document, not a picture</h2><p>So I changed the framing.</p>
+<p>Treat a carousel as a picture, and image generation makes sense. Break it apart, though, and it's closer to a well-laid-out document: headings, body copy, highlight boxes, logos, and backgrounds. Browsers render those precisely every day.</p>
+<p>Instead of asking AI to draw, I asked it to write HTML/CSS and rendered that into PNGs with a headless browser. Puppeteer captured each <code>.slide</code> at double resolution, producing 2160×2160 retina images.</p>
+<p>There's a crucial difference. Image generation is probabilistic: the same prompt produces different results. HTML rendering is deterministic in the same rendering environment. Fonts draw the letters, so they don't dissolve; <code>#F05A2A</code> produces that brand color; the original SVG supplies the logo.</p>
+<p>The broken-text problem disappeared.</p>
+<h2 id="그런데-안-예뻤습니다">But it still didn't look good</h2><p>The first series built and rendered cleanly into seven PNGs. I opened them excitedly.</p>
+<p>All seven looked the same. Dark background, text on the left; next slide, same thing. The right side stayed empty. Swiping barely revealed a change. It looked more like dark-themed terminal output than an Instagram carousel.</p>
+<p>This was harder than broken text. Switching tools solved the text issue, but this didn't seem like a tooling problem.</p>
+<p>I started writing rules: minimum font sizes, bold emphasis, percentage-based margins, and varied layouts. I put whole paragraphs of design principles into the prompt.</p>
+<p>It was still boring. ‘Make it look good’ wouldn't translate into code. More detailed rules just made AI satisfy those rules, not create a good design. I lost days here, but those days taught me the most valuable lesson in the project.</p>
+<h2 id="ai는-디자인을-압니다-우리-브랜드를-모를-뿐이었습니다">AI knew design. It didn't know our brand</h2><p>The cards weren't dull because the model was stupid. Modern models, including Opus, can distinguish good cards from bad ones. What was missing was context for what ‘good’ meant for our brand. That lived only in my head.</p>
+<p>That's a familiar observation now: context, not the model, is the bottleneck. Where I really got stuck came next.</p>
+<p>I didn't know that context myself until I tried to provide it.</p>
+<p>In theory, I just had to document my judgment. In practice, writing ‘our brand's design rules’ stalled me. Orange, dark background: easy. But how should emphasis work? I knew it when I saw it, yet couldn't explain it in advance.</p>
+<p>It surfaced after I saw a dull card: ‘Of course—white text in a black box. Orange emphasis fights the background.’ The rule had been inside me, but I hadn't known it existed until I saw a bad result. The necessary context wasn't a prepared checklist. It emerged piece by piece when something looked wrong.</p>
+<h2 id="예쁘게를-파일로-굳히기">Making ‘good-looking’ persistent</h2><p>I rebuilt onboarding around reacting to outputs: generate cards → identify what feels wrong → record those reactions as rules. Files accumulated in a folder for each brand.</p>
+<p>At the center is <code>idioms.json</code>, a machine-readable description of how this brand handles emphasis, lists, and large numbers. An actual emphasis rule looks like this.</p>
+<pre data-lang="json"><code class="language-json hljs"><span class="hljs-attr">"emphasis"</span><span class="hljs-punctuation">:</span> <span class="hljs-punctuation">{</span>
+  <span class="hljs-attr">"type"</span><span class="hljs-punctuation">:</span> <span class="hljs-string">"inline-highlight"</span><span class="hljs-punctuation">,</span>
+  <span class="hljs-attr">"css"</span><span class="hljs-punctuation">:</span> <span class="hljs-string">".emph { background:#000; color:#fff; padding:4px 14px; font-weight:800; }"</span><span class="hljs-punctuation">,</span>
+  <span class="hljs-attr">"rationale"</span><span class="hljs-punctuation">:</span> <span class="hljs-string">"Black box with white text; echoes the lion logo's black eyes and nose."</span><span class="hljs-punctuation">,</span>
+  <span class="hljs-attr">"enforcement"</span><span class="hljs-punctuation">:</span> <span class="hljs-string">"default"</span><span class="hljs-punctuation">,</span>
+  <span class="hljs-attr">"usageBudget"</span><span class="hljs-punctuation">:</span> <span class="hljs-punctuation">{</span> <span class="hljs-attr">"perSlide"</span><span class="hljs-punctuation">:</span> <span class="hljs-number">1</span><span class="hljs-punctuation">,</span> <span class="hljs-attr">"perSeries"</span><span class="hljs-punctuation">:</span> <span class="hljs-number">3</span> <span class="hljs-punctuation">}</span><span class="hljs-punctuation">,</span>
+  <span class="hljs-attr">"contextFit"</span><span class="hljs-punctuation">:</span> <span class="hljs-string">"Only on slides highlighting 1-2 keywords. Omit when a large number is the focal point."</span>
+<span class="hljs-punctuation">}</span>
+</code></pre>
+<p>The <code>rationale</code> matters. It records not only ‘black box’ but why: it echoes the logo's eyes and nose. That helps AI adapt the rule to a new slide rather than mechanically copying it.</p>
+<p>Then come <code>usageBudget</code> and <code>contextFit</code>. These actually addressed the seven-identical-slides problem. Given only a rule, AI applies it everywhere. Praise a folder-card container and all seven slides become folder cards—wallpaper. So each idiom also gets budgets and conditions: at most three uses per series, only for categorical content such as teams, not a single quotation. The rule and restraint come together.</p>
+<p>One detail is revealing. Of eight idioms, the one for success and celebration was deliberately left <code>null</code>. The log said <code>success-feel: TBD, decide in the first real series</code>. I knew we'd need it someday, but couldn't decide how it should look before there was something to celebrate. Context filled in when it became necessary.</p>
+<p>With those accumulated rules, a regenerated detail slide used a white-tabbed orange folder card, black labels separating items, and a signature clip in the upper-right corner.</p>
+<p><img src="/assets/cec69113-bffb-483b-b5a9-b754bfaacc02.png" alt="" loading="lazy"></p>
+<p>It started from the same ‘left text, empty right side.’ This time, a signature object filled the space, and black highlight boxes echoed the logo. The improvement wasn't a cleverer prompt so much as having files to refer to.</p>
+<h2 id="그래서-생성이-아니라-축적입니다">Accumulation, not just generation</h2><p>These files grow with each conversation. Values in <code>taste-profile.json</code> carry confidence scores. Colors and spacing start around 0.6–0.7 and rise to 0.9 after several series. ‘Accumulation’ is literal here. Repeated feedback such as ‘more space’ or ‘this color works’ promotes a preference into an automatic rule; two contradictory responses demote it again.</p>
+<p>By the tenth carousel, the first can look almost unrecognizable. The model hasn't necessarily improved; its context has grown. Those files live in the user's folder, not inside the tool. Colors and fonts can be copied from a screenshot in five minutes. An <code>idioms.json</code> built through dozens of feedback cycles can't be copied that way.</p>
+<h2 id="아직-못-푼-것들">What I haven't solved</h2><p>There's still plenty to fix. With low-confidence preferences, AI applies rules in odd ways. Tight budgets and context conditions make everything identical; loosen them too far and we're back to wallpaper. I'm still finding the balance by feel.</p>
+<p>Half my work in delegating to AI was extracting judgment I had but couldn't yet articulate, using failed outputs to draw it out and solidify it into files. I later learned there's a name for knowing more than we can say: tacit knowledge.</p>
+<p>I think the model is often capable enough already. The bottleneck is frequently what's still inside the person's head.</p>
+<hr>
+<p><em>The full code is at <a href="https://github.com/xhae123/card-designer" target="_blank" rel="noopener noreferrer">github.com/xhae123/card-designer</a>.</em></p>
+
+        </div>
+      </article>
+    <nav class="post-nav" aria-label="Previous and next posts">
+      <a class="post-nav-item post-nav-item--prev" href="/posts/building-the-data-before-the-model/">
+        <span class="post-nav-label">previous post</span>
+        <span class="post-nav-title">An ML Project Where We Decided Not to Build the ML Yet</span>
+      </a>
+      <a class="post-nav-item post-nav-item--next" href="/posts/ai-era-team-projects/">
+        <span class="post-nav-label">next post</span>
+        <span class="post-nav-title">Where Do University Team Projects Go in the AI Transition?</span>
+      </a>
+    </nav>
+      <nav class="post-back">
+        <a href="/writing/">← back to posts</a>
+      </nav>
+    </div>
+    <aside class="toc" id="toc" aria-label="Contents">
+      <p class="toc-title">contents</p>
+      <ul class="toc-list">
+        <li class="toc-item toc-item--h2"><a href="#카드뉴스-생각보다-까다롭습니다" data-target="카드뉴스-생각보다-까다롭습니다">Carousel posts are harder than they look</a></li>
+        <li class="toc-item toc-item--h2"><a href="#1차-시도-이미지를-통째로-뽑기" data-target="1차-시도-이미지를-통째로-뽑기">First attempt: generate the entire image</a></li>
+        <li class="toc-item toc-item--h2"><a href="#방향-전환-그림-말고-문서" data-target="방향-전환-그림-말고-문서">Change of direction: a document, not a picture</a></li>
+        <li class="toc-item toc-item--h2"><a href="#그런데-안-예뻤습니다" data-target="그런데-안-예뻤습니다">But it still didn't look good</a></li>
+        <li class="toc-item toc-item--h2"><a href="#ai는-디자인을-압니다-우리-브랜드를-모를-뿐이었습니다" data-target="ai는-디자인을-압니다-우리-브랜드를-모를-뿐이었습니다">AI knew design. It didn't know our brand</a></li>
+        <li class="toc-item toc-item--h2"><a href="#예쁘게를-파일로-굳히기" data-target="예쁘게를-파일로-굳히기">Making ‘good-looking’ persistent</a></li>
+        <li class="toc-item toc-item--h2"><a href="#그래서-생성이-아니라-축적입니다" data-target="그래서-생성이-아니라-축적입니다">Accumulation, not just generation</a></li>
+        <li class="toc-item toc-item--h2"><a href="#아직-못-푼-것들" data-target="아직-못-푼-것들">What I haven't solved</a></li>
+      </ul>
+    </aside>
+  </main>
+  <script src="/app.js?v=391ab9a5"></script>
+
+
+</body></html>

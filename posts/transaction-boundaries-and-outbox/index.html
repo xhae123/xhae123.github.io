@@ -1,0 +1,400 @@
+<!DOCTYPE html><html lang="en"><head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="google-site-verification" content="sNrpo16A0vUj7vHmVNEmAGZj85cGykaOeHO44krbqDU">
+  <title>woojin kim · Choosing Transaction Boundaries: Narrowing Them with the Outbox Pattern · xhae123's notes</title>
+  <meta name="description" content="The reward-earning API, POST /rewards/earn, records a completed order in our database, writes an audit log, and synchronizes with a partner API.">
+  <link rel="canonical" href="https://xhae123.github.io/posts/transaction-boundaries-and-outbox/">
+  <meta property="og:type" content="article">
+  <meta property="og:site_name" content="xhae123's notes">
+  <meta property="og:title" content="Choosing Transaction Boundaries: Narrowing Them with the Outbox Pattern · xhae123's notes">
+  <meta property="og:description" content="The reward-earning API, POST /rewards/earn, records a completed order in our database, writes an audit log, and synchronizes with a partner API.">
+  <meta property="og:url" content="https://xhae123.github.io/posts/transaction-boundaries-and-outbox/">
+  <meta property="og:locale" content="en_US">
+  <meta property="og:image" content="https://xhae123.github.io/assets/8312cbb5-87b5-445d-babc-0add71b28fd8.png">
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:title" content="Choosing Transaction Boundaries: Narrowing Them with the Outbox Pattern · xhae123's notes">
+  <meta name="twitter:description" content="The reward-earning API, POST /rewards/earn, records a completed order in our database, writes an audit log, and synchronizes with a partner API.">
+  <meta name="twitter:image" content="https://xhae123.github.io/assets/8312cbb5-87b5-445d-babc-0add71b28fd8.png">
+  <link rel="preconnect" href="https://cdn.jsdelivr.net">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin="">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable.css">
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500&amp;display=swap">
+  <link rel="stylesheet" href="/styles.css?v=lowercase-2">
+  <link rel="stylesheet" href="/navigation.css?v=rose-1">
+  <link rel="icon" type="image/svg+xml" href="/favicon.svg?v=woojin-w-2">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/github.min.css">
+  <link rel="stylesheet" href="/blog.css?v=lowercase-2">
+  <meta property="article:published_time" content="2026-02-19T09:39:12.000Z">
+  <meta property="article:section" content="Backend">
+  <meta property="article:author" content="Woojin Kim">
+  <script type="application/ld+json">{"@context":"https://schema.org","@type":"BlogPosting","headline":"Choosing Transaction Boundaries: Narrowing Them with the Outbox Pattern","description":"The reward-earning API, POST /rewards/earn, records a completed order in our database, writes an audit log, and synchronizes with a partner API.","datePublished":"2026-02-19T09:39:12.000Z","dateModified":"2026-02-19T09:39:12.000Z","author":{"@type":"Person","name":"Woojin Kim"},"url":"https://xhae123.github.io/posts/transaction-boundaries-and-outbox/","mainEntityOfPage":"https://xhae123.github.io/posts/transaction-boundaries-and-outbox/","image":"https://xhae123.github.io/assets/8312cbb5-87b5-445d-babc-0add71b28fd8.png"}</script>
+</head>
+<body>
+  <main class="post-layout">
+    <div class="post-main">
+      <article class="post" id="post">
+        <header class="post-header">
+          <a class="post-top-back" href="/writing/">← all posts</a>
+          <p class="post-meta"><time datetime="2026-02-19">2026.02.19</time><span aria-hidden="true"> · </span><span class="post-category">backend</span></p>
+          <h1 class="post-title">Choosing Transaction Boundaries: Narrowing Them with the Outbox Pattern</h1>
+        </header>
+        <div class="post-body" id="post-body">
+<h2 id="0-테스트-환경--관측-지표">0. Test environment and metrics</h2><ul>
+<li>Load generator: k6 (<code>ramping-vus</code>).</li>
+<li>Database: MySQL, InnoDB.</li>
+<li>ORM: Spring Data JPA.</li>
+<li>Connection pool: HikariCP, <code>maximumPoolSize=10</code>.</li>
+<li>Metrics:<ul>
+<li>API latency: p50, p95, p99, max.</li>
+<li>HikariCP active and pending counts.</li>
+</ul>
+</li>
+</ul>
+<hr>
+<h2 id="1-문제-상황">1. The problem</h2><p><img src="/assets/8312cbb5-87b5-445d-babc-0add71b28fd8.png" alt="" loading="lazy"></p>
+<p>The reward-earning API, <code>POST /rewards/earn</code>, records a completed order in our database, writes an audit log, and synchronizes with a partner API.</p>
+<p>Raising the load to 50 VUs caused response times to spike.</p>
+<p><img src="/assets/7b74dd7b-394e-4ac9-bac5-d655ccc95d73.png" alt="" loading="lazy"> <img src="/assets/22a855d4-b734-48bf-bb9b-3b69c0beb5eb.png" alt="" loading="lazy"></p>
+<p>Average latency was roughly 6.2 seconds, with 3,510 requests processed.</p>
+<p><img src="/assets/a51fb19e-600b-4cb5-a97c-39739b0a161e.png" alt="" loading="lazy"> <img src="/assets/b4af00f9-7adb-4a9b-b7bb-6851e0c7cc77.png" alt="" loading="lazy"></p>
+<p>Soon after load began, active connections reached the maximum of ten. Pending requests then accumulated, peaking at 35.</p>
+<p>That suggested the application was holding connections too long, not simply that the DB was slow.</p>
+<hr>
+<h2 id="2-왜-처음엔-이렇게-설계했나">2. Why I originally designed it this way</h2><p>Looking back, putting external HTTP calls inside a transaction seems questionable. At the time, the reasoning felt sensible.</p>
+<ul>
+<li>If rewards are earned, the audit log and partner synchronization should succeed too.</li>
+<li>If something fails midway, rolling everything back seems safer.</li>
+</ul>
+<p>It looked like one business workflow, so I wrapped it in one transaction.</p>
+<p>But a transaction doesn't make every step of a logical workflow atomic. It also determines how long connections and locks remain held.</p>
+<hr>
+<h2 id="3-트랜잭션이-너무-오래-산다">3. Transactions lived too long</h2><p>Two common causes of pool exhaustion are:</p>
+<ol>
+<li>Slow queries holding connections for a long time.</li>
+<li>Fast queries inside broad transactions, delaying commit and connection return.</li>
+</ol>
+<p>The second looked overwhelmingly likely here. Pending requests accumulated quickly, and requests appeared to stall in one particular part of the flow.</p>
+<hr>
+<h2 id="4-트랜잭션-안의-외부-io">4. External I/O inside the transaction</h2><p>This was the original code.</p>
+<pre data-lang="kotlin"><code class="language-kotlin hljs"><span class="hljs-meta">@Transactional</span>
+<span class="hljs-function"><span class="hljs-keyword">fun</span> <span class="hljs-title">earnReward</span><span class="hljs-params">(request: <span class="hljs-type">EarnRewardRequest</span>)</span></span>: EarnRewardResponse {
+
+    <span class="hljs-comment">// 1) Acquire an exclusive lock</span>
+    <span class="hljs-keyword">val</span> summary = userRewardSummaryRepository
+        .findByUserIdAndYearMonthForUpdate(userId, yearMonth)
+
+    <span class="hljs-comment">// 2) Update internal state</span>
+    summary.totalAmount += request.amount
+
+    <span class="hljs-comment">// 3) Write the ledger</span>
+    <span class="hljs-keyword">val</span> ledger = rewardLedgerRepository.save(
+        RewardLedger(...)
+    )
+
+    <span class="hljs-comment">// 4) Write the audit log</span>
+    auditLogRepository.save(
+        AuditLog(...)
+    )
+
+    <span class="hljs-comment">// 5) Synchronize with partner over HTTP</span>
+    partnerApiClient.syncRewardPoints(
+        userId = request.userId,
+        amount = request.amount,
+        ledgerId = ledger.id
+    )
+}
+</code></pre>
+<p>The partner call was synchronous.</p>
+<pre data-lang="kotlin"><code class="language-kotlin hljs"><span class="hljs-meta">@Component</span>
+<span class="hljs-keyword">class</span> <span class="hljs-title class_">PartnerApiClient</span>(
+    <span class="hljs-keyword">private</span> <span class="hljs-keyword">val</span> webClient: WebClient
+) {
+    <span class="hljs-function"><span class="hljs-keyword">fun</span> <span class="hljs-title">syncRewardPoints</span><span class="hljs-params">(userId: <span class="hljs-type">Long</span>, amount: <span class="hljs-type">Long</span>, ledgerId: <span class="hljs-type">Long</span>)</span></span> {
+        webClient.post()
+            .uri(<span class="hljs-string">"/api/v1/points/sync"</span>)
+            .bodyValue(
+                SyncRequest(
+                    userId = userId,
+                    amount = amount,
+                    idempotencyKey = ledgerId.toString()
+                )
+            )
+            .retrieve()
+            .bodyToMono(<span class="hljs-built_in">Void</span>::<span class="hljs-keyword">class</span>.java)
+            .block() <span class="hljs-comment">// Wait for the response</span>
+    }
+}
+</code></pre>
+<p>The key is <code>.block()</code>.</p>
+<ul>
+<li>The thread waits for the network response.</li>
+<li>The transaction stays open.</li>
+<li>The connection and exclusive lock remain held.</li>
+</ul>
+<blockquote>
+<p>External network latency becomes connection-holding time and lock-holding time.</p>
+</blockquote>
+<hr>
+<h2 id="5-상한-계산">5. Estimating the upper bound</h2><p>With a pool of ten, if an external call adds an average of 100 ms to each transaction:</p>
+<pre data-lang="nix"><code class="language-nix hljs">Throughput upper bound ≈ poolSize <span class="hljs-symbol">/</span> holdingTime
+                <span class="hljs-operator">=</span> <span class="hljs-number">10</span> <span class="hljs-symbol">/</span> <span class="hljs-number">0.1</span>
+                <span class="hljs-operator">=</span> <span class="hljs-number">100</span> tx<span class="hljs-symbol">/s</span>
+</code></pre>
+<p>It's a simple estimate with important implications.</p>
+<ul>
+<li>Only ten requests can hold connections; the rest wait.</li>
+<li>The pending queue grows and p95/p99 climb.</li>
+</ul>
+<hr>
+<h2 id="6-락-대기가-커넥션을-연쇄로-묶는다">6. Lock waits tie up more connections</h2><p><code>SELECT ... FOR UPDATE</code> makes it worse.</p>
+<ul>
+<li>Request A holds the exclusive lock while waiting for the partner.</li>
+<li>Requests B through N wait for the same row's lock.</li>
+<li>Those requests wait inside transactions, holding their own connections.</li>
+</ul>
+<p>When one userId becomes a hot key:</p>
+<ul>
+<li>A lock queue becomes a connection-holding queue.</li>
+<li>The entire pool is quickly consumed.</li>
+<li>Requests for unrelated users are affected too.</li>
+</ul>
+<p>Connection scarcity was a visible consequence.</p>
+<blockquote>
+<p>Broad transactions, lock contention, and external I/O combined to exhaust the pool.</p>
+</blockquote>
+<hr>
+<h2 id="7-원자성-경계를-잘못-잡았다">7. The wrong atomicity boundary</h2><p>Ask which operations actually need to commit together:</p>
+<table>
+<thead>
+<tr>
+<th>Operation</th>
+<th>Atomic for internal consistency?</th>
+<th>Benefit of inclusion</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>summary UPDATE + ledger INSERT</td>
+<td>✅</td>
+<td>High</td>
+</tr>
+<tr>
+<td>audit INSERT</td>
+<td>❌</td>
+<td>Low</td>
+</tr>
+<tr>
+<td>Partner API call</td>
+<td>❌—not atomic with our DB</td>
+<td>None</td>
+</tr>
+</tbody></table>
+<p>Putting partner synchronization inside a database transaction doesn't make it atomic with that database.</p>
+<ul>
+<li>External call succeeds, internal DB rolls back: partner credits rewards, internal state doesn't.</li>
+<li>External call fails, internal DB commits: internal rewards exist, partner state doesn't reflect them.</li>
+</ul>
+<blockquote>
+<p>Consistency with an external system requires idempotency, retries, and asynchronous processing—not just a local transaction.</p>
+</blockquote>
+<hr>
+<h2 id="8-왜-async가-아니라-outbox인가">8. Why Outbox instead of <code>@Async</code>?</h2><p>There are several ways to move the call outside the transaction. The simplest is <code>@Async</code>.</p>
+<h3 id="옵션-a-async">Option A: <code>@Async</code></h3><p>Advantages:</p>
+<ul>
+<li>Easy implementation and immediate latency improvement.</li>
+</ul>
+<p>Disadvantages:</p>
+<ul>
+<li>Work can be lost when the process restarts.</li>
+<li>Retries, status tracking, and operational recovery need their own implementation.</li>
+</ul>
+<h3 id="옵션-b-transactional-outbox">Option B: Transactional Outbox</h3><p>Advantages:</p>
+<ul>
+<li>Database changes and the record of work to perform commit together.</li>
+<li>Explicit PENDING, DONE, and DEAD_LETTER states support operations.</li>
+<li>Pending events survive restarts and can be retried.</li>
+</ul>
+<p>Disadvantages:</p>
+<ul>
+<li>Polling adds delay rather than immediate partner updates.</li>
+<li>The outbox needs cleanup, indexes, and monitoring.</li>
+<li>At-least-once delivery requires idempotency.</li>
+</ul>
+<p>Losing work was hard to accept, and traceability mattered more. I chose Option B.</p>
+<hr>
+<h2 id="9-트랜잭션-경계-축소--outbox">9. Narrower transactions with an Outbox</h2><p>The main transaction handles internal consistency only.</p>
+<pre data-lang="kotlin"><code class="language-kotlin hljs"><span class="hljs-meta">@Transactional</span>  <span class="hljs-comment">// Shorter connection occupancy</span>
+<span class="hljs-function"><span class="hljs-keyword">fun</span> <span class="hljs-title">earnReward</span><span class="hljs-params">(request: <span class="hljs-type">EarnRewardRequest</span>)</span></span>: EarnRewardResponse {
+
+    <span class="hljs-keyword">val</span> summary = userRewardSummaryRepository
+        .findByUserIdAndYearMonthForUpdate(userId, yearMonth)
+
+    summary.totalAmount += request.amount
+
+    <span class="hljs-keyword">val</span> ledger = rewardLedgerRepository.save(...)
+
+    <span class="hljs-comment">// Record deferred work in the same transaction</span>
+    outboxEventRepository.save(
+        OutboxEvent(
+            type = <span class="hljs-string">"REWARD_EARNED"</span>,
+            payload = toJson(ledger),
+            status = <span class="hljs-string">"PENDING"</span>,
+            retryCount = <span class="hljs-number">0</span>
+        )
+    )
+}
+</code></pre>
+<p>A separate scheduler processes the work.</p>
+<pre data-lang="kotlin"><code class="language-kotlin hljs"><span class="hljs-meta">@Scheduled(fixedDelay = 500)</span>
+<span class="hljs-function"><span class="hljs-keyword">fun</span> <span class="hljs-title">processOutbox</span><span class="hljs-params">()</span></span> {
+    outboxEventRepository.findPending(MAX_RETRY).forEach { event -&gt;
+        <span class="hljs-keyword">try</span> {
+            <span class="hljs-keyword">val</span> payload = parse(event.payload)
+
+            partnerApiClient.syncRewardPoints(
+                userId = payload.userId,
+                amount = payload.amount,
+                ledgerId = payload.ledgerId
+            )
+
+            auditLogRepository.save(...)
+            event.status = <span class="hljs-string">"DONE"</span>
+        } <span class="hljs-keyword">catch</span> (ex: Exception) {
+            event.retryCount++
+            <span class="hljs-keyword">if</span> (event.retryCount &gt;= MAX_RETRY) event.status = <span class="hljs-string">"DEAD_LETTER"</span>
+        }
+        outboxEventRepository.save(event)
+    }
+}
+</code></pre>
+<hr>
+<h2 id="10-감수한-트레이드오프">10. Trade-offs accepted</h2><h3 id="101-즉시성-대신-최대-지연을-정의했다">10.1. Define delay instead of promising immediacy</h3><p>With a 500 ms polling interval, partner synchronization is no longer immediate.</p>
+<ul>
+<li>Average polling wait: about 250 ms.</li>
+<li>Up to about 500 ms of polling wait, plus processing and queueing time.</li>
+</ul>
+<p>I chose a bounded polling interval over immediate execution. That is a requirements decision; processing and queueing still add time.</p>
+<h3 id="102-exactly-once는-자동으로-생기지-않는다">10.2. Exactly-once doesn't appear automatically</h3><p>Outbox delivery is generally at least once. Duplicate delivery is possible, so the partner API needs an idempotency key.</p>
+<ul>
+<li>Use <code>ledgerId</code> as the idempotency key.</li>
+<li>Repeated requests with the same key must not credit rewards twice.</li>
+</ul>
+<h3 id="103-outbox는-새로운-운영-대상이다">10.3. The Outbox is another operational component</h3><p>Introducing it creates these responsibilities:</p>
+<ul>
+<li>Monitor and alert on accumulating PENDING events.</li>
+<li>Clean up DONE rows according to retention policy.</li>
+<li>Tune polling indexes and batch sizes.</li>
+<li>Handle DEAD_LETTER events through investigation and manual reprocessing.</li>
+</ul>
+<hr>
+<h2 id="11-결과">11. Results</h2><p><img src="/assets/65db9b86-86f0-4993-83cb-8b0fd5748dc1.png" alt="" loading="lazy"></p>
+<p><img src="/assets/806e223c-feca-489a-bfdf-ab00361926e8.png" alt="" loading="lazy"></p>
+<table>
+<thead>
+<tr>
+<th>Metric</th>
+<th>Before</th>
+<th>After</th>
+<th>Change</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>avg</td>
+<td>624.1ms</td>
+<td>15.9ms</td>
+<td>-97%</td>
+</tr>
+<tr>
+<td>p50</td>
+<td>477.7ms</td>
+<td>4.7ms</td>
+<td>-99%</td>
+</tr>
+<tr>
+<td>p95</td>
+<td>1,483.2ms</td>
+<td>58.7ms</td>
+<td>-96%</td>
+</tr>
+<tr>
+<td>p99</td>
+<td>1,746.3ms</td>
+<td>239.2ms</td>
+<td>-86%</td>
+</tr>
+<tr>
+<td>max</td>
+<td>2,734.7ms</td>
+<td>1,309.0ms</td>
+<td>-52%</td>
+</tr>
+<tr>
+<td>Requests processed</td>
+<td>3,510</td>
+<td>21,725</td>
+<td>+6.2×</td>
+</tr>
+</tbody></table>
+<p>Average response time fell sharply, and requests processed in the test increased roughly sixfold.</p>
+<p><img src="/assets/ed3d57d9-a7f8-4aa1-9d9e-2bf101bdae6e.png" alt="" loading="lazy"> <img src="/assets/a57f0d82-abce-4aa6-8d2d-c0b89e0e23cd.png" alt="" loading="lazy"></p>
+<ul>
+<li>Active connections reached their maximum later and stayed there for less time.</li>
+<li>Pending counts fell by more than tenfold.</li>
+</ul>
+<p>This didn't require query tuning or a broad architectural rewrite.</p>
+<blockquote>
+<p>The improvement came from separating network waiting from transaction resources: connections and locks.</p>
+</blockquote>
+<hr>
+<h2 id="12-핵심-인사이트">12. Key takeaways</h2><ul>
+<li>A transaction boundary is a resource-holding interval, not just a code block. Business consistency determines what belongs together.</li>
+<li>External calls inside transactions turn network latency into DB resource occupancy.</li>
+<li>An Outbox isn't magic. It's a basic mechanism for durable asynchronous work.</li>
+<li>You pay for it with delayed consistency, operational work, and idempotency design.</li>
+</ul>
+
+        </div>
+      </article>
+    <nav class="post-nav" aria-label="Previous and next posts">
+      <a class="post-nav-item post-nav-item--prev" href="/posts/sql-in-the-age-of-vibe-coding/">
+        <span class="post-nav-label">previous post</span>
+        <span class="post-nav-title">Why Return to SQL in the Age of Vibe Coding?</span>
+      </a>
+      <a class="post-nav-item post-nav-item--next" href="/posts/functional-programming-in-spring/">
+        <span class="post-nav-label">next post</span>
+        <span class="post-nav-title">Essential and Accidental Complexity: How Far Can Functional Programming Go in Spring?</span>
+      </a>
+    </nav>
+      <nav class="post-back">
+        <a href="/writing/">← back to posts</a>
+      </nav>
+    </div>
+    <aside class="toc" id="toc" aria-label="Contents">
+      <p class="toc-title">contents</p>
+      <ul class="toc-list">
+        <li class="toc-item toc-item--h2"><a href="#0-테스트-환경--관측-지표" data-target="0-테스트-환경--관측-지표">0. Test environment and metrics</a></li>
+        <li class="toc-item toc-item--h2"><a href="#1-문제-상황" data-target="1-문제-상황">1. The problem</a></li>
+        <li class="toc-item toc-item--h2"><a href="#2-왜-처음엔-이렇게-설계했나" data-target="2-왜-처음엔-이렇게-설계했나">2. Why I originally designed it this way</a></li>
+        <li class="toc-item toc-item--h2"><a href="#3-트랜잭션이-너무-오래-산다" data-target="3-트랜잭션이-너무-오래-산다">3. Transactions lived too long</a></li>
+        <li class="toc-item toc-item--h2"><a href="#4-트랜잭션-안의-외부-io" data-target="4-트랜잭션-안의-외부-io">4. External I/O inside the transaction</a></li>
+        <li class="toc-item toc-item--h2"><a href="#5-상한-계산" data-target="5-상한-계산">5. Estimating the upper bound</a></li>
+        <li class="toc-item toc-item--h2"><a href="#6-락-대기가-커넥션을-연쇄로-묶는다" data-target="6-락-대기가-커넥션을-연쇄로-묶는다">6. Lock waits tie up more connections</a></li>
+        <li class="toc-item toc-item--h2"><a href="#7-원자성-경계를-잘못-잡았다" data-target="7-원자성-경계를-잘못-잡았다">7. The wrong atomicity boundary</a></li>
+        <li class="toc-item toc-item--h2"><a href="#8-왜-async가-아니라-outbox인가" data-target="8-왜-async가-아니라-outbox인가">8. Why Outbox instead of @Async?</a></li>
+        <li class="toc-item toc-item--h3"><a href="#옵션-a-async" data-target="옵션-a-async">Option A: @Async</a></li>
+        <li class="toc-item toc-item--h3"><a href="#옵션-b-transactional-outbox" data-target="옵션-b-transactional-outbox">Option B: Transactional Outbox</a></li>
+        <li class="toc-item toc-item--h2"><a href="#9-트랜잭션-경계-축소--outbox" data-target="9-트랜잭션-경계-축소--outbox">9. Narrower transactions with an Outbox</a></li>
+        <li class="toc-item toc-item--h2"><a href="#10-감수한-트레이드오프" data-target="10-감수한-트레이드오프">10. Trade-offs accepted</a></li>
+        <li class="toc-item toc-item--h3"><a href="#101-즉시성-대신-최대-지연을-정의했다" data-target="101-즉시성-대신-최대-지연을-정의했다">10.1. Define delay instead of promising immediacy</a></li>
+        <li class="toc-item toc-item--h3"><a href="#102-exactly-once는-자동으로-생기지-않는다" data-target="102-exactly-once는-자동으로-생기지-않는다">10.2. Exactly-once doesn't appear automatically</a></li>
+        <li class="toc-item toc-item--h3"><a href="#103-outbox는-새로운-운영-대상이다" data-target="103-outbox는-새로운-운영-대상이다">10.3. The Outbox is another operational component</a></li>
+        <li class="toc-item toc-item--h2"><a href="#11-결과" data-target="11-결과">11. Results</a></li>
+        <li class="toc-item toc-item--h2"><a href="#12-핵심-인사이트" data-target="12-핵심-인사이트">12. Key takeaways</a></li>
+      </ul>
+    </aside>
+  </main>
+  <script src="/app.js?v=391ab9a5"></script>
+
+
+</body></html>

@@ -1,0 +1,505 @@
+<!DOCTYPE html><html lang="en"><head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="google-site-verification" content="sNrpo16A0vUj7vHmVNEmAGZj85cGykaOeHO44krbqDU">
+  <title>woojin kim · A Familiar N+1 Problem: The 26× Speedup from Caching · xhae123's notes</title>
+  <meta name="description" content="While operating a sports social platform, I noticed how slowly the feed loaded. Introducing Caffeine caching reduced average response time from roughly 800 ms t">
+  <link rel="canonical" href="https://xhae123.github.io/posts/fixing-n-plus-one-with-caching/">
+  <meta property="og:type" content="article">
+  <meta property="og:site_name" content="xhae123's notes">
+  <meta property="og:title" content="A Familiar N+1 Problem: The 26× Speedup from Caching · xhae123's notes">
+  <meta property="og:description" content="While operating a sports social platform, I noticed how slowly the feed loaded. Introducing Caffeine caching reduced average response time from roughly 800 ms t">
+  <meta property="og:url" content="https://xhae123.github.io/posts/fixing-n-plus-one-with-caching/">
+  <meta property="og:locale" content="en_US">
+  <meta property="og:image" content="https://xhae123.github.io/assets/c6bb270b-7282-44ac-83dd-52898c7a8374.png">
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:title" content="A Familiar N+1 Problem: The 26× Speedup from Caching · xhae123's notes">
+  <meta name="twitter:description" content="While operating a sports social platform, I noticed how slowly the feed loaded. Introducing Caffeine caching reduced average response time from roughly 800 ms t">
+  <meta name="twitter:image" content="https://xhae123.github.io/assets/c6bb270b-7282-44ac-83dd-52898c7a8374.png">
+  <link rel="preconnect" href="https://cdn.jsdelivr.net">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin="">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable.css">
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500&amp;display=swap">
+  <link rel="stylesheet" href="/styles.css?v=lowercase-2">
+  <link rel="stylesheet" href="/navigation.css?v=rose-1">
+  <link rel="icon" type="image/svg+xml" href="/favicon.svg?v=woojin-w-2">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/github.min.css">
+  <link rel="stylesheet" href="/blog.css?v=lowercase-2">
+  <meta property="article:published_time" content="2025-11-05T13:06:27.000Z">
+  <meta property="article:section" content="Backend">
+  <meta property="article:author" content="Woojin Kim">
+  <script type="application/ld+json">{"@context":"https://schema.org","@type":"BlogPosting","headline":"A Familiar N+1 Problem: The 26× Speedup from Caching","description":"While operating a sports social platform, I noticed how slowly the feed loaded. Introducing Caffeine caching reduced average response time from roughly 800 ms t","datePublished":"2025-11-05T13:06:27.000Z","dateModified":"2025-11-05T13:06:27.000Z","author":{"@type":"Person","name":"Woojin Kim"},"url":"https://xhae123.github.io/posts/fixing-n-plus-one-with-caching/","mainEntityOfPage":"https://xhae123.github.io/posts/fixing-n-plus-one-with-caching/","image":"https://xhae123.github.io/assets/c6bb270b-7282-44ac-83dd-52898c7a8374.png"}</script>
+</head>
+<body>
+  <main class="post-layout">
+    <div class="post-main">
+      <article class="post" id="post">
+        <header class="post-header">
+          <a class="post-top-back" href="/writing/">← all posts</a>
+          <p class="post-meta"><time datetime="2025-11-05">2025.11.05</time><span aria-hidden="true"> · </span><span class="post-category">backend</span></p>
+          <h1 class="post-title">A Familiar N+1 Problem: The 26× Speedup from Caching</h1>
+        </header>
+        <div class="post-body" id="post-body">
+<h2 id="개요">Overview</h2><p>While operating a sports social platform, I noticed how slowly the feed loaded. Introducing Caffeine caching reduced average response time from roughly 800 ms to 38 ms.</p>
+<p><strong>Key metrics</strong></p>
+<ul>
+<li>Response time: 800 ms → 38 ms, a 95% improvement.</li>
+<li>DB queries: 81 → 1, a 98% reduction.</li>
+<li>Throughput: 3.8 req/s → 78.2 req/s, roughly 20×.</li>
+</ul>
+<hr>
+<h2 id="1-문제">1. The problem</h2><h3 id="11-피드-요구사항">1.1. Feed requirements</h3><p>There are two kinds of feed items:</p>
+<ul>
+<li>Completed matches, including results, scores, and reviews.</li>
+<li>Upcoming matches in matching, scheduled, or in-progress states.</li>
+</ul>
+<p>They needed to be sorted as follows:</p>
+<ol>
+<li>Matches involving friends first.</li>
+<li>Other matches next.</li>
+<li>Newest first within each priority.</li>
+</ol>
+<p>Each feed item also contains user-specific flags such as <code>isFriend</code> and <code>isMyGame</code>.</p>
+<h3 id="12-초기-구현">1.2. Initial implementation</h3><p>A native query using UNION ALL implemented friend-first ordering.</p>
+<pre data-lang="kotlin"><code class="language-kotlin hljs"><span class="hljs-function"><span class="hljs-keyword">fun</span> <span class="hljs-title">getFeed</span><span class="hljs-params">(myUserId: <span class="hljs-type">Long</span>)</span></span>: FeedResponse {
+    <span class="hljs-keyword">val</span> query = entityManager.createNativeQuery(<span class="hljs-string">"""
+        SELECT gr.id, 1 as priority FROM game_records gr
+        JOIN custom_game g ON gr.game_id = g.id
+        JOIN game_participation p ON p.game_id = g.id
+        JOIN friend f ON f.user_id = :myUserId AND f.friend_id = p.user_id
+        WHERE g.game_status = 'COMPLETED' AND f.status = 'ACCEPTED'
+
+        UNION ALL
+        -- Upcoming matches (friends) ...
+        UNION ALL
+        -- Completed matches (non-friends) ...
+        UNION ALL
+        -- Upcoming matches (non-friends) ...
+
+        ORDER BY priority, created_at DESC
+    """</span>)
+
+    <span class="hljs-keyword">return</span> results.map { toFeedItemResponse(it) }
+}
+</code></pre>
+<h3 id="13-성능-병목">1.3. Performance bottlenecks</h3><p><strong>Measurement environment</strong></p>
+<ul>
+<li>500 matches.</li>
+<li>50 users.</li>
+<li>An average of five friends per user.</li>
+</ul>
+<p><strong>Response time</strong> <img src="/assets/c6bb270b-7282-44ac-83dd-52898c7a8374.png" alt="Response-time measurements before caching" loading="lazy"></p>
+<pre data-lang="makefile"><code class="language-makefile hljs"><span class="hljs-section">Average: 820ms</span>
+<span class="hljs-section">Median: 780ms</span>
+<span class="hljs-section">P95: 1200ms</span>
+<span class="hljs-section">P99: 1800ms</span>
+</code></pre>
+<p><strong>Bottlenecks</strong></p>
+<pre data-lang="dns"><code class="language-dns hljs">Query execution: <span class="hljs-number">650m</span>s <span class="hljs-punctuation">(</span><span class="hljs-number">79</span>%<span class="hljs-punctuation">)</span>
+N+<span class="hljs-number">1</span> queries: <span class="hljs-number">120m</span>s <span class="hljs-punctuation">(</span><span class="hljs-number">15</span>%<span class="hljs-punctuation">)</span>
+Object mapping: <span class="hljs-number">30m</span>s <span class="hljs-punctuation">(</span><span class="hljs-number">4</span>%<span class="hljs-punctuation">)</span>
+Other: <span class="hljs-number">20m</span>s <span class="hljs-punctuation">(</span><span class="hljs-number">2</span>%<span class="hljs-punctuation">)</span>
+</code></pre>
+<h4>Problem 1: repeated UNION ALL scans</h4><p>UNION ALL combined four independent query branches. In this query plan, MySQL repeated full table scans instead of eliminating the redundant work.</p>
+<pre data-lang="sql"><code class="language-sql hljs">EXPLAIN ANALYZE results:
+<span class="hljs-operator">-</span> game_records (<span class="hljs-number">500</span> <span class="hljs-keyword">rows</span>) × <span class="hljs-number">2</span> scans
+<span class="hljs-operator">-</span> custom_game (<span class="hljs-number">500</span> <span class="hljs-keyword">rows</span>) × <span class="hljs-number">2</span> scans
+<span class="hljs-operator">-</span> friend (<span class="hljs-number">250</span> <span class="hljs-keyword">rows</span>) × <span class="hljs-number">2</span> scans
+</code></pre>
+<h4>Problem 2: N+1 queries</h4><p>Lazy loading and additional lookups occurred during DTO conversion.</p>
+<pre data-lang="kotlin"><code class="language-kotlin hljs">results.map { toFeedItemResponse(it) }
+</code></pre>
+<p>For each item:</p>
+<ul>
+<li><code>game.rule</code> (Lazy Loading)</li>
+<li><code>game.participations</code> (Lazy Loading)</li>
+<li><code>reviewRepository.findByGameId()</code></li>
+<li><code>commentService.getCommentCount()</code></li>
+</ul>
+<p><strong>Actual query count:</strong> 1 main query + 20 × 4 = 81 queries.</p>
+<h4>Problem 3: inefficient pagination</h4><p>OFFSET pagination scans and discards rows up to the offset, making later pages slower.</p>
+<hr>
+<h2 id="2-해결">2. The solution</h2><h3 id="21-캐싱-결정">2.1. Choosing caching</h3><p>The feed's characteristics were a textbook fit for caching.</p>
+<ul>
+<li>A read-to-write ratio of 100:1.</li>
+<li>Completed matches don't change.</li>
+<li>Upcoming matches change infrequently.</li>
+</ul>
+<h3 id="22-왜-caffeine인가">2.2. Why Caffeine?</h3><p>Initially, I wondered whether a <code>ConcurrentHashMap&lt;Long, FeedItemResponse&gt;</code> would be enough.</p>
+<pre data-lang="kotlin"><code class="language-kotlin hljs"><span class="hljs-comment">// Simple map approach</span>
+<span class="hljs-keyword">private</span> <span class="hljs-keyword">val</span> cache = ConcurrentHashMap&lt;<span class="hljs-built_in">Long</span>, FeedItemResponse&gt;()
+
+<span class="hljs-function"><span class="hljs-keyword">fun</span> <span class="hljs-title">put</span><span class="hljs-params">(id: <span class="hljs-type">Long</span>, item: <span class="hljs-type">FeedItemResponse</span>)</span></span> {
+    cache[id] = item
+}
+</code></pre>
+<p>The issue is memory management. Without explicit removal, entries accumulate. Dozens of new matches each day would require custom eviction logic.</p>
+<p>Caffeine handles that:</p>
+<pre data-lang="kotlin"><code class="language-kotlin hljs">Caffeine.newBuilder()
+    .maximumSize(<span class="hljs-number">5000</span>)  <span class="hljs-comment">// Evict automatically above 5000 entries</span>
+    .recordStats()       <span class="hljs-comment">// Monitor hit rate and eviction count</span>
+    .build()
+</code></pre>
+<ul>
+<li><strong>maximumSize:</strong> Window TinyLFU manages eviction based on access patterns.</li>
+<li><strong>recordStats:</strong> hit-rate monitoring supports tuning.</li>
+</ul>
+<p>A tested library was preferable to writing my own LRU implementation.</p>
+<h3 id="23-redis-vs-caffeine">2.3 Redis vs Caffeine</h3><p>I compared Redis with Caffeine.</p>
+<table>
+<thead>
+<tr>
+<th>Property</th>
+<th>Redis</th>
+<th>Caffeine</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>Latency</td>
+<td>1-5ms (network)</td>
+<td>&lt;0.1ms (in-memory)</td>
+</tr>
+<tr>
+<td>Operational complexity</td>
+<td>Higher (separate server)</td>
+<td>Lower (embedded)</td>
+</tr>
+<tr>
+<td>Environment</td>
+<td>Distributed</td>
+<td>Single instance</td>
+</tr>
+</tbody></table>
+<p>We had one instance and didn't need network I/O for a shared cache. I chose Caffeine.</p>
+<h3 id="24-아키텍처">2.4. Architecture</h3><pre data-lang="dns"><code class="language-dns hljs">[Server startup]
+    ↓
+warmupCache<span class="hljs-punctuation">(</span><span class="hljs-punctuation">)</span>
+    ├─ Completed matches from the last <span class="hljs-number">6</span> weeks → Completed Cache <span class="hljs-punctuation">(</span>max <span class="hljs-number">5000</span><span class="hljs-punctuation">)</span>
+    └─ Upcoming/<span class="hljs-type">in</span>-progress matches → Upcoming Cache <span class="hljs-punctuation">(</span>max <span class="hljs-number">2000</span><span class="hljs-punctuation">)</span>
+
+[Read request]
+    ↓
+<span class="hljs-number">1</span>. Load friend IDs <span class="hljs-punctuation">(</span><span class="hljs-number">1</span> query<span class="hljs-punctuation">)</span>
+<span class="hljs-number">2</span>. Read cached feed <span class="hljs-punctuation">(</span><span class="hljs-number">0</span> queries<span class="hljs-punctuation">)</span>
+<span class="hljs-number">3</span>. Sort/filter <span class="hljs-type">in</span> memory
+<span class="hljs-number">4</span>. Paginate
+    ↓
+[Response]
+</code></pre>
+<p>The server loads feed data from the DB at startup, then serves that data from memory.</p>
+<h3 id="25-설계-결정">2.5. Design decisions</h3><h4>No TTL</h4><p>I initially set <code>expireAfterWrite(30, MINUTES)</code>, then reconsidered:</p>
+<ul>
+<li>Warmup only loads data from the last six weeks.</li>
+<li>Old data isn't loaded in the first place.</li>
+<li>TTL management added overhead we didn't need.</li>
+</ul>
+<p>I controlled memory with <code>maximumSize</code> and left eviction to Caffeine's Window TinyLFU policy.</p>
+<pre data-lang="kotlin"><code class="language-kotlin hljs"><span class="hljs-keyword">private</span> <span class="hljs-keyword">val</span> completedGameCache = Caffeine.newBuilder()
+    .maximumSize(<span class="hljs-number">5000</span>)
+    .recordStats()
+    .build()
+</code></pre>
+<h4>Separate user-specific data</h4><p>At first, I cached user-specific fields such as <code>isFriend</code> and <code>isMyGame</code>. That caused a bug: all users shared the cache, so one user's flags could appear for another.</p>
+<p><strong>Before: the bug</strong></p>
+<pre data-lang="kotlin"><code class="language-kotlin hljs"><span class="hljs-keyword">val</span> feedItem = toFeedItemResponse(
+    gameRecord,
+    isFriend = gameService.isFriend(myUserId),
+    isMyGame = gameService.isMyGame(myUserId)
+)
+cache.put(gameRecordId, feedItem)
+</code></pre>
+<p><strong>After</strong></p>
+<pre data-lang="kotlin"><code class="language-kotlin hljs"><span class="hljs-comment">// Cache only user-independent data</span>
+<span class="hljs-keyword">val</span> feedItem = toFeedItemResponse(
+    gameRecord,
+    isFriend = <span class="hljs-literal">false</span>,
+    isMyGame = <span class="hljs-literal">false</span>
+)
+cache.put(gameRecordId, feedItem)
+
+<span class="hljs-comment">// Compute user-specific fields at read time</span>
+<span class="hljs-function"><span class="hljs-keyword">fun</span> <span class="hljs-title">getFeed</span><span class="hljs-params">(myUserId: <span class="hljs-type">Long</span>)</span></span>: FeedResponse {
+    <span class="hljs-keyword">val</span> myFriendIds = friendRepository
+        .findAllByUserIdAndStatus(myUserId, ACCEPTED)
+        .map { it.friend.id }
+        .toSet()
+
+    <span class="hljs-keyword">val</span> allFeeds = cache.getAllFeeds()
+
+    <span class="hljs-keyword">return</span> allFeeds.map { feedItem -&gt;
+        feedItem.copy(
+            isFriend = feedItem.players.any { it.id <span class="hljs-keyword">in</span> myFriendIds },
+            isMyGame = feedItem.players.any { it.id == myUserId }
+        )
+    }
+}
+</code></pre>
+<p>I changed the design to cache only user-independent data and compute user-specific fields at read time.</p>
+<hr>
+<h2 id="3-구현">3. Implementation</h2><h3 id="31-캐시-서비스">3.1. Cache service</h3><pre data-lang="kotlin"><code class="language-kotlin hljs"><span class="hljs-meta">@Service</span>
+<span class="hljs-keyword">class</span> <span class="hljs-title class_">FeedCacheService</span> {
+    <span class="hljs-keyword">private</span> <span class="hljs-keyword">val</span> completedGameCache: Cache&lt;<span class="hljs-built_in">Long</span>, FeedItemResponse&gt; =
+        Caffeine.newBuilder()
+            .maximumSize(<span class="hljs-number">5000</span>)
+            .recordStats()
+            .build()
+
+    <span class="hljs-keyword">private</span> <span class="hljs-keyword">val</span> upcomingGameCache: Cache&lt;<span class="hljs-built_in">Long</span>, FeedItemResponse&gt; =
+        Caffeine.newBuilder()
+            .maximumSize(<span class="hljs-number">2000</span>)
+            .recordStats()
+            .build()
+
+    <span class="hljs-function"><span class="hljs-keyword">fun</span> <span class="hljs-title">putCompletedGame</span><span class="hljs-params">(id: <span class="hljs-type">Long</span>, item: <span class="hljs-type">FeedItemResponse</span>)</span></span> {
+        completedGameCache.put(id, item)
+    }
+
+    <span class="hljs-function"><span class="hljs-keyword">fun</span> <span class="hljs-title">getAllFeeds</span><span class="hljs-params">()</span></span>: List&lt;FeedItemResponse&gt; {
+        <span class="hljs-keyword">return</span> completedGameCache.asMap().values.toList() +
+               upcomingGameCache.asMap().values.toList()
+    }
+}
+</code></pre>
+<h3 id="32-캐시-워밍">3.2. Cache warmup</h3><pre data-lang="kotlin"><code class="language-kotlin hljs"><span class="hljs-meta">@PostConstruct</span>
+<span class="hljs-meta">@Transactional(readOnly = true)</span>
+<span class="hljs-function"><span class="hljs-keyword">fun</span> <span class="hljs-title">warmupFeedCache</span><span class="hljs-params">()</span></span> {
+    <span class="hljs-keyword">val</span> sixWeeksAgo = LocalDateTime.now().minusWeeks(<span class="hljs-number">6</span>)
+
+    <span class="hljs-comment">// Load completed matches</span>
+    <span class="hljs-keyword">val</span> completedGames = gameRecordRepository.findAll()
+        .filter { it.recordTime.isAfter(sixWeeksAgo) }
+
+    completedGames.forEach { gameRecord -&gt;
+        <span class="hljs-keyword">try</span> {
+            <span class="hljs-keyword">val</span> feedItem = toFeedItemResponse(gameRecord, <span class="hljs-literal">false</span>, <span class="hljs-literal">false</span>)
+            feedCacheService.putCompletedGame(gameRecord.id, feedItem)
+        } <span class="hljs-keyword">catch</span> (e: Exception) {
+            log.error(e) { <span class="hljs-string">"Cache warmup failed: <span class="hljs-subst">${gameRecord.id}</span>"</span> }
+        }
+    }
+
+    <span class="hljs-comment">// Load upcoming matches</span>
+    <span class="hljs-keyword">val</span> upcomingStatuses = listOf(MATCHING, SCHEDULED, IN_PROGRESS)
+    <span class="hljs-keyword">val</span> upcomingGames = gameRepository.findAll()
+        .filter { it.gameStatus <span class="hljs-keyword">in</span> upcomingStatuses }
+
+    upcomingGames.forEach { game -&gt;
+        <span class="hljs-keyword">try</span> {
+            <span class="hljs-keyword">val</span> feedItem = toUpcomingGameFeedItem(game, <span class="hljs-literal">false</span>, <span class="hljs-literal">false</span>)
+            feedCacheService.putUpcomingGame(game.id, feedItem)
+        } <span class="hljs-keyword">catch</span> (e: Exception) {
+            log.error(e) { <span class="hljs-string">"Cache warmup failed: <span class="hljs-subst">${game.id}</span>"</span> }
+        }
+    }
+
+    log.info { <span class="hljs-string">"Cache warmup complete: <span class="hljs-subst">${completedGames.size + upcomingGames.size}</span>"</span> }
+}
+</code></pre>
+<p>Warming 500 matches takes about two seconds. Startup gets a little longer, but the cost is acceptable.</p>
+<h3 id="33-피드-조회">3.3. Feed reads</h3><pre data-lang="kotlin"><code class="language-kotlin hljs"><span class="hljs-function"><span class="hljs-keyword">fun</span> <span class="hljs-title">getFeed</span><span class="hljs-params">(myUserId: <span class="hljs-type">Long</span>, page: <span class="hljs-type">Int</span> = <span class="hljs-number">0</span>, size: <span class="hljs-type">Int</span> = <span class="hljs-number">20</span>)</span></span>: FeedResponse {
+    <span class="hljs-comment">// 1. Load friend IDs (1 query)</span>
+    <span class="hljs-keyword">val</span> myFriendIds = friendRepository
+        .findAllByUserIdAndStatus(myUserId, FriendStatus.ACCEPTED)
+        .map { it.friend.id!! }
+        .toSet()
+
+    <span class="hljs-comment">// 2. Read feed from cache (0 query)</span>
+    <span class="hljs-keyword">val</span> allFeeds = feedCacheService.getAllFeeds()
+
+    <span class="hljs-comment">// 3. Compute user-specific fields and sort</span>
+    <span class="hljs-keyword">val</span> processedFeeds = allFeeds
+        .map { feedItem -&gt;
+            feedItem.copy(
+                isFriend = feedItem.players.any { it.id <span class="hljs-keyword">in</span> myFriendIds },
+                isMyGame = feedItem.players.any { it.id == myUserId }
+            )
+        }
+        .sortedWith(
+            compareBy&lt;FeedItemResponse&gt; {
+                <span class="hljs-keyword">when</span> {
+                    it.isFriend &amp;&amp; it.isCompleted -&gt; <span class="hljs-number">1</span>
+                    it.isFriend &amp;&amp; !it.isCompleted -&gt; <span class="hljs-number">2</span>
+                    !it.isFriend &amp;&amp; it.isCompleted -&gt; <span class="hljs-number">3</span>
+                    <span class="hljs-keyword">else</span> -&gt; <span class="hljs-number">4</span>
+                }
+            }.thenByDescending { it.date }
+        )
+
+    <span class="hljs-comment">// 4. Pagination</span>
+    <span class="hljs-keyword">val</span> startIndex = page * size
+    <span class="hljs-keyword">val</span> endIndex = minOf(startIndex + size, processedFeeds.size)
+
+    <span class="hljs-keyword">val</span> pagedFeeds = <span class="hljs-keyword">if</span> (startIndex &lt; processedFeeds.size) {
+        processedFeeds.subList(startIndex, endIndex)
+    } <span class="hljs-keyword">else</span> {
+        emptyList()
+    }
+
+    <span class="hljs-keyword">return</span> FeedResponse(
+        items = pagedFeeds,
+        totalPages = (processedFeeds.size + size - <span class="hljs-number">1</span>) / size,
+        currentPage = page
+    )
+}
+</code></pre>
+<hr>
+<h2 id="4-성능-측정">4. Performance measurements</h2><h3 id="41-응답-시간">4.1. Response time</h3><p><img src="/assets/b2a3366b-4082-4f9a-9d8b-869bf8b07ae5.png" alt="" loading="lazy"></p>
+<table>
+<thead>
+<tr>
+<th>Metric</th>
+<th>Before</th>
+<th>After</th>
+<th>Improvement</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>Average</td>
+<td>820ms</td>
+<td>38ms</td>
+<td>95%</td>
+</tr>
+<tr>
+<td>Median</td>
+<td>780ms</td>
+<td>32ms</td>
+<td>96%</td>
+</tr>
+<tr>
+<td>P95</td>
+<td>1200ms</td>
+<td>65ms</td>
+<td>95%</td>
+</tr>
+<tr>
+<td>P99</td>
+<td>1800ms</td>
+<td>95ms</td>
+<td>95%</td>
+</tr>
+</tbody></table>
+<h3 id="42-쿼리-수">4.2. Query count</h3><ul>
+<li>Before: 81 queries on average.</li>
+<li>After: one query for friend IDs.</li>
+</ul>
+<p>Database query volume fell by 98%.</p>
+<h3 id="43-처리-시간-분해-after">4.3. Processing-time breakdown after caching</h3><pre data-lang="dns"><code class="language-dns hljs">Friend lookup: <span class="hljs-number">5m</span>s <span class="hljs-punctuation">(</span><span class="hljs-number">13</span>%<span class="hljs-punctuation">)</span>
+Cache read: <span class="hljs-number">1m</span>s <span class="hljs-punctuation">(</span><span class="hljs-number">3</span>%<span class="hljs-punctuation">)</span>
+Sorting/filtering: <span class="hljs-number">15m</span>s <span class="hljs-punctuation">(</span><span class="hljs-number">39</span>%<span class="hljs-punctuation">)</span>
+Pagination: <span class="hljs-number">2m</span>s <span class="hljs-punctuation">(</span><span class="hljs-number">5</span>%<span class="hljs-punctuation">)</span>
+Other: <span class="hljs-number">15m</span>s <span class="hljs-punctuation">(</span><span class="hljs-number">40</span>%<span class="hljs-punctuation">)</span>
+</code></pre>
+<p>Most work is now in memory.</p>
+<h3 id="44-메모리-사용량">4.4. Memory usage</h3><pre data-lang="nestedtext"><code class="language-nestedtext hljs"><span class="hljs-attribute">250 completed matches</span><span class="hljs-punctuation">:</span> <span class="hljs-string">22MB</span>
+<span class="hljs-attribute">250 upcoming matches</span><span class="hljs-punctuation">:</span> <span class="hljs-string">23MB</span>
+<span class="hljs-attribute">Total</span><span class="hljs-punctuation">:</span> <span class="hljs-string">45MB</span>
+
+<span class="hljs-attribute">Maximum (5000 entries)</span><span class="hljs-punctuation">:</span> <span class="hljs-string">Estimated 450 MB</span>
+</code></pre>
+<p>There is room within the server's 2 GB memory budget.</p>
+<h3 id="45-동시성-테스트">4.5. Concurrency test</h3><p>I load-tested with Apache Bench:</p>
+<pre data-lang="bash"><code class="language-bash hljs">ab -n 10000 -c 100 http://localhost:8080/api/feed
+</code></pre>
+<table>
+<thead>
+<tr>
+<th>Metric</th>
+<th>Before</th>
+<th>After</th>
+<th>Improvement</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>Requests/sec</td>
+<td>3.8</td>
+<td>78.2</td>
+<td>20×</td>
+</tr>
+<tr>
+<td>Time/request</td>
+<td>820ms</td>
+<td>38ms</td>
+<td>95%</td>
+</tr>
+</tbody></table>
+<hr>
+<h2 id="5-제약-사항">5. Limitations</h2><h3 id="51-서버-재시작">5.1. Server restarts</h3><p>A restart clears the cache. <code>@PostConstruct</code> warms it automatically, but that takes about two seconds. Redis is a future option if traffic grows.</p>
+<h3 id="52-분산-환경">5.2. Multiple instances</h3><p>We currently run one instance. Adding servers gives each its own independent cache, introducing synchronization concerns.</p>
+<p><strong>Possible approaches</strong></p>
+<ol>
+<li>Move to Redis.</li>
+<li>Broadcast invalidation events through Kafka.</li>
+<li>Consider load-balancer sticky sessions.</li>
+</ol>
+<h3 id="53-친구-관계-변경">5.3. Friendship changes</h3><p>Adding or removing a friend must immediately affect the feed. Computing <code>isFriend</code> at read time makes that possible without invalidating the shared cache.</p>
+<hr>
+<h2 id="6-정리">6. Conclusion</h2><p>Caching isn't just a speed technique. It's deciding when an expensive computation needs to run once rather than repeatedly.</p>
+<p><strong>Key decisions</strong></p>
+<ol>
+<li>Cache only user-independent data.</li>
+<li>Compute user-specific data at read time.</li>
+<li>Warm the cache at startup.</li>
+</ol>
+<p><strong>Results</strong></p>
+<ul>
+<li>Response time: 820 ms → 38 ms, a 95% improvement.</li>
+<li>DB queries: 81 → 1, a 98% reduction.</li>
+<li>Throughput: 3.8 req/s → 78.2 req/s, roughly 20×.</li>
+</ul>
+<p><strong>Trade-offs</strong></p>
+<ul>
+<li>Longer startup time.</li>
+<li>Up to hundreds of MB of additional memory.</li>
+<li>More code complexity.</li>
+</ul>
+
+        </div>
+      </article>
+    <nav class="post-nav" aria-label="Previous and next posts">
+      <span></span>
+      <a class="post-nav-item post-nav-item--next" href="/posts/grpc-schema-drift-in-kubernetes/">
+        <span class="post-nav-label">next post</span>
+        <span class="post-nav-title">Catching gRPC Schema Drift Automatically in Kubernetes</span>
+      </a>
+    </nav>
+      <nav class="post-back">
+        <a href="/writing/">← back to posts</a>
+      </nav>
+    </div>
+    <aside class="toc" id="toc" aria-label="Contents">
+      <p class="toc-title">contents</p>
+      <ul class="toc-list">
+        <li class="toc-item toc-item--h2"><a href="#개요" data-target="개요">Overview</a></li>
+        <li class="toc-item toc-item--h2"><a href="#1-문제" data-target="1-문제">1. The problem</a></li>
+        <li class="toc-item toc-item--h3"><a href="#11-피드-요구사항" data-target="11-피드-요구사항">1.1. Feed requirements</a></li>
+        <li class="toc-item toc-item--h3"><a href="#12-초기-구현" data-target="12-초기-구현">1.2. Initial implementation</a></li>
+        <li class="toc-item toc-item--h3"><a href="#13-성능-병목" data-target="13-성능-병목">1.3. Performance bottlenecks</a></li>
+        <li class="toc-item toc-item--h2"><a href="#2-해결" data-target="2-해결">2. The solution</a></li>
+        <li class="toc-item toc-item--h3"><a href="#21-캐싱-결정" data-target="21-캐싱-결정">2.1. Choosing caching</a></li>
+        <li class="toc-item toc-item--h3"><a href="#22-왜-caffeine인가" data-target="22-왜-caffeine인가">2.2. Why Caffeine?</a></li>
+        <li class="toc-item toc-item--h3"><a href="#23-redis-vs-caffeine" data-target="23-redis-vs-caffeine">2.3 Redis vs Caffeine</a></li>
+        <li class="toc-item toc-item--h3"><a href="#24-아키텍처" data-target="24-아키텍처">2.4. Architecture</a></li>
+        <li class="toc-item toc-item--h3"><a href="#25-설계-결정" data-target="25-설계-결정">2.5. Design decisions</a></li>
+        <li class="toc-item toc-item--h2"><a href="#3-구현" data-target="3-구현">3. Implementation</a></li>
+        <li class="toc-item toc-item--h3"><a href="#31-캐시-서비스" data-target="31-캐시-서비스">3.1. Cache service</a></li>
+        <li class="toc-item toc-item--h3"><a href="#32-캐시-워밍" data-target="32-캐시-워밍">3.2. Cache warmup</a></li>
+        <li class="toc-item toc-item--h3"><a href="#33-피드-조회" data-target="33-피드-조회">3.3. Feed reads</a></li>
+        <li class="toc-item toc-item--h2"><a href="#4-성능-측정" data-target="4-성능-측정">4. Performance measurements</a></li>
+        <li class="toc-item toc-item--h3"><a href="#41-응답-시간" data-target="41-응답-시간">4.1. Response time</a></li>
+        <li class="toc-item toc-item--h3"><a href="#42-쿼리-수" data-target="42-쿼리-수">4.2. Query count</a></li>
+        <li class="toc-item toc-item--h3"><a href="#43-처리-시간-분해-after" data-target="43-처리-시간-분해-after">4.3. Processing-time breakdown after caching</a></li>
+        <li class="toc-item toc-item--h3"><a href="#44-메모리-사용량" data-target="44-메모리-사용량">4.4. Memory usage</a></li>
+        <li class="toc-item toc-item--h3"><a href="#45-동시성-테스트" data-target="45-동시성-테스트">4.5. Concurrency test</a></li>
+        <li class="toc-item toc-item--h2"><a href="#5-제약-사항" data-target="5-제약-사항">5. Limitations</a></li>
+        <li class="toc-item toc-item--h3"><a href="#51-서버-재시작" data-target="51-서버-재시작">5.1. Server restarts</a></li>
+        <li class="toc-item toc-item--h3"><a href="#52-분산-환경" data-target="52-분산-환경">5.2. Multiple instances</a></li>
+        <li class="toc-item toc-item--h3"><a href="#53-친구-관계-변경" data-target="53-친구-관계-변경">5.3. Friendship changes</a></li>
+        <li class="toc-item toc-item--h2"><a href="#6-정리" data-target="6-정리">6. Conclusion</a></li>
+      </ul>
+    </aside>
+  </main>
+  <script src="/app.js?v=391ab9a5"></script>
+
+
+</body></html>

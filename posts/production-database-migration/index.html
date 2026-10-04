@@ -1,0 +1,108 @@
+<!DOCTYPE html><html lang="en"><head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="google-site-verification" content="sNrpo16A0vUj7vHmVNEmAGZj85cGykaOeHO44krbqDU">
+  <title>woojin kim · Moving a Production Database: Pressing a Button You Can't Undo · xhae123's notes</title>
+  <meta name="description" content="I stopped just before pressing Enter.">
+  <link rel="canonical" href="https://xhae123.github.io/posts/production-database-migration/">
+  <meta property="og:type" content="article">
+  <meta property="og:site_name" content="xhae123's notes">
+  <meta property="og:title" content="Moving a Production Database: Pressing a Button You Can't Undo · xhae123's notes">
+  <meta property="og:description" content="I stopped just before pressing Enter.">
+  <meta property="og:url" content="https://xhae123.github.io/posts/production-database-migration/">
+  <meta property="og:locale" content="en_US">
+  <meta property="og:image" content="https://xhae123.github.io/assets/covers/cover-24.svg">
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:title" content="Moving a Production Database: Pressing a Button You Can't Undo · xhae123's notes">
+  <meta name="twitter:description" content="I stopped just before pressing Enter.">
+  <meta name="twitter:image" content="https://xhae123.github.io/assets/covers/cover-24.svg">
+  <link rel="preconnect" href="https://cdn.jsdelivr.net">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin="">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable.css">
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500&amp;display=swap">
+  <link rel="stylesheet" href="/styles.css?v=lowercase-2">
+  <link rel="stylesheet" href="/navigation.css?v=rose-1">
+  <link rel="icon" type="image/svg+xml" href="/favicon.svg?v=woojin-w-2">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/github.min.css">
+  <link rel="stylesheet" href="/blog.css?v=lowercase-2">
+  <meta property="article:published_time" content="2026-06-03T14:41:48.000Z">
+  <meta property="article:section" content="Infra">
+  <meta property="article:author" content="Woojin Kim">
+  <script type="application/ld+json">{"@context":"https://schema.org","@type":"BlogPosting","headline":"Moving a Production Database: Pressing a Button You Can't Undo","description":"I stopped just before pressing Enter.","datePublished":"2026-06-03T14:41:48.000Z","dateModified":"2026-06-03T14:41:48.000Z","author":{"@type":"Person","name":"Woojin Kim"},"url":"https://xhae123.github.io/posts/production-database-migration/","mainEntityOfPage":"https://xhae123.github.io/posts/production-database-migration/","image":"https://xhae123.github.io/assets/covers/cover-24.svg"}</script>
+</head>
+<body>
+  <main class="post-layout">
+    <div class="post-main">
+      <article class="post" id="post">
+        <div class="post-cover"><img src="/assets/covers/cover-24.svg" alt=""></div>
+        <header class="post-header">
+          <a class="post-top-back" href="/writing/">← all posts</a>
+          <p class="post-meta"><time datetime="2026-06-03">2026.06.03</time><span aria-hidden="true"> · </span><span class="post-category">infra</span></p>
+          <h1 class="post-title">Moving a Production Database: Pressing a Button You Can't Undo</h1>
+        </header>
+        <div class="post-body" id="post-body">
+<pre data-lang="dsconfig"><code class="language-dsconfig hljs"><span class="hljs-string">aws</span> <span class="hljs-string">rds</span> <span class="hljs-built_in">delete-db-instance</span> <span class="hljs-built_in">--skip-final-snapshot</span> ...
+</code></pre>
+<p>I stopped just before pressing Enter.</p>
+<p>If this were code, I'd have pushed it. A bad deployment can be rolled back; a bug can get a hotfix. Most of our work is reversible, so ‘try it and fix it if it breaks’ works. This command was different. Press Enter, and the instance disappears for good.</p>
+<p>The hard part of this production database migration wasn't moving the data. The dump took 26 seconds and the restore 0.75 seconds. The difficulty was the irreversible moments scattered through the process, like that final Enter. ‘Fix it if it breaks’ doesn't work there. You need reasons to believe the action is right before taking it.</p>
+<h2 id="139ms--옮겨야-할-이유">139 ms: the reason to move</h2><p>The application was in Seoul, but RDS was in Sydney, for assorted reasons. Before settling for ‘distance makes it slow,’ I measured it. The TCP round trip from Seoul to Sydney RDS was 139 ms, versus 0.2 ms in the same region. Every query started with that 139 ms cost.</p>
+<p>The dump took 26 seconds for the same reason. <code>pg_dump</code> queried the catalogs 184 times to discover the schema, waiting for each answer before asking the next question. 184 × 139 ms = 25.7 seconds. Physical distance was the bottleneck; having only 12 MB of data didn't help. After the move, the same query round trips fell to 0.2–0.9 ms.</p>
+<h2 id="1분--다운타임의-가격">One minute: the price of downtime</h2><p>A zero-downtime approach would have required PgBouncer between the app and DB, plus multiple application instances. We had one server with the app connected directly to the DB. Supporting that approach meant rebuilding the setup—a substantial project.</p>
+<p>All that work would buy us a reduction from one minute of downtime to zero. The rehearsal gave us the breakdown: 26 seconds to dump, 0.75 to restore, and 30 to restart the app. I wasn't going to spend weeks eliminating one quiet minute overnight. With 12 GB, a dump alone could take tens of minutes and change the decision. We had 12 MB, so we chose to stop and copy.</p>
+<h2 id="836mb--메모리-예산">836 MB: the memory budget</h2><p>Would adding a DB overwhelm a small server with 1.9 GB of RAM already running a JVM application? I checked in a rehearsal. The app used 490 MB, the PostgreSQL container 33 MB, and 836 MB remained available. Since both fit, I kept the instance as it was.</p>
+<p>PostgreSQL used only 33 MB because its working set was small: 12 MB of data. Even with <code>shared_buffers</code> set to 128 MB, it touched only a small number of pages. The data fit in memory, leaving few disk reads; the cache hit rate after migration was 99.5%. On this server, the JVM was the bigger memory concern, not PostgreSQL.</p>
+<h2 id="17gb--스왑이-들어갈-자리">1.7 GB: room for swap</h2><p>The server had no swap. Without it, a brief memory spike can trigger OOM, so I added a safety net. Disk space chose the size: with 1.7 GB free, a 2 GB swap file wouldn't fit. I made it 1 GB; afterward, reported free space was 1.4 GB at 80% utilization. On a small server, even a safety net consumes a scarce resource.</p>
+<h2 id="전환--새벽의-1분">Cutover: one minute overnight</h2><p>Night came. From this point on, irreversible actions would appear one by one, so I defined a gate for each step.</p>
+<p>First, I stopped the app to freeze writes to RDS. Comparing two databases while both are changing doesn't work. I assumed the app was the only writer, but strictly speaking I should have checked <code>pg_stat_activity</code> for zero active connections. Stopping the app and assuming nobody else was writing was the least comfortable part of this migration. After stopping it, the dump took 26 seconds, the restore 0.75, with no warnings.</p>
+<p>I didn't validate the restore using row counts. Two tables can both have 35 rows and still contain different values. Instead, I hashed all concatenated rows and compared the two databases.</p>
+<pre data-lang="abnf"><code class="language-abnf hljs">            New container       RDS
+users       <span class="hljs-number">8479836</span>e179a    <span class="hljs-operator">=</span>    <span class="hljs-number">8479836</span>e179a
+blog_posts  <span class="hljs-number">5</span>b2b243ef8ac    <span class="hljs-operator">=</span>    <span class="hljs-number">5</span>b2b243ef8ac
+</code></pre>
+<p>I checked that both sides used <code>pg_trgm 1.6</code>. With the big-bang approach, sequences came with the dump, preserving <code>users_id_seq=1649</code>. With logical replication, that would have needed manual adjustment.</p>
+<p>Once the hashes matched, I changed <code>DB_HOST</code> to the container and restarted the app. It's configuration, not code, so a restart was enough—but there's a trap. Without also updating Secrets Manager, the next deployment would overwrite <code>.env</code> with the old value and point at the deleted database. I ran <code>ANALYZE</code> because statistics were empty after restoration. Health was <code>UP</code>, there were 11 connections, and reads worked. One minute had passed since stopping the app.</p>
+<p>The new database was now authoritative. We'd crossed one point of no return.</p>
+<h2 id="삭제-그리고-망설임">Deletion, and hesitation</h2><p>I returned to the delete command. I could run it because every earlier gate was green: matching hashes, health UP, and successful reads. If any had failed, I'd have stopped and pointed <code>DB_HOST</code> back to RDS. I'd also taken a manual snapshot to leave a recovery path. That's why I could use <code>--skip-final-snapshot</code>.</p>
+<pre data-lang="avrasm"><code class="language-avrasm hljs"><span class="hljs-symbol">status:</span> deleting
+</code></pre>
+<p>The gates passed, and a snapshot existed. There wasn't much left to lose. Still, my finger paused. <code>delete-db-instance</code> works in one direction: that instance doesn't come back. Restoring a snapshot creates a new instance; it's a different operation. This hesitation was almost reflexive. But checking gates before small irreversible actions builds a habit that can survive much larger deletions. What got my hand moving again wasn't courage. It was those gates.</p>
+<h2 id="옮기고-나서">After the move</h2><p>Only after leaving RDS did I understand what the bill had bought: automated backups, monitoring, and recovery. The snapshot was a picture of the old RDS instance, not a backup of the new container database. I now owned all of that work. I'd configured Discord alerts below 100 MB of free memory, but shipping <code>pg_dump</code> backups to S3 was still pending. Even then, a backup deserves that name only after a restore test. Leaving a managed service wasn't simply saving money. It traded money for labor and risk.</p>
+<p>Debt remained: self-managed backups and monitoring, and a single server whose failure would take both the app and DB down. The 8 GB disk was already 90% full.</p>
+<p>Moving the data took 27 seconds. Everything else was about crossing irreversible boundaries. 139 ms justified the move; one minute justified big-bang cutover; 836 MB justified keeping the instance; 1.7 GB determined swap size; matching hashes justified pressing Enter. Without those numbers, the decisions would have rested on intuition. That matters even more when the work can't be undone.</p>
+<p>More work lacks <code>git revert</code> than we think: deleting a production table, migrating data, sending a payment that can't be recalled. Pausing before those commands isn't cowardice. Use the pause to check that every reason to proceed is green.</p>
+
+        </div>
+      </article>
+    <nav class="post-nav" aria-label="Previous and next posts">
+      <a class="post-nav-item post-nav-item--prev" href="/posts/automating-personal-messaging/">
+        <span class="post-nav-label">previous post</span>
+        <span class="post-nav-title">Let's Automate My Social Life</span>
+      </a>
+      <a class="post-nav-item post-nav-item--next" href="/posts/building-the-data-before-the-model/">
+        <span class="post-nav-label">next post</span>
+        <span class="post-nav-title">An ML Project Where We Decided Not to Build the ML Yet</span>
+      </a>
+    </nav>
+      <nav class="post-back">
+        <a href="/writing/">← back to posts</a>
+      </nav>
+    </div>
+    <aside class="toc" id="toc" aria-label="Contents">
+      <p class="toc-title">contents</p>
+      <ul class="toc-list">
+        <li class="toc-item toc-item--h2"><a href="#139ms--옮겨야-할-이유" data-target="139ms--옮겨야-할-이유">139 ms: the reason to move</a></li>
+        <li class="toc-item toc-item--h2"><a href="#1분--다운타임의-가격" data-target="1분--다운타임의-가격">One minute: the price of downtime</a></li>
+        <li class="toc-item toc-item--h2"><a href="#836mb--메모리-예산" data-target="836mb--메모리-예산">836 MB: the memory budget</a></li>
+        <li class="toc-item toc-item--h2"><a href="#17gb--스왑이-들어갈-자리" data-target="17gb--스왑이-들어갈-자리">1.7 GB: room for swap</a></li>
+        <li class="toc-item toc-item--h2"><a href="#전환--새벽의-1분" data-target="전환--새벽의-1분">Cutover: one minute overnight</a></li>
+        <li class="toc-item toc-item--h2"><a href="#삭제-그리고-망설임" data-target="삭제-그리고-망설임">Deletion, and hesitation</a></li>
+        <li class="toc-item toc-item--h2"><a href="#옮기고-나서" data-target="옮기고-나서">After the move</a></li>
+      </ul>
+    </aside>
+  </main>
+  <script src="/app.js?v=391ab9a5"></script>
+
+
+</body></html>

@@ -1,0 +1,18 @@
+{
+  "AI-과도기-대학-조별과제는-어디로-가야-할까": "ai-era-team-projects",
+  "익숙한-N1-문제-캐싱이-가져온-26배의-속도-차이": "fixing-n-plus-one-with-caching",
+  "운영-DB-옮기기-되돌릴-수-없는-버튼-누르기": "production-database-migration",
+  "예쁘게를-코드로-옮기는-법": "design-context-to-code",
+  "본질적-복잡성과-우연적-복잡성-스프링에서-FP는-어디까지-밀어넣을-수-있는가": "functional-programming-in-spring",
+  "코딩-시험-결과를-교육과정-단위의-진단으로-바꾸는-방법": "curriculum-level-learning-diagnostics",
+  "LLM-파이프라인-리팩터링-토큰-새는-곳-찾기": "llm-pipeline-token-optimization",
+  "인간관계를-자동화-해보자": "automating-personal-messaging",
+  "Netty-오픈소스-기여-왜-Direct-Memory-한도를-확인할까": "netty-direct-memory-limit",
+  "트랜잭션의-경계는-어떻게-정해야할까-Outbox-pattern으로-경계-줄이기": "transaction-boundaries-and-outbox",
+  "배포-후에야-알게-되는-gRPC-스키마-불일치-Kubernetes에서-자동으로-잡기": "grpc-schema-drift-in-kubernetes",
+  "극도로-발전된-명세프롬프트는-코드와-구별되지-않는다": "specifications-as-code",
+  "바이브-코딩-시대-왜-다시-SQL인가": "sql-in-the-age-of-vibe-coding",
+  "반년-동안-창업하며-배운-것들": "six-months-building-a-startup",
+  "요청-처리량-27배-Java-Virtual-Thread-도입기": "java-virtual-threads",
+  "ML-프로젝트인데-ML을-안-넣기로-했습니다": "building-the-data-before-the-model"
+}

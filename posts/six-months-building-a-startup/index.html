@@ -1,0 +1,100 @@
+<!DOCTYPE html><html lang="en"><head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="google-site-verification" content="sNrpo16A0vUj7vHmVNEmAGZj85cGykaOeHO44krbqDU">
+  <title>woojin kim · What Six Months of Building a Startup Taught Me · xhae123's notes</title>
+  <meta name="description" content="The word ‘sports’ usually sits next to professional leagues, broadcasts, and salaries. Our definition was different: if there's competition and an audience, it'">
+  <link rel="canonical" href="https://xhae123.github.io/posts/six-months-building-a-startup/">
+  <meta property="og:type" content="article">
+  <meta property="og:site_name" content="xhae123's notes">
+  <meta property="og:title" content="What Six Months of Building a Startup Taught Me · xhae123's notes">
+  <meta property="og:description" content="The word ‘sports’ usually sits next to professional leagues, broadcasts, and salaries. Our definition was different: if there's competition and an audience, it'">
+  <meta property="og:url" content="https://xhae123.github.io/posts/six-months-building-a-startup/">
+  <meta property="og:locale" content="en_US">
+  <meta property="og:image" content="https://xhae123.github.io/assets/covers/cover-22.svg">
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:title" content="What Six Months of Building a Startup Taught Me · xhae123's notes">
+  <meta name="twitter:description" content="The word ‘sports’ usually sits next to professional leagues, broadcasts, and salaries. Our definition was different: if there's competition and an audience, it'">
+  <meta name="twitter:image" content="https://xhae123.github.io/assets/covers/cover-22.svg">
+  <link rel="preconnect" href="https://cdn.jsdelivr.net">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin="">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable.css">
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500&amp;display=swap">
+  <link rel="stylesheet" href="/styles.css?v=lowercase-2">
+  <link rel="stylesheet" href="/navigation.css?v=rose-1">
+  <link rel="icon" type="image/svg+xml" href="/favicon.svg?v=woojin-w-2">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/github.min.css">
+  <link rel="stylesheet" href="/blog.css?v=lowercase-2">
+  <meta property="article:published_time" content="2025-12-31T00:00:00.000Z">
+  <meta property="article:section" content="Product">
+  <meta property="article:author" content="Woojin Kim">
+  <script type="application/ld+json">{"@context":"https://schema.org","@type":"BlogPosting","headline":"What Six Months of Building a Startup Taught Me","description":"The word ‘sports’ usually sits next to professional leagues, broadcasts, and salaries. Our definition was different: if there's competition and an audience, it'","datePublished":"2025-12-31T00:00:00.000Z","dateModified":"2025-12-31T00:00:00.000Z","author":{"@type":"Person","name":"Woojin Kim"},"url":"https://xhae123.github.io/posts/six-months-building-a-startup/","mainEntityOfPage":"https://xhae123.github.io/posts/six-months-building-a-startup/","image":"https://xhae123.github.io/assets/covers/cover-22.svg"}</script>
+</head>
+<body>
+  <main class="post-layout">
+    <div class="post-main">
+      <article class="post" id="post">
+        <div class="post-cover"><img src="/assets/covers/cover-22.svg" alt=""></div>
+        <header class="post-header">
+          <a class="post-top-back" href="/writing/">← all posts</a>
+          <p class="post-meta"><time datetime="2025-12-31">2025.12.31</time><span aria-hidden="true"> · </span><span class="post-category">product</span></p>
+          <h1 class="post-title">What Six Months of Building a Startup Taught Me</h1>
+        </header>
+        <div class="post-body" id="post-body">
+<h2 id="가위바위보도-스포츠니까">Even rock-paper-scissors is a sport</h2><p>The word ‘sports’ usually sits next to professional leagues, broadcasts, and salaries. Our definition was different: if there's competition and an audience, it's a sport. Even rock-paper-scissors.</p>
+<p>Professionals have leagues, records, and fans. Someone playing badminton in the neighborhood has none of that. When the match ends, it disappears into ‘I got some exercise.’ We wanted to build an app where everyday players could keep records, and those records could connect people.</p>
+<p>Oddly, it started at a university competition unrelated to startups. I met another student who worked on product planning, and one coffee chat was enough. I was drawn to the person before the idea. It had been a while since I'd met someone who genuinely wanted to tackle a problem.</p>
+<p>We incorporated first. Investment needed a legal entity, and running tournaments meant signing contracts as a company rather than individuals. A company name helped with promotion too. In other words, this never started as a casual side project.</p>
+<h2 id="안-죽는-게-먼저다">Keeping it alive comes first</h2><p>I handled development: infrastructure, backend, and frontend. I chose the stack I could move fastest with. It wasn't the ideal combination, but what we needed then was speed, not a perfect stack.</p>
+<p>The catch was that the app was both a social network and a tournament operations system. When a typical app goes down, users refresh. When ours went down, people in a gym couldn't play their matches. That was the kind of incident we faced.</p>
+<p>After that day, I looked at code differently. I'd believed that good code and clean design were what made you capable. But a perfect design means nothing if the service isn't alive. I started putting redundant fallbacks around every feature. My design philosophy shifted from ‘elegant’ to ‘keeps running.’</p>
+<h2 id="로그에-안-찍히는-것들">What logs don't tell you</h2><p>Shipping the app to the store and making tournaments happen was the most intense part of those six months.</p>
+<p>I remember the first time I watched participants open my app and enter scores at a tournament. It felt strange. Until then, a service had meant logs in a terminal. Now people were tapping a screen in front of me, and their actions were reflected in real time. That was the first day I felt like someone operating a service, not just building one.</p>
+<p>I also saw uncomfortable moments. Someone hesitating on a screen. Someone looking around for a button they couldn't find. None of those problems appeared in the logs. On the tournament floor, I learned that a product's real problems don't always show up in telemetry. After that, I shifted priorities from adding features to improving the ones we already had.</p>
+<h2 id="사람은-ai보다-어렵다">People are harder than AI</h2><p>Around this time, a few teammates joined.</p>
+<p>I was used to producing fairly large results on my own with AI agents. Give AI the right context and it produces something. People were different. Defining what to ask them to do was work in itself, and code reviews took more energy than I expected. Working alone, the code was an extension of what was in my head. Working together meant putting that whole picture into words. Honestly, there were moments when building it myself with Claude felt faster than explaining it.</p>
+<p>Was that wasted effort? No. I couldn't have gone that far alone. Shipping, hosting tournaments, and operating them within six months happened because of the people who worked alongside me. Tools gave us speed; people gave us scale. I learned that firsthand.</p>
+<h2 id="열심히-할수록-멀어졌습니다">The harder we worked, the further we drifted</h2><p>Everything above was a small blow compared with the real problem.</p>
+<p>Outside the users we brought in through tournaments and marketing, almost nobody opened the app again on their own. Organic retention was terrible. Our first diagnosis was that the app wasn't entertaining enough, so we added a feed where people could browse others' matches like Reels. My co-founder and I even disagreed about whether to prioritize the feed or sales. I chose the feed because I thought people needed a reason to open the app more often. My point is that we didn't fail for lack of effort.</p>
+<p>Looking back, the diagnosis itself was wrong. This business needed an existing community. People attract more people, and no amount of features creates the first group. It wasn't simply that the app was bad. The problem wasn't one we could solve at our stage.</p>
+<p>Some startups fail from weak execution. But when the diagnosis is wrong, working harder takes you further from the answer. That was us. Six months of execution piled up without addressing the real issue.</p>
+<p>The final blow came from outside. Around the same time, Karrot launched a local groups feature. They already had the community we were trying to build from scratch. Honestly, seeing that took a lot of the wind out of us.</p>
+<h2 id="확신이-꺼지니까-회사가-꺼졌습니다">When conviction ran out, the company stopped</h2><p>The decision to stop was mine.</p>
+<p>The service was still running, which made it stranger. We hadn't collapsed; we chose to stop while still standing. It's hard to explain what it feels like to incorporate a company, build an app, run tournaments, and then switch it off yourself. One thing was clear, though: continuing without knowing where we were headed was scarier than failing.</p>
+<p>If I had to name one thing those six months left me, it would be an understanding of the world outside the logs. I learned painfully that perfect designs and intense execution can still be powerless against how users live and when a market is ready.</p>
+<p>But the experience wasn't lost. It left me better able to look past a builder's assumptions and see what users actually lacked, and better able to keep a service running under pressure.</p>
+<p>Our diagnosis was wrong; my desire to solve problems wasn't gone. I'm taking what I learned into the next problem, with a sharper eye.</p>
+
+        </div>
+      </article>
+    <nav class="post-nav" aria-label="Previous and next posts">
+      <a class="post-nav-item post-nav-item--prev" href="/posts/grpc-schema-drift-in-kubernetes/">
+        <span class="post-nav-label">previous post</span>
+        <span class="post-nav-title">Catching gRPC Schema Drift Automatically in Kubernetes</span>
+      </a>
+      <a class="post-nav-item post-nav-item--next" href="/posts/sql-in-the-age-of-vibe-coding/">
+        <span class="post-nav-label">next post</span>
+        <span class="post-nav-title">Why Return to SQL in the Age of Vibe Coding?</span>
+      </a>
+    </nav>
+      <nav class="post-back">
+        <a href="/writing/">← back to posts</a>
+      </nav>
+    </div>
+    <aside class="toc" id="toc" aria-label="Contents">
+      <p class="toc-title">contents</p>
+      <ul class="toc-list">
+        <li class="toc-item toc-item--h2"><a href="#가위바위보도-스포츠니까" data-target="가위바위보도-스포츠니까">Even rock-paper-scissors is a sport</a></li>
+        <li class="toc-item toc-item--h2"><a href="#안-죽는-게-먼저다" data-target="안-죽는-게-먼저다">Keeping it alive comes first</a></li>
+        <li class="toc-item toc-item--h2"><a href="#로그에-안-찍히는-것들" data-target="로그에-안-찍히는-것들">What logs don't tell you</a></li>
+        <li class="toc-item toc-item--h2"><a href="#사람은-ai보다-어렵다" data-target="사람은-ai보다-어렵다">People are harder than AI</a></li>
+        <li class="toc-item toc-item--h2"><a href="#열심히-할수록-멀어졌습니다" data-target="열심히-할수록-멀어졌습니다">The harder we worked, the further we drifted</a></li>
+        <li class="toc-item toc-item--h2"><a href="#확신이-꺼지니까-회사가-꺼졌습니다" data-target="확신이-꺼지니까-회사가-꺼졌습니다">When conviction ran out, the company stopped</a></li>
+      </ul>
+    </aside>
+  </main>
+  <script src="/app.js?v=391ab9a5"></script>
+
+
+</body></html>

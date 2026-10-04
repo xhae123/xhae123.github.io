@@ -1,0 +1,279 @@
+{
+  "method": "Built-in image_gen for raster text-localization; direct SVG text localization for editable vector originals",
+  "constraints": "Translate titles, labels, legends, and annotations into English. Preserve every number, unit, axis scale, bar, curve, flow arrow, and semantic boundary. No invented measurements, no screenshots altered. Keep original assets; publish English siblings locally only.",
+  "figures": [
+    {
+      "id": "fp-core",
+      "date": "2026-03-22",
+      "sources": [
+        "38c72e5e-bacb-4ca4-8233-f738f16f31bc.png",
+        "71ae9fb6-8e40-489e-a1cc-f58aa0b87923.png"
+      ],
+      "alt": "Before and after separating a functional core from an imperative shell",
+      "labels": "Before: Controller → OrderService (I/O + computation) → GoodsOrder (State mutation) → Repository. After: Controller → OrderService (Shell: I/O only) → Goods.toSnapshot() → OrderCalculator (Core: pure computation) → Core result → Entity assembly → Repository. The two original files are byte-identical."
+    },
+    {
+      "id": "fp-benefit",
+      "date": "2026-03-22",
+      "sources": [
+        "c033870d-5aff-4461-932e-35e5ea14f3db.png"
+      ],
+      "alt": "Conceptual benefit curve as functional programming adoption expands into framework infrastructure",
+      "labels": "Benefit; Extent of FP adoption; Break-even; Discount policies → higher-order functions; FC/IS adoption; Stock validation → pure functions; State transitions (cancel); Remove exceptions; @Transactional + Either. Conceptual curve, not measured data."
+    },
+    {
+      "id": "zansol-stages",
+      "date": "2026-06-20",
+      "sources": [
+        "1437dc76f23edc13.png"
+      ],
+      "alt": "Intervention exposures and return rates by escalation stage",
+      "labels": "Interventions and return rates by stage — 93.9% at stage 1. Exposures (9,214 total); Return rate (%). Stage 1 (immediate): 8,655 (93.9%), 72.2%. Stage 2 (+30 sec): 466 (5.1%), 41.2% (survivor bias). Stage 3 (+2 min): 93 (1.0%), ~55% (n=93; interpret cautiously)."
+    },
+    {
+      "id": "zansol-messages",
+      "date": "2026-06-20",
+      "sources": [
+        "2c45d844fa16aa4c.png"
+      ],
+      "alt": "Top and bottom message return rates within the same stage and tone",
+      "labels": "Message return-rate rankings (≥50 exposures, stage 1 / harsh). Top 5: Weren’t you supposed to be studying? lol: 89% (n=142); Your competition is solving problems right now: 86% (n=121); Same regret, same routine, every day: 84% (n=133); Funny now? It won’t be later: 82% (n=98); Ready to fail the next exam too: 81% (n=104). Bottom 5: Amazing job not studying: 31% (n=87); Hey, face reality: 38% (n=76); Your life graph is heading down: 41% (n=69); Your laziness is remarkable: 44% (n=71); Still here? Your willpower is a zombie: 47% (n=58). Return rate (%). Same stage and tone, about 3× variation: message selection is worth optimizing."
+    },
+    {
+      "id": "zansol-user-share",
+      "date": "2026-06-20",
+      "sources": [
+        "b05da13a0565b758.png"
+      ],
+      "alt": "Share of intervention events accounted for by the ten most active users",
+      "labels": "Intervention share by user — top 10 account for 41%. Share of 9,214 events. Top 10: 3,778 events (41%). Top-ten individual shares: 9.8%, 6.5%, 5.1%, 4.4%, 3.6%, 3.1%, 2.7%, 2.2%, 1.9%, 1.7%; u01–u10. Share of all events (%). At semester-end scale, the earlier one-user 82.5% concentration becomes less extreme."
+    },
+    {
+      "id": "zansol-tones",
+      "date": "2026-06-20",
+      "sources": [
+        "3cddc9af2c7b5c9f.png"
+      ],
+      "alt": "Tone exposure and return rates with a warning about self-selection bias",
+      "labels": "Tone exposure and return rates — not a fair comparison. Onboarding self-selection: harsh is most popular. Gentle 1,014 (11%), Neutral 2,856 (31%), Harsh 5,344 (58%). Return rates: Gentle 74.1%, Neutral 71.3%, Harsh 69.2%. Not a fair comparison (self-selection bias). Users selecting harsh may be more distracted; randomized tone assignment is needed."
+    },
+    {
+      "id": "zansol-policy-returns",
+      "date": "2026-06-20",
+      "sources": [
+        "ae684e4653ff5a95.png"
+      ],
+      "alt": "Simulated policy comparison of rolling return rates across intervention count",
+      "labels": "Policy comparison: rolling return rate. Rolling return rate (window=300); Total interventions. V1 uniform random; V1 fixed (user-selected); V2 Thompson Sampling; Oracle (theoretical upper bound). Endpoint labels 66.0%, 67.3%, 71.3%, 75.0%. Keep all original curve geometry and axis ticks; do not synthesize trajectories."
+    },
+    {
+      "id": "zansol-tone-heatmap",
+      "date": "2026-06-20",
+      "sources": [
+        "c25e4a51b67b2eeb.png"
+      ],
+      "alt": "Simulated early and late tone-selection distributions by user type",
+      "labels": "Tone selection by user type as V2 learns. Early (first 1,000), Late (last 1,000). Rows: Empathy-responsive, Pressure-responsive, Uniform, Adaptive, Sensitive. Columns: Gentle (tone 0), Neutral (tone 1), Harsh (tone 2). Early rows: 41/33/26, 24/38/37, 33/35/32, 32/39/28, 56/27/17 (%). Late rows: 58/29/12, 16/35/48, 33/40/26, 33/40/27, 56/27/17 (%). Colorbar: Selection share, 0.0–0.8."
+    },
+    {
+      "id": "zansol-policy-regret",
+      "date": "2026-06-20",
+      "sources": [
+        "055a01df6934260f.png"
+      ],
+      "alt": "Simulated policy comparison of cumulative regret",
+      "labels": "Policy comparison: cumulative regret. Cumulative regret; Interventions. V1 uniform random; V1 fixed (user-selected); V2 Thompson Sampling; Oracle (theoretical upper bound). Preserve original curves and numeric endpoints: 1103, 990, 773, 0. Do not synthesize trajectories."
+    },
+    {
+      "id": "curriculum-workflow",
+      "date": "2026-07-30",
+      "sources": [
+        "7dfb6bba25248a07.png"
+      ],
+      "alt": "Eight-step workflow connecting curriculum standards, assessment, evidence, and remediation",
+      "labels": "1 NCIC or local curriculum → 2 Structure achievement standards → 3 AI drafts questions and rubrics (AI) → 4 Teacher review (Teacher) → 5 Student responses (Student) → 6 Evidence by question → 7 Diagnosis by standard → 8 Remediation and next lesson. Two-row serpentine flow."
+    },
+    {
+      "id": "vt-execution",
+      "date": "2026-09-16",
+      "sources": [
+        "bc6086a1a40868e7.png"
+      ],
+      "alt": "Controlled virtual-thread experiment and supported blocking I/O execution model",
+      "labels": "VT OFF run; VT ON run. k6 · 40 VUs → Read API · VT OFF/ON → HikariCP · pool 4 → PostgreSQL. Connection wait; Wait for query result. Fixed conditions: 40 VUs, 150 sec, pool size 4, Java 21 / Spring Boot 3.5.3, same runtime. Separate comparison runs, not two servers. Platform thread: Request A · waiting for I/O → OS thread A; binding remains. Virtual thread: Virtual thread A · waiting for I/O; B can run on the carrier while A waits; Virtual thread B · running → Carrier · platform thread → OS thread. Solid: call; dashed: response. Supported blocking I/O schematic; counts illustrative, not measured carrier counts."
+    },
+    {
+      "id": "vt-performance",
+      "date": "2026-09-16",
+      "sources": [
+        "5947914d3a782af0.png"
+      ],
+      "alt": "Throughput and p95 latency with virtual threads disabled and enabled",
+      "labels": "VT OFF / ON performance comparison. Throughput (RPS): Read A 16.6/45.5 (2.74×), Read B 68.3/134.8 (1.97×), Read C 39.4/79.5 (2.02×). p95 latency (ms): Read A 6976.7/2401.9, Read B 1890.6/902.7, Read C 2795.9/1298.9. Gray VT OFF, blue VT ON. 40 VUs per API · 150 sec per run · DB pool: 4. Read scenario failure rate 0% for both."
+    },
+    {
+      "id": "vt-waits",
+      "date": "2026-09-16",
+      "sources": [
+        "6dd483e7583a0a28.png"
+      ],
+      "alt": "Peak platform threads and connection waiters with virtual threads off and on",
+      "labels": "Peak platform threads (Count): Read A 68/33, Read B 65/30, Read C 65/31. Peak connection waiters (Count): Read A 36/34, Read B 31/35, Read C 34/33. OFF gray, ON blue."
+    },
+    {
+      "id": "vt-ai-path",
+      "date": "2026-09-16",
+      "sources": [
+        "7a3af06d9fe170e5.png"
+      ],
+      "alt": "Spring API waiting for a response from an external photo-classification server",
+      "labels": "Photo verification request → Spring API → AI server. HTTP call; Classification result (dashed return). Wait for external response · compare VT OFF / ON. Server’s role: photo classification."
+    },
+    {
+      "id": "vt-ai-threads",
+      "date": "2026-09-16",
+      "sources": [
+        "a4ac0d748ee7066e.png"
+      ],
+      "alt": "Peak platform-thread counts in the calling API for external AI requests",
+      "labels": "Peak platform threads in the API server. Count. 80 VUs: VT OFF 171, VT ON 92. 150 VUs: VT OFF 261, VT ON 112. Gray VT OFF; blue VT ON; scale 0–300."
+    },
+    {
+      "id": "vt-pool-size",
+      "date": "2026-09-16",
+      "sources": [
+        "4da815d254de230a.png"
+      ],
+      "alt": "Throughput and peak connection waiters as the database pool grows",
+      "labels": "Throughput (RPS): pool size 4/8/16/32 → 43.7/27.6/23.7/23.6. Peak connection waiters (Count): same sizes → 59/52/45/27. X axis: Connection pool size. Preserve scales 0–50 and 0–64."
+    },
+    {
+      "id": "netty-layout",
+      "date": "2026-09-22",
+      "sources": [
+        "netty-direct-memory-layout.webp"
+      ],
+      "alt": "Java heap contains the DirectByteBuffer object, pointing to off-heap byte data",
+      "labels": "Java process memory; Java heap; Objects / byte[]; DirectByteBuffer object; Direct memory; Actual byte data; Other memory; Method area; Native libraries; Other OS regions. Preserve the heap/direct-memory boundary and downward pointer."
+    },
+    {
+      "id": "netty-copy",
+      "date": "2026-09-22",
+      "sources": [
+        "netty-heap-to-direct-buffer.webp"
+      ],
+      "alt": "A heap buffer is copied into a temporary direct buffer before an OS write",
+      "labels": "Heap buffer → Temporary direct buffer → OS write function."
+    },
+    {
+      "id": "llm-pipeline-00-architecture",
+      "date": "2026-07-22",
+      "sources": [
+        "llm-pipeline-00-architecture.svg"
+      ],
+      "format": "svg",
+      "method": "SVG text localization; original vector geometry and numeric data retained",
+      "alt": "Four-stage pipeline: ingestion, triage, writing, assembly; output files represent state, with humans at review points",
+      "labels": "Four stages of the pipeline; No separate state store — the files in each directory are the state; [1] Ingestion; Scripts · no LLM; Feeds: 178 vendors; [2] Triage; Haiku · batch; Gates G1–G5; [3] Writing; Sonnet · per article; Read source → card; [4] Assembly; Scripts · no LLM; DB → serving; Artifacts = state; in cards.json = served; No state ledger. Resume by processing only the missing next file.; Where humans participate; Admin console — review decisions and cards; leave ; 💬 a brief comment; ; Writing and assembly run unattended. Review feedback becomes reusable criteria.; Run revisions manually once comments accumulate; triage and writing criteria update separately.; No automatic updates. Criteria change only with human approval."
+    },
+    {
+      "id": "llm-pipeline-01-cost-breakdown",
+      "date": "2026-07-22",
+      "sources": [
+        "llm-pipeline-01-cost-breakdown.svg"
+      ],
+      "format": "svg",
+      "method": "SVG text localization; original vector geometry and numeric data retained",
+      "alt": "Of 48,932 input tokens per writing task, 25,559 (52%) are fixed overhead",
+      "labels": "Where do the input tokens go?; 48,932 measured tokens · about half are fixed overhead; Fixed overhead; System prompt · tools · CLAUDE.md; — charged even for an &quot;ok&quot; reply; File reads; Source 17.5KB + policy 5.5KB; Output fed back; Written card billed again as next-turn input; My prompt "
+    },
+    {
+      "id": "llm-pipeline-02-prefix-cache",
+      "date": "2026-07-22",
+      "sources": [
+        "llm-pipeline-02-prefix-cache.svg"
+      ],
+      "format": "svg",
+      "method": "SVG text localization; original vector geometry and numeric data retained",
+      "alt": "A one-byte prompt difference invalidates the entire 43,006-token prefix before the cache breakpoint",
+      "labels": "Prefix caching requires byte-for-byte equality; A hit needs an exact prefix match; one changed byte invalidates the entire prefix; Article path embedded in the prompt; System · tools · CLAUDE.md; Path ← changes each time; Other instructions; → Miss: 27,223 new input tokens billed; Article path moved to a queue file; System · tools · CLAUDE.md; Instructions identical for every article; → Hit: all 43,006 cached · 0 new input tokens; How does a worker claim its article?; Claim ;  with ;  in the queue; atomic claims prevent overlap."
+    },
+    {
+      "id": "llm-pipeline-03-silent-loss",
+      "date": "2026-07-22",
+      "sources": [
+        "llm-pipeline-03-silent-loss.svg"
+      ],
+      "format": "svg",
+      "method": "SVG text localization; original vector geometry and numeric data retained",
+      "alt": "Swallowed JSON parse failures reset the derived state, silently hiding completed writing",
+      "labels": "How completed writing silently disappears; The file exists on disk, but the UI reports &quot;not written&quot;; Writing; 60K tokens; Save card.json; 25% escaping failure; read_json fails; State: unwritten; Gone from the UI; Fix: keep the body in a body file; card.json — escaping required;   &quot;body&quot;: &quot;## Title; Body with ; quotes; Unicode, newlines, and quotes are pitfalls; card.md — no body escaping; title: Only the kernel knew; Body stays as Markdown below the header"
+    },
+    {
+      "id": "llm-pipeline-04-before-after",
+      "date": "2026-07-22",
+      "sources": [
+        "llm-pipeline-04-before-after.svg"
+      ],
+      "format": "svg",
+      "method": "SVG text localization; original vector geometry and numeric data retained",
+      "alt": "Before and after: tokens fell 37%, from 72,136 to 45,788; tool calls 13 to 5; corruption 25% to 0",
+      "labels": "Before and after — writing one article; Quality unchanged: coverage 9/9 · fabricated figures 0; Tokens ; (base-price equivalent); Before; After; Tool calls; Before; 13 calls; After; 5 calls; 4 parallel Reads + 1 Write — minimum; Output corruption ; (2 of 8 runs silently lost); · failures visible in console"
+    },
+    {
+      "id": "llm-pipeline-05-three-axes",
+      "date": "2026-07-22",
+      "sources": [
+        "llm-pipeline-05-three-axes.svg"
+      ],
+      "format": "svg",
+      "method": "SVG text localization; original vector geometry and numeric data retained",
+      "alt": "Total cost equals unit cost times volume times rework rate; unit-cost improvements are fixed factors, better decisions compound",
+      "labels": "Cost has more than one axis; Optimizing unit cost alone hid the other two dimensions; Total cost =; Unit cost; Volume; Rework rate; Unit cost; Cost of writing one card; Limit; One-time factor reduction; Already near the floor; Volume; How many cards get written; Triage pass rate (measured); Lever; One false-positive article; = 45K wasted; Rework rate; Cards discarded after writing; Rejected cards (measured); Most expensive; Rejected only after; spending 45K tokens"
+    },
+    {
+      "id": "llm-pipeline-06-feedback-loop",
+      "date": "2026-07-22",
+      "sources": [
+        "llm-pipeline-06-feedback-loop.svg"
+      ],
+      "format": "svg",
+      "method": "SVG text localization; original vector geometry and numeric data retained",
+      "alt": "Human comments accumulate in files; a manually triggered skill revises criteria in a human-on-the-loop workflow",
+      "labels": "Keep humans involved, not on every run; Leave brief review comments; batch criterion revisions manually; Triage; Writing; Card · 45K; Serve · review; Hold / reject; 💬 Brief comment; stage derives from current state — the review screen determines its value; Manual trigger · refuses fewer than 3 comments; stage: triage comments →; Revise taste-rubric.md gates; stage: write + rejection →; Revise writing-policy.md; Measure; Take snapshots; before and after; Append-only:; baseline stays intact; Without measurements,; better or worse; remains unknown"
+    },
+    {
+      "id": "llm-pipeline-07-baseline",
+      "date": "2026-07-22",
+      "sources": [
+        "llm-pipeline-07-baseline.svg"
+      ],
+      "format": "svg",
+      "method": "SVG text localization; original vector geometry and numeric data retained",
+      "alt": "Measured baseline: triage pass rate 26.5%, bring precision 71.8%, writing acceptance 42.3%",
+      "labels": "Baseline — measured before revisions; 294 decisions: bring 78 / skip 216 · a reference for future comparisons; Triage pass rate; Low is not bad: filtering is the job. Abrupt changes can signal unstable gates.; bring precision; ★ Key metric: the other 28% were discarded after spending 45K.; Writing acceptance; Share served; 23 cards awaiting assembly still depress this rate."
+    },
+    {
+      "id": "llm-pipeline-08-rounds",
+      "date": "2026-07-22",
+      "sources": [
+        "llm-pipeline-08-rounds.svg"
+      ],
+      "format": "svg",
+      "method": "SVG text localization; original vector geometry and numeric data retained",
+      "alt": "Eight rounds, 40 articles: agreement increased from 80% to 93% after switching from 60-line excerpts to full-text reading; most errors involved reading scope",
+      "labels": "8 rounds, 40 articles — what caused misjudgments?; Each round: articles from 5 new vendors, then human review; Round; Match; Reading only the first 60 lines; Reading scope: 60 → 400 lines (full sources were already local); After enabling full-text reading; Of 5 errors,; 3 were not rubric errors; (reading scope issue); All 3 corrected; with more context"
+    },
+    {
+      "id": "llm-pipeline-10-results",
+      "date": "2026-07-22",
+      "sources": [
+        "llm-pipeline-10-results.svg"
+      ],
+      "format": "svg",
+      "method": "SVG text localization; original vector geometry and numeric data retained",
+      "alt": "Measured results: tokens per article 72,136 to 45,788 (-37%); tool calls 13 to 5; duration 282s to 121s; corruption 25% to 0; triage agreement 80% to 93%. Refactoring also revealed that 25% of written cards were silently disappearing.",
+      "labels": "BEFORE → AFTER; Less cost per card; Measured · same article; Writing tokens / card; Tool round trips; 13 calls; 5 calls; Duration; Card corruption; Triage agreement; Also found: ;  of written cards were silently disappearing."
+    }
+  ]
+}

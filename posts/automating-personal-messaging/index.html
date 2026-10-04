@@ -1,0 +1,201 @@
+<!DOCTYPE html><html lang="en"><head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="google-site-verification" content="sNrpo16A0vUj7vHmVNEmAGZj85cGykaOeHO44krbqDU">
+  <title>woojin kim · Let's Automate My Social Life · xhae123's notes</title>
+  <meta name="description" content="Replying on KakaoTalk has always been hard. I wondered whether developing social skills or outsourcing them would be faster, and leaned toward outsourcing. So I">
+  <link rel="canonical" href="https://xhae123.github.io/posts/automating-personal-messaging/">
+  <meta property="og:type" content="article">
+  <meta property="og:site_name" content="xhae123's notes">
+  <meta property="og:title" content="Let's Automate My Social Life · xhae123's notes">
+  <meta property="og:description" content="Replying on KakaoTalk has always been hard. I wondered whether developing social skills or outsourcing them would be faster, and leaned toward outsourcing. So I">
+  <meta property="og:url" content="https://xhae123.github.io/posts/automating-personal-messaging/">
+  <meta property="og:locale" content="en_US">
+  <meta property="og:image" content="https://xhae123.github.io/assets/covers/cover-26.svg">
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:title" content="Let's Automate My Social Life · xhae123's notes">
+  <meta name="twitter:description" content="Replying on KakaoTalk has always been hard. I wondered whether developing social skills or outsourcing them would be faster, and leaned toward outsourcing. So I">
+  <meta name="twitter:image" content="https://xhae123.github.io/assets/covers/cover-26.svg">
+  <link rel="preconnect" href="https://cdn.jsdelivr.net">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin="">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable.css">
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500&amp;display=swap">
+  <link rel="stylesheet" href="/styles.css?v=lowercase-2">
+  <link rel="stylesheet" href="/navigation.css?v=rose-1">
+  <link rel="icon" type="image/svg+xml" href="/favicon.svg?v=woojin-w-2">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/github.min.css">
+  <link rel="stylesheet" href="/blog.css?v=lowercase-2">
+  <meta property="article:published_time" content="2026-04-23T12:49:56.000Z">
+  <meta property="article:section" content="AI">
+  <meta property="article:author" content="Woojin Kim">
+  <script type="application/ld+json">{"@context":"https://schema.org","@type":"BlogPosting","headline":"Let's Automate My Social Life","description":"Replying on KakaoTalk has always been hard. I wondered whether developing social skills or outsourcing them would be faster, and leaned toward outsourcing. So I","datePublished":"2026-04-23T12:49:56.000Z","dateModified":"2026-04-23T12:49:56.000Z","author":{"@type":"Person","name":"Woojin Kim"},"url":"https://xhae123.github.io/posts/automating-personal-messaging/","mainEntityOfPage":"https://xhae123.github.io/posts/automating-personal-messaging/","image":"https://xhae123.github.io/assets/covers/cover-26.svg"}</script>
+</head>
+<body>
+  <main class="post-layout">
+    <div class="post-main">
+      <article class="post" id="post">
+        <div class="post-cover"><img src="/assets/covers/cover-26.svg" alt=""></div>
+        <header class="post-header">
+          <a class="post-top-back" href="/writing/">← all posts</a>
+          <p class="post-meta"><time datetime="2026-04-23">2026.04.23</time><span aria-hidden="true"> · </span><span class="post-category">ai</span></p>
+          <h1 class="post-title">Let's Automate My Social Life</h1>
+        </header>
+        <div class="post-body" id="post-body">
+<p>Replying on KakaoTalk has always been hard. I wondered whether developing social skills or outsourcing them would be faster, and leaned toward outsourcing. So I sat an agent in front of my chats.</p>
+<p>Using an agent in 2026 isn't just calling an LLM API. It's closer to <strong>placing an agent</strong> inside a runtime such as Claude Code. The real work is designing invocation timing, context boundaries, human intervention points, and runtime lifetime. Generating reply text follows from that.</p>
+<p>This article records decisions behind <code>auto-kakaotalk</code>, an open-source Skill that learns my conversational style and replies on my behalf.</p>
+<h2 id="런타임을-먼저-정한다">Choose the runtime first</h2><p>The first question in an agent system isn't what it should do, but where it should run.</p>
+<p>I considered three options: a Python daemon spawning <code>claude -p</code>, an OS scheduler using a launchd plist, and running directly inside a Claude Code session. The first two initially seemed natural because ‘daemon’ was familiar.</p>
+<p>But this tool wasn't meant to be a 24/7 background service. It helps while I am not looking at KakaoTalk. A daemon would create an unattended period without a structural mechanism against unwanted messages. Logs and alerts would be needed, converting safety into operational work.</p>
+<p>With the Claude Code session as the runtime, closing the session stops its work. It helps only while the window is open; the stop instruction is simply ‘close the window.’ I called this topological safety: a safety property derived from the system's arrangement and lifetime, not another feature to maintain. It limits when the system can act, rather than requiring another always-running guard.</p>
+<p>That choice shaped the rest of the design.</p>
+<h2 id="croncreate-로-에이전트를-깨운다">Wake the agent with CronCreate</h2><p>A session runtime needs a way to schedule work inside it. Claude Code's <code>CronCreate</code> is an in-memory scheduler valid for the session's lifetime. It accepts standard cron expressions and fires when the REPL is idle. During a conversation it waits; closing the session removes it.</p>
+<p>Those properties fit this use case.</p>
+<pre data-lang="stylus"><code class="language-stylus hljs"><span class="hljs-function"><span class="hljs-title">CronCreate</span><span class="hljs-params">(<span class="hljs-string">"*/3 * * * *"</span>, <span class="hljs-string">"auto-kakaotalk tick — cycle.sh poll → draft → send"</span>)</span></span>
+</code></pre>
+<p>That one line replaces what a traditional design would handle with a launchd plist, daemon process, health checks, and shutdown handlers. There is no separate daemon binary or restart script; changing the rule means editing one Markdown line.</p>
+<p>Using it taught me that agent design is often more about exploiting a runtime than invoking code. Idle-triggered execution and session-scoped scheduling removed the need for a separate daemon architecture.</p>
+<h2 id="skill-을-얇게-쓴다">Keep the Skill thin</h2><p>A Claude Code Skill begins with <code>~/.claude/skills/&lt;name&gt;/SKILL.md</code>. You describe the task in natural language. Putting every procedure in one long document is tempting, but bad for context: the whole document loads every cycle, and longer instructions make attention less focused.</p>
+<p>I kept a routing table and minimal loop in SKILL.md, moving details into <code>references/*.md</code>. They load only when the corresponding situation occurs.</p>
+<pre data-lang="gherkin"><code class="language-gherkin hljs">|<span class="hljs-string"> Task                  </span>|<span class="hljs-string"> Reference               </span>|
+|<span class="hljs-string"> Initial setup/failure </span>|<span class="hljs-string"> references/setup.md     </span>|
+|<span class="hljs-string"> Register a contact    </span>|<span class="hljs-string"> references/register.md  </span>|
+|<span class="hljs-string"> Run the loop          </span>|<span class="hljs-string"> references/loop.md      </span>|
+|<span class="hljs-string"> Persona overrides     </span>|<span class="hljs-string"> references/persona.md   </span>|
+|<span class="hljs-string"> Two-phase sending     </span>|<span class="hljs-string"> references/send.md      </span>|
+</code></pre>
+<p>Each cycle reads the table first and leaves irrelevant references unloaded. What the agent doesn't read matters as much as what it does. In this runtime, the context window acts as memory, making context allocation part of system design.</p>
+<h2 id="판단의-단일점">One place for judgment</h2><p>A common agent pattern chains small classifiers: route → classify → choose a tool → generate. It suits some domains. This one called for the opposite.</p>
+<p>I started with an emotion classifier. <code>emotion_score.py</code> examined exclamation marks, emoji, and length, returning a <code>suspicion</code> score. Above a threshold, the contact was considered angry and the reply model wasn't called. It broke within two days.</p>
+<p>A friend sent ‘Fine.’ In context, it meant ‘Okay, do it your way.’ No exclamation marks, no emoji, short text: a low score, followed by a wrong reply. Meanwhile, ‘LOL that's insane hahaha’ scored high from repetition and was blocked, though it was just a joke. The conversation stopped there.</p>
+<p>People don't run a separate classifier before reading a chat. One reading determines both the emotional context and whether and how to reply. Splitting those decisions tears the context apart. Script scores describe surface signals; the agent has the broader context.</p>
+<p>I removed the classifier and kept one rule:</p>
+<blockquote>
+<p>No script independently opens or closes the send gate.</p>
+</blockquote>
+<p>Script signals are advisory inputs. The agent decides whether to send, with one LLM judgment per cycle. Splitting that integrated judgment undermined why I was using an agent.</p>
+<p>Implementation kept tempting me to break the rule. In <code>register.py</code>, registering a contact gathers 500 historical messages. Automatically generating a persona while reading them sounded tidy. But it would create two judgment points: registration and the session loop, plus the question of whether those judgments agree.</p>
+<p>So <code>register.py</code> doesn't call an LLM. It backfills the DB and creates an empty <code>persona.md</code>. The user and agent write the persona together within the session. Scripts gather data; the agent judges. Recognizing when that boundary was blurring became a central part of the project.</p>
+<h2 id="승인을-n번에서-1번으로">From N approvals to one</h2><p>The difficult human–agent question is when to involve a person. Approval for every action makes the agent pointless; no approval at all can create trouble.</p>
+<p>The first version used draft-and-ask. A cron tick found a new message, generated a draft, and asked in the session.</p>
+<pre data-lang="node-repl"><code class="language-node-repl hljs"><span class="hljs-meta prompt_">&gt;</span> <span class="language-javascript">[<span class="hljs-title class_">Maenggu</span>] ‘I<span class="hljs-string">'m screwed’ (05:51 KST)</span></span>
+<span class="hljs-meta prompt_">&gt;</span> <span class="language-javascript"><span class="hljs-string">  Draft: ‘lol why’</span></span>
+<span class="hljs-meta prompt_">&gt;</span> <span class="language-javascript"><span class="hljs-string">  Send? (yes / no / edit: ...)</span></span>
+</code></pre>
+<p>It looked safe. After a day, the problem was obvious. Typing ‘yes’ every time wasn't much less burdensome than replying myself. I'd replaced the one-line-reply burden with an approval burden. People can avoid the approval loop too.</p>
+<p>I switched to automatic sending, concentrating approval into <strong>one calibration at registration.</strong></p>
+<p>During registration, the agent reviews 500 historical messages and writes a relationship report: tone, relationship dynamics, and topics it shouldn't reply to. Something like this:</p>
+<pre data-lang="dns"><code class="language-dns hljs">[Maenggu relationship report]
+
+▸ Relationship
+  - Familiarity: casual speech, jokes, shared self-deprecation<span class="hljs-comment">; likely friends for 10+ years</span>
+  - Initiation: <span class="hljs-number">58</span>:<span class="hljs-number">42</span> <span class="hljs-punctuation">(</span>Maenggu:me<span class="hljs-punctuation">)</span><span class="hljs-comment">; Maenggu initiates slightly more</span>
+  - Reply rhythm: me <span class="hljs-number">12</span> minutes, Maenggu <span class="hljs-number">4</span> minutes<span class="hljs-comment">; I tend to be slower</span>
+
+▸ My style
+  - Average length: <span class="hljs-number">1</span>.<span class="hljs-number">4</span> sentences<span class="hljs-comment">; short</span>
+  - Frequent abbreviated endings and casual acknowledgments
+
+▸ Recent changes
+  - Average delay rose to <span class="hljs-number">38</span> minutes over the last <span class="hljs-number">2</span> weeks. Something changed?
+
+▸ Suggested no-reply topics
+  - Account details and transfers
+  - Long stories about dreams, which I historically didn't respond to
+
+Is this accurate? What tone should I use when replying for you?
+</code></pre>
+<p>The user reads and corrects it: ‘I've been brief because of exams,’ ‘You missed that I call him an older brother,’ or ‘Don't write long sympathetic replies about dreams.’ The agreed corrections become <code>state/personas/&lt;chat_id&gt;.md</code>.</p>
+<p>The loop no longer asks about every message. It uses the persona to decide and send, then leaves a one-line log.</p>
+<pre data-lang="node-repl"><code class="language-node-repl hljs"><span class="hljs-meta prompt_">&gt;</span> <span class="language-javascript">[<span class="hljs-title class_">Maenggu</span>] ‘I<span class="hljs-string">'m screwed’ → Sent ‘lol why’</span></span>
+</code></pre>
+<p>It's notification after the fact, not an approval request. Reducing N approvals to one was the most important decision. Autonomy versus safety wasn't just a binary choice; it depended on approval timing and frequency. Per-cycle approval and per-relationship agreement produce very different tools.</p>
+<p>This matches a pattern I see in agent UX: tiny permissions asked repeatedly can make a tool unusable, while a few <strong>substantial agreements</strong> can support autonomy within understood boundaries. One substantial calibration asks the user to endure the setup once. Repeated micro-approvals demand effort forever. The nominal autonomy may be similar, but the experience isn't.</p>
+<h2 id="계층은-만들지-않았다">I didn't build the layers</h2><p>I spent the most design time on a four-layer Reflection Stack, citing Reflexion, Voyager, Generative Agents, and MemGPT, with three layers of drift defense.</p>
+<pre data-lang="dart"><code class="language-dart hljs"><span class="hljs-title class_">L1</span> <span class="hljs-title class_">Episode</span>     <span class="hljs-title class_">Raw</span> conversation logs
+<span class="hljs-title class_">L2</span> <span class="hljs-title class_">Reflection</span>  <span class="hljs-title class_">Daily</span> summaries
+<span class="hljs-title class_">L3</span> <span class="hljs-title class_">Lesson</span>      <span class="hljs-title class_">Reusable</span> rules
+<span class="hljs-title class_">L4</span> <span class="hljs-title class_">Persona</span>     <span class="hljs-title class_">Actual</span> style guide
+</code></pre>
+<p>The document looked impressive: four papers, four layers, three drift defenses. During implementation, only L1 had a real use. What would L2 summarize, and for what purpose? L3 had no reflections to find patterns in. L4's persona merge approval had no lessons to merge.</p>
+<p>They existed only in the future. They were plans, not features. Mistaking plans for features is common in agent design, and paper citations can make that mistake look well structured.</p>
+<p>I removed them. What remained was conversation history in the DB and a persona file. Each cycle pulls the latest 30 messages and overlays the persona. The DB holds facts; the file holds intent. They meet only at judgment time. Four layers became two, without losing any actual functionality.</p>
+<p>After deleting them, I stared at the diagram suspiciously. Could it really be this simple? Further use didn't reveal another required layer.</p>
+<h2 id="피드백-루프는-db-가-한다">The DB provides the feedback loop</h2><p>The immediate question was how learning would continue. A persona written once during calibration is static. What keeps the agent aligned as relationships and tone change?</p>
+<p>The DB does. Each cycle calls <code>db.py get-context --chat-id &lt;id&gt; --limit 30</code>. Those messages form a <strong>sliding window</strong>, not a fixed sample. Today's jokes and yesterday's tone change inform the next draft. Sent replies also enter the DB and the next context window, so the agent reads its previous output as input to its next judgment.</p>
+<p>This has two implications. Short-term changes can be followed without a separate learning pipeline, explaining why the Reflection Stack was unnecessary. And the persona's purpose becomes clear: specifying what intent should override observed behavior. Facts come from the DB; intent comes from the file; they combine at every decision.</p>
+<p>Users guide long-term recalibration. If a formerly formal relationship becomes casual but <code>persona.md</code> remains formal, the user can ask to analyze the contact again. The agent reviews recent chats, the user corrects the report, and the persona updates. Automatic drift detection could be wrong and move the persona in an unwanted direction. Automatic short-term adaptation and manual long-term calibration define this system's improvement strategy.</p>
+<h2 id="어댑터는-쉘-verb-로">Adapters as shell verbs</h2><p>I isolated the platform boundary in one file: <code>scripts/adapters/kakao.sh</code>.</p>
+<pre data-lang="vim"><code class="language-vim hljs">kakao.<span class="hljs-keyword">sh</span> check                         → Check authentication
+kakao.<span class="hljs-keyword">sh</span> <span class="hljs-built_in">resolve</span>                       → List chats
+kakao.<span class="hljs-keyword">sh</span> <span class="hljs-keyword">history</span> <span class="hljs-symbol">&lt;id&gt;</span> <span class="hljs-symbol">&lt;limit&gt;</span>          → Historical <span class="hljs-keyword">messages</span>
+kakao.<span class="hljs-keyword">sh</span> poll <span class="hljs-symbol">&lt;id&gt;</span> <span class="hljs-symbol">&lt;since&gt;</span>             → New <span class="hljs-keyword">messages</span>
+kakao.<span class="hljs-keyword">sh</span> send <span class="hljs-symbol">&lt;display_name&gt;</span> <span class="hljs-symbol">&lt;text&gt;</span>    → Send
+</code></pre>
+<p>Five verbs. I initially considered Python abstract classes for type safety and mypy. But the caller is an agent invoking <code>bash kakao.sh poll ...</code> and receiving JSON. A shared superclass offers it little benefit.</p>
+<p>Stdout, exit codes, and JSON make shell verbs language-neutral. A Slack adapter could be Ruby and a Discord adapter Go. With an agent as caller, a cheap abstraction can go far. It also fits the session runtime: adapters return JSON, the agent judges, and invokes an adapter again. No deeper binding was needed.</p>
+<h2 id="카톡은-입구가-없었다">KakaoTalk had no suitable entry point</h2><p>The five-verb contract was clean. What sat underneath was not.</p>
+<p>There was no documented official route for externally reading personal messages and freely replying in this scenario. Kakao's REST messaging APIs and business channels don't provide that personal-chat interface.</p>
+<p>I used two unofficial paths: reading the local encrypted database and sending through macOS accessibility-driven UI automation.</p>
+<p>The Mac app stores messages with SQLCipher. Its key is derived using PBKDF2 from <code>user_id</code> and the device UUID. The user ID isn't always stored plainly in a plist: some accounts have candidates, others only a hash. For the latter case, the existing authentication logic searches a range of up to a billion candidates in parallel, taking tens of seconds on an eight-core MacBook. This logic fits in the roughly 500-line <code>_kakao_auth.py</code>.</p>
+<p>Sending presented a different problem. Without an official route, AppleScript operates the UI. Typing with a Korean IME active can produce the Korean character mapped to <code>V</code> rather than the intended shortcut. Instead, text goes onto the clipboard and is pasted with <strong>keycode 9 plus Command</strong>, bypassing text composition. Chat rows are located by name in the UI tree and double-clicked with <code>cliclick dc:x,y</code>; the input coordinate is fixed 70 pixels above the window bottom. These values came from experiments.</p>
+<p>I didn't invent the whole stack. I reused the necessary parts of silver-flight-group's <code>kakaocli</code> and upstream authentication logic, inlining the IME-safe AppleScript. I kept only <code>chats</code> and <code>messages</code>, dropping unnecessary search and schema features. Choosing the thinnest sufficient implementation below the adapter was itself a design decision.</p>
+<p>The agent sits on top of that stack and imitates social fluency.</p>
+<h2 id="전송은-한쪽으로-몰았다">Bias sending toward one kind of failure</h2><p>UI-driven sending is irreversible. Once the automation presses Enter, it can't take the message back. Duplicate sending is the worst outcome.</p>
+<p>‘Not sent’ and ‘sent twice’ have different costs. A duplicate apology makes things awkward. A missed message can be sent manually.</p>
+<pre data-lang="dns"><code class="language-dns hljs">drafted  --<span class="hljs-punctuation">(</span>phase <span class="hljs-number">1</span>: DB commit<span class="hljs-punctuation">)</span>---&gt; sending
+sending  --<span class="hljs-punctuation">(</span>phase <span class="hljs-number">2</span>: adapter<span class="hljs-punctuation">)</span>-----&gt; sent <span class="hljs-punctuation">(</span>normal<span class="hljs-punctuation">)</span>
+sending  --<span class="hljs-punctuation">(</span>phase <span class="hljs-number">2</span> failure<span class="hljs-punctuation">)</span>------&gt; failed
+sending  --<span class="hljs-punctuation">(</span>process crash<span class="hljs-punctuation">)</span>-------&gt; <span class="hljs-punctuation">(</span>stuck<span class="hljs-punctuation">)</span>
+<span class="hljs-punctuation">(</span>stuck<span class="hljs-punctuation">)</span>  --<span class="hljs-punctuation">(</span>next-session recovery<span class="hljs-punctuation">)</span>-&gt; failed
+</code></pre>
+<p>If the process dies between phases, the row remains <code>sending</code>. At the next session, <code>cycle.sh check</code> marks it <code>failed</code>. We can't know whether AppleScript pressed Enter successfully. If it did, the message appears as outbound on the next poll. If not, it stays failed rather than being automatically resent.</p>
+<p>I'd call this <strong>safety-biased reconciliation.</strong> Decide explicitly which failure is less harmful and bias recovery toward it. That asymmetry belongs in a system sending messages on someone's behalf.</p>
+<h2 id="아직-안-풀린-것들">Unsolved problems</h2><p>Concurrent Mac use is awkward: user typing can race with AppleScript. That's unresolved. Group-chat attribution also needs more real usage to determine whether the agent reliably distinguishes someone addressing me from one member addressing another.</p>
+<p>Repeated feedback that silence was preferable could make the agent overfit to silence. A drifting baseline response rate is hard to identify. Automatic long-term drift detection is also unfinished: if the user doesn't notice a changing relationship, recalibration doesn't happen. The DB handles short-term feedback, but the system doesn't yet suggest when to recalibrate.</p>
+<h2 id="마무리">Conclusion</h2><p>A few years ago, the question was how to prompt an LLM well. Now, it often looks more like how to arrange an agent system well. The frame has changed.</p>
+<p>The LLM can generate reply text. My work was making the path from that text to an actual send thin and deliberate. I didn't change model capability. I chose the boundaries along five axes: runtime, lifetime, context, approval, and adapter contracts.</p>
+<hr>
+<blockquote>
+<p>Project: <a href="https://github.com/xhae123/auto-kakaotalk" target="_blank" rel="noopener noreferrer">auto-kakaotalk</a></p>
+</blockquote>
+
+        </div>
+      </article>
+    <nav class="post-nav" aria-label="Previous and next posts">
+      <a class="post-nav-item post-nav-item--prev" href="/posts/specifications-as-code/">
+        <span class="post-nav-label">previous post</span>
+        <span class="post-nav-title">A Sufficiently Detailed Specification Is Indistinguishable from Code</span>
+      </a>
+      <a class="post-nav-item post-nav-item--next" href="/posts/production-database-migration/">
+        <span class="post-nav-label">next post</span>
+        <span class="post-nav-title">Moving a Production Database: Pressing a Button You Can't Undo</span>
+      </a>
+    </nav>
+      <nav class="post-back">
+        <a href="/writing/">← back to posts</a>
+      </nav>
+    </div>
+    <aside class="toc" id="toc" aria-label="Contents">
+      <p class="toc-title">contents</p>
+      <ul class="toc-list">
+        <li class="toc-item toc-item--h2"><a href="#런타임을-먼저-정한다" data-target="런타임을-먼저-정한다">Choose the runtime first</a></li>
+        <li class="toc-item toc-item--h2"><a href="#croncreate-로-에이전트를-깨운다" data-target="croncreate-로-에이전트를-깨운다">Wake the agent with CronCreate</a></li>
+        <li class="toc-item toc-item--h2"><a href="#skill-을-얇게-쓴다" data-target="skill-을-얇게-쓴다">Keep the Skill thin</a></li>
+        <li class="toc-item toc-item--h2"><a href="#판단의-단일점" data-target="판단의-단일점">One place for judgment</a></li>
+        <li class="toc-item toc-item--h2"><a href="#승인을-n번에서-1번으로" data-target="승인을-n번에서-1번으로">From N approvals to one</a></li>
+        <li class="toc-item toc-item--h2"><a href="#계층은-만들지-않았다" data-target="계층은-만들지-않았다">I didn't build the layers</a></li>
+        <li class="toc-item toc-item--h2"><a href="#피드백-루프는-db-가-한다" data-target="피드백-루프는-db-가-한다">The DB provides the feedback loop</a></li>
+        <li class="toc-item toc-item--h2"><a href="#어댑터는-쉘-verb-로" data-target="어댑터는-쉘-verb-로">Adapters as shell verbs</a></li>
+        <li class="toc-item toc-item--h2"><a href="#카톡은-입구가-없었다" data-target="카톡은-입구가-없었다">KakaoTalk had no suitable entry point</a></li>
+        <li class="toc-item toc-item--h2"><a href="#전송은-한쪽으로-몰았다" data-target="전송은-한쪽으로-몰았다">Bias sending toward one kind of failure</a></li>
+        <li class="toc-item toc-item--h2"><a href="#아직-안-풀린-것들" data-target="아직-안-풀린-것들">Unsolved problems</a></li>
+        <li class="toc-item toc-item--h2"><a href="#마무리" data-target="마무리">Conclusion</a></li>
+      </ul>
+    </aside>
+  </main>
+  <script src="/app.js?v=391ab9a5"></script>
+
+
+</body></html>

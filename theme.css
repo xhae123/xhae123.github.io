@@ -1,0 +1,26 @@
+/* Plain lining numerals only; letters retain the shared system sans-serif. */
+@font-face {
+  font-family: 'Plain Numerals';
+  src: local('Arial'), local('ArialMT'), local('Liberation Sans');
+  font-style: normal;
+  font-weight: 100 900;
+  font-display: swap;
+  unicode-range: U+0030-0039;
+}
+
+:root {
+  color-scheme: light;
+  --paper: #fcfcfb;
+  --ink: #333333;
+  --body-ink: #4f4f4f;
+  --muted: #707070;
+  --line: #e6e6e6;
+  --rule: #cccccc;
+  --accent: #ac405c;
+  --accent-soft: #dfb0bc;
+  --highlight: #f7e8ed;
+  --quote-surface: #fbf3f5;
+  --code-surface: #f1f1ef;
+  --sans: 'Plain Numerals', -apple-system, BlinkMacSystemFont, 'Apple SD Gothic Neo', 'Noto Sans KR', system-ui, sans-serif;
+  --mono: 'SFMono-Regular', Consolas, 'Liberation Mono', monospace;
+}

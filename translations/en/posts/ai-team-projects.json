@@ -1,0 +1,32 @@
+{
+  "slug": "ai-era-team-projects",
+  "legacySlug": "AI-과도기-대학-조별과제는-어디로-가야-할까",
+  "title": "Where Do University Team Projects Go in the AI Transition?",
+  "blocks": {
+    "0": "During the first semester of my junior year, I split my time between university and work. At school, I did team projects. At work, I built services with AI. Both places used the word ‘collaboration,’ but they meant completely different things.",
+    "1": "Let me start with work. I was on an AX team: a group rethinking how work gets done with AI, something like the next step after digital transformation. My title was AI-native Software Engineer, and honestly, I wasn't sure what that meant at first. In practice, it was straightforward. Instead of writing every line myself, I decided what to ask AI to do and judged the results. Agents handled boilerplate and small bugs; I focused on how to solve the problem with AI and which parts of its output were actually right. That let one person move work forward on a scale that previously would have taken a team.",
+    "2": "Then I'd sit down with my project group and enter another world. Four of us would be there, with someone spending three hours on a Git conflict involving a few lines—something that took seconds at work. At first, I shrugged it off as a university thing. By the end of the semester, though, it looked like a deeper problem than a difference in tooling.",
+    "3": "For the record, I wasn't someone who hated team projects. I put effort into them. That made me think even harder about why they had started to feel so strange.",
+    "4": "First, we stopped needing to divide up the implementation",
+    "5": "Team projects used to have a practical purpose. There was too much code for one person, so you divided it up: two on frontend, two on backend, staying up all night connecting APIs and resolving conflicts. Even when inefficient, there was a reason to split the work.",
+    "6": "At work, I watched that reason fall apart every day. One person could lead frontend, backend, and infrastructure, and problems that once took days could take seconds. We simply didn't need as many pairs of hands. ‘There's too much work, so let's divide it up’—almost the only practical justification for the format—quietly disappeared.",
+    "7": "What remained was a gap, not collaboration",
+    "8": "Once dividing up implementation loses its meaning, something odd happens. The deliverable stops being the product of four people's combined effort. It becomes what the one person who can push AI furthest produces. The other three put their names on it without understanding how it was made. Instead of sharing learning, we're sharing luck: did our group happen to get that person?",
+    "9": "What separated that one person from everyone else? I first thought it was a skill gap—being a little better at prompting. It wasn't. The difference ran deeper.",
+    "10": "The real gap was whether you'd seen what was possible",
+    "11": "Once, I told a teammate, ‘Why don't we just ask an agent to do this?’ The reply was:",
+    "12": "‘Wait… it can do that?’",
+    "13": "That question stayed with me all semester.",
+    "14": "The difference wasn't ability. They had never seen that this was possible. If AI means autocomplete and typo fixes to you, a world where an agent builds a service in days doesn't exist. You don't think to try something you don't know exists. You don't even know what you don't know: literal unknown unknowns.",
+    "15": "Looking back, nobody on my work team had that blind spot. Everyone had seen the ceiling move at least once: ‘It can go this far?’ But this isn't about blaming anyone. One demonstration could have changed things. Some people happened to get that demonstration, and others didn't.",
+    "16": "The problem is that team projects hide this gap under the label ‘collaboration.’ We group four people with different ideas of what's possible and present it as shared learning. In reality, one person does the work while three watch.",
+    "17": "So the team-project format isn't what we need to fix first",
+    "18": "You could argue that working with others still teaches collaboration. But what did we actually learn? How to cover for a teammate who disappears. How not to get angry at free riders. Those are closer to survival skills than collaboration skills.",
+    "19": "I'm not saying collaboration is dead. The collaboration I experienced at work—people with different areas of depth coming together when needed—is still powerful. The problem is grouping people who haven't yet seen what's possible simply because they share a timetable.",
+    "20": "That's why proposals to change the format—make people reviewers, have teams compete—are secondary. Someone who hasn't seen what's possible can't meaningfully review someone else's work either. You need a sense of what good looks like to see where something falls short.",
+    "21": "This is a transition, and that gives us something to do",
+    "22": "Reading this back, it sounds harsh. I'm sure some people have great memories of team projects. But this is what I saw this semester.",
+    "23": "It may all be happening because we're in a transition. In a few years, everyone may take what agents can do for granted, and this gap may narrow. Right now, some people have seen that world and others haven't. Team projects feel especially strange because an old format is colliding head-on with that transition.",
+    "24": "Seen that way, a university's first job isn't to repair team projects. It's to help everyone cross this transition sooner. Give every student at least one chance to see how far AI can go, the way my workplace did for me. Only then do collaboration, competition, or any other format become meaningful."
+  }
+}

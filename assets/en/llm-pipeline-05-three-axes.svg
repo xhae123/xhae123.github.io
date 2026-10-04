@@ -1,0 +1,49 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 720 330" width="720" height="330" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', sans-serif" role="img" aria-label="Total cost equals unit cost times volume times rework rate; unit-cost improvements are fixed factors, better decisions compound">
+  <rect width="720" height="330" fill="#fcfcfb"/>
+
+  <text x="32" y="36" font-size="17" font-weight="600" fill="#1a1a19">Cost has more than one axis</text>
+  <text x="32" y="58" font-size="13" fill="#5c5b55">Optimizing unit cost alone hid the other two dimensions</text>
+
+  <!-- formula -->
+  <g font-size="15" font-weight="600">
+    <text x="32" y="98" fill="#5c5b55">Total cost =</text>
+    <text x="135" y="98" fill="#2a78d6">Unit cost</text>
+    <text x="215" y="98" fill="#8a8980">×</text>
+    <text x="250" y="98" fill="#eb6834">Volume</text>
+    <text x="330" y="98" fill="#8a8980">×</text>
+    <text x="355" y="98" fill="#4a3aa7">Rework rate</text>
+  </g>
+
+  <!-- three columns -->
+  <g>
+    <rect x="32" y="122" width="208" height="176" rx="8" fill="#ffffff" stroke="#2a78d6" stroke-width="1.5"/>
+    <rect x="32" y="122" width="208" height="5" rx="2.5" fill="#2a78d6"/>
+    <text x="48" y="152" font-size="14" font-weight="600" fill="#1a1a19">Unit cost</text>
+    <text x="48" y="174" font-size="12.5" fill="#5c5b55">Cost of writing one card</text>
+    <text x="48" y="202" font-size="20" font-weight="700" fill="#2a78d6">−37%</text>
+    <text x="48" y="222" font-size="12" fill="#5c5b55">72,136 → 45,788</text>
+    <text x="48" y="252" font-size="12" font-weight="600" fill="#1a1a19">Limit</text>
+    <text x="48" y="272" font-size="12" fill="#5c5b55">One-time factor reduction</text>
+    <text x="48" y="289" font-size="12" fill="#5c5b55">Already near the floor</text>
+
+    <rect x="256" y="122" width="208" height="176" rx="8" fill="#ffffff" stroke="#eb6834" stroke-width="1.5"/>
+    <rect x="256" y="122" width="208" height="5" rx="2.5" fill="#eb6834"/>
+    <text x="272" y="152" font-size="14" font-weight="600" fill="#1a1a19">Volume</text>
+    <text x="272" y="174" font-size="12.5" fill="#5c5b55">How many cards get written</text>
+    <text x="272" y="202" font-size="20" font-weight="700" fill="#eb6834">26.5%</text>
+    <text x="272" y="222" font-size="12" fill="#5c5b55">Triage pass rate (measured)</text>
+    <text x="272" y="252" font-size="12" font-weight="600" fill="#1a1a19">Lever</text>
+    <text x="272" y="272" font-size="12" fill="#5c5b55">One false-positive article</text>
+    <text x="272" y="289" font-size="12" fill="#5c5b55">= 45K wasted</text>
+
+    <rect x="480" y="122" width="208" height="176" rx="8" fill="#ffffff" stroke="#4a3aa7" stroke-width="1.5"/>
+    <rect x="480" y="122" width="208" height="5" rx="2.5" fill="#4a3aa7"/>
+    <text x="496" y="152" font-size="14" font-weight="600" fill="#1a1a19">Rework rate</text>
+    <text x="496" y="174" font-size="12.5" fill="#5c5b55">Cards discarded after writing</text>
+    <text x="496" y="202" font-size="20" font-weight="700" fill="#4a3aa7">28%</text>
+    <text x="496" y="222" font-size="12" fill="#5c5b55">Rejected cards (measured)</text>
+    <text x="496" y="252" font-size="12" font-weight="600" fill="#1a1a19">Most expensive</text>
+    <text x="496" y="272" font-size="12" fill="#5c5b55">Rejected only after</text>
+    <text x="496" y="289" font-size="12" fill="#5c5b55">spending 45K tokens</text>
+  </g>
+</svg>

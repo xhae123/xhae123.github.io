@@ -1,0 +1,165 @@
+<!DOCTYPE html><html lang="en"><head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="google-site-verification" content="sNrpo16A0vUj7vHmVNEmAGZj85cGykaOeHO44krbqDU">
+  <title>woojin kim · A Sufficiently Detailed Specification Is Indistinguishable from Code · xhae123's notes</title>
+  <meta name="description" content="When Karpathy called English the hottest new programming language, many people nodded. So did I. After writing natural-language documents to control agents and ">
+  <link rel="canonical" href="https://xhae123.github.io/posts/specifications-as-code/">
+  <meta property="og:type" content="article">
+  <meta property="og:site_name" content="xhae123's notes">
+  <meta property="og:title" content="A Sufficiently Detailed Specification Is Indistinguishable from Code · xhae123's notes">
+  <meta property="og:description" content="When Karpathy called English the hottest new programming language, many people nodded. So did I. After writing natural-language documents to control agents and ">
+  <meta property="og:url" content="https://xhae123.github.io/posts/specifications-as-code/">
+  <meta property="og:locale" content="en_US">
+  <meta property="og:image" content="https://xhae123.github.io/assets/covers/cover-41.svg">
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:title" content="A Sufficiently Detailed Specification Is Indistinguishable from Code · xhae123's notes">
+  <meta name="twitter:description" content="When Karpathy called English the hottest new programming language, many people nodded. So did I. After writing natural-language documents to control agents and ">
+  <meta name="twitter:image" content="https://xhae123.github.io/assets/covers/cover-41.svg">
+  <link rel="preconnect" href="https://cdn.jsdelivr.net">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin="">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable.css">
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500&amp;display=swap">
+  <link rel="stylesheet" href="/styles.css?v=lowercase-2">
+  <link rel="stylesheet" href="/navigation.css?v=rose-1">
+  <link rel="icon" type="image/svg+xml" href="/favicon.svg?v=woojin-w-2">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/github.min.css">
+  <link rel="stylesheet" href="/blog.css?v=lowercase-2">
+  <meta property="article:published_time" content="2026-03-23T13:47:16.000Z">
+  <meta property="article:section" content="AI">
+  <meta property="article:author" content="Woojin Kim">
+  <script type="application/ld+json">{"@context":"https://schema.org","@type":"BlogPosting","headline":"A Sufficiently Detailed Specification Is Indistinguishable from Code","description":"When Karpathy called English the hottest new programming language, many people nodded. So did I. After writing natural-language documents to control agents and ","datePublished":"2026-03-23T13:47:16.000Z","dateModified":"2026-03-23T13:47:16.000Z","author":{"@type":"Person","name":"Woojin Kim"},"url":"https://xhae123.github.io/posts/specifications-as-code/","mainEntityOfPage":"https://xhae123.github.io/posts/specifications-as-code/","image":"https://xhae123.github.io/assets/covers/cover-41.svg"}</script>
+</head>
+<body>
+  <main class="post-layout">
+    <div class="post-main">
+      <article class="post" id="post">
+        <div class="post-cover"><img src="/assets/covers/cover-41.svg" alt=""></div>
+        <header class="post-header">
+          <a class="post-top-back" href="/writing/">← all posts</a>
+          <p class="post-meta"><time datetime="2026-03-23">2026.03.23</time><span aria-hidden="true"> · </span><span class="post-category">ai</span></p>
+          <h1 class="post-title">A Sufficiently Detailed Specification Is Indistinguishable from Code</h1>
+        </header>
+        <div class="post-body" id="post-body">
+<p>When Karpathy called English the hottest new programming language, many people nodded. So did I. After writing natural-language documents to control agents and repeatedly watching them break, I started to wonder: perhaps English hasn't become a programming language. Perhaps it only works when we write it like one.</p>
+<hr>
+<h2 id="배경">Background</h2><p>Claude Code has a system called Skills. Put a Markdown document under <code>.claude/skills/</code>, and AI reads it to perform a task: send a Slack message, approve a database change, or validate code.</p>
+<p>I spent a while building and breaking these. The same document worked one day and failed the next. Different conversation contexts made AI interpret the same sentence differently. I built a framework to validate Skill documents. These are the observations that came out of it.</p>
+<hr>
+<h2 id="코드는-허용-목록이고-프롬프트는-차단-목록이다">Code is an allowlist; prompts behave like a blocklist</h2><p>I wrote a Skill to approve database changes. The first version looked like this.</p>
+<pre data-lang="markdown"><code class="language-markdown hljs"><span class="hljs-section">## Process</span>
+<span class="hljs-bullet">1.</span> Validate SQL
+<span class="hljs-bullet">2.</span> Check the Jira ticket
+<span class="hljs-bullet">3.</span> Approve the change
+</code></pre>
+<p>It usually worked. Sometimes, during SQL validation, AI would announce a performance issue and rewrite the query. I hadn't asked it to. But I hadn't forbidden it either.</p>
+<p>That's the crucial difference from code. Write <code>validateSQL(query)</code>, and it performs only the implemented validation logic. Without query-modification code, modification isn't available. But ‘validate SQL’ in natural language can be interpreted to include fixing it.</p>
+<p>Code executes implemented behavior; omitted behavior isn't there. Natural-language instructions leave room for AI to fill in anything not explicitly prohibited. The default control model is reversed.</p>
+<p>As a firewall analogy, code resembles an allowlist: only explicitly permitted traffic passes. A prompt can behave like a blocklist: anything not denied may pass.</p>
+<hr>
+<h2 id="실제로-어떻게-닫아갔는가">How I narrowed the boundaries</h2><p>Fixing the SQL-rewriting issue revealed another gap.</p>
+<p>After adding prohibitions, AI guessed a URL when given something other than a Slack link. Once I blocked that, it sent another approval request for a Jira ticket already approved. Close one gap, and another appears. That's the weakness of a blocklist: unblocked paths remain open.</p>
+<p>I built the validation framework to make this trial and error systematic. Failure patterns fell into several categories.</p>
+<p>One was acting beyond the intended scope: intent drift. Phrases such as <code>as needed</code>, <code>if appropriate</code>, and <code>consider</code> frequently triggered it. They're like variables typed <code>any</code>: almost anything fits. I made a checklist: at least two explicit prohibitions, no vague delegation language, and explicit criteria wherever AI could branch on its own judgment.</p>
+<p>Another was context contamination. A preceding ‘refactor aggressively’ conversation could make the next Skill behave aggressively too. For an ordinary function, that would be strange. <code>calculateDiscount(price, rate)</code> shouldn't change its result based on the previously called function without some shared state. For LLMs, the whole conversation effectively acts as global state.</p>
+<p>I quickly learned that an isolation statement—‘ignore previous context’—wasn't enough. I shifted from trying to prevent contamination to assessing its blast radius. A contaminated read-only Skill may do little damage; one changing a DB or approving Jira work can affect production. I classified blast radius as Local, Team, or Production, and failed Production-level Skills without a prior confirmation gate.</p>
+<p>This produced seven validation dimensions. A Skill review returns something like this.</p>
+<pre data-lang="dart"><code class="language-dart hljs">/validate-skill approve-db-changes
+
+[<span class="hljs-number">1</span>] <span class="hljs-title class_">Intent</span> <span class="hljs-title class_">Drift</span> <span class="hljs-title class_">Prevention</span>       WARN — <span class="hljs-title class_">No</span> prohibited-actions section; <span class="hljs-number">0</span> prohibitions
+[<span class="hljs-number">2</span>] <span class="hljs-title class_">Intent</span> <span class="hljs-title class_">Corruption</span> <span class="hljs-title class_">Prevention</span>  FAIL — <span class="hljs-title class_">No</span> invariants or input/output examples
+[<span class="hljs-number">3</span>] <span class="hljs-title class_">Intent</span> <span class="hljs-title class_">Completeness</span>           FAIL — <span class="hljs-title class_">Invalid</span> input, missing tickets, API failures undefined
+[<span class="hljs-number">4</span>] <span class="hljs-title class_">Trigger</span> <span class="hljs-title class_">Clarity</span>               PASS — <span class="hljs-number">3</span> clear triggers; no conflicts
+[<span class="hljs-number">5</span>] <span class="hljs-title class_">Environment</span> <span class="hljs-title class_">Dependencies</span>      WARN — <span class="hljs-title class_">Token</span> specified; acquisition path missing
+[<span class="hljs-number">6</span>] <span class="hljs-title class_">Context</span> <span class="hljs-title class_">Contamination</span> <span class="hljs-title class_">Risk</span>    WARN — <span class="hljs-title class_">Jira</span> approval (<span class="hljs-title class_">Production</span>) + <span class="hljs-title class_">Slack</span> (<span class="hljs-title class_">Team</span>); unclear gates
+[<span class="hljs-number">7</span>] <span class="hljs-title class_">Testability</span>                   FAIL — <span class="hljs-title class_">Responsibilities</span> not separated; failures indistinguishable
+</code></pre>
+<p>On FAIL, I revise and run it again. The final document after that loop looked like this.</p>
+<pre data-lang="markdown"><code class="language-markdown hljs"><span class="hljs-section">## execute@approve-db-changes</span>
+
+<span class="hljs-strong">**Input**</span>: Slack message link (https://team.slack.com/archives/...)
+<span class="hljs-strong">**Output**</span>: Jira approval confirmation or an error
+
+<span class="hljs-section">### Process</span>
+<span class="hljs-bullet">1.</span> Extract the SQL query from the Slack link
+<span class="hljs-bullet">2.</span> Validate SQL syntax only
+<span class="hljs-bullet">3.</span> Retrieve the Jira ticket status
+<span class="hljs-bullet">4.</span> Show the approval details and request Y/N confirmation
+<span class="hljs-bullet">5.</span> Approve the Jira ticket only if the response is Y
+
+<span class="hljs-section">### Invariants</span>
+<span class="hljs-bullet">-</span> Order: SQL extraction → syntax validation → Jira lookup → confirmation → approval. Do not change it.
+<span class="hljs-bullet">-</span> If SQL validation fails, do not continue.
+<span class="hljs-bullet">-</span> Do not call the Jira API before the user enters Y.
+
+<span class="hljs-section">### Prohibited actions</span>
+<span class="hljs-bullet">-</span> Do not modify the SQL or suggest alternatives
+<span class="hljs-bullet">-</span> Do not analyze SQL performance, inspect execution plans, or suggest indexes
+<span class="hljs-bullet">-</span> Do not change Jira ticket status without validation
+<span class="hljs-bullet">-</span> Do not invent an approval rationale
+<span class="hljs-bullet">-</span> Do not approve without user confirmation
+<span class="hljs-bullet">-</span> Do not retry on error
+
+<span class="hljs-section">### Edge cases</span>
+<span class="hljs-bullet">-</span> Not a Slack link → Return: Please enter a Slack message link
+<span class="hljs-bullet">-</span> Slack message without SQL → Return: No SQL query found
+<span class="hljs-bullet">-</span> Ticket already approved → Return: Ticket already processed
+<span class="hljs-bullet">-</span> Missing ticket → Return: Ticket not found
+<span class="hljs-bullet">-</span> API failure → Return an error without retrying
+<span class="hljs-bullet">-</span> User enters N → Return: Approval canceled
+
+<span class="hljs-section">### Requires</span>
+<span class="hljs-bullet">-</span> JIRA<span class="hljs-emphasis">_API_</span>TOKEN
+<span class="hljs-bullet">-</span> SLACK<span class="hljs-emphasis">_USER_</span>TOKEN
+</code></pre>
+<p>The original three lines became input and output types, enforced ordering, six prohibitions, branching criteria, error handling, and dependency declarations. Replace the prose with symbols, and it's essentially code.</p>
+<hr>
+<h2 id="근데-이러면-llm-쓸-이유가-있나">Then why use an LLM?</h2><p>Room for interpretation is both a problem and a source of LLMs' power. They fill gaps with judgment. ‘Validate SQL’ may lead to syntax checks or performance analysis depending on context. Implementing that in code requires explicitly writing the branches.</p>
+<p>I was systematically removing that flexibility. Taken to the extreme, a fully constrained prompt is just code, and using an LLM loses its purpose.</p>
+<p>My working rule became: constrain behavior more tightly as actions become less reversible. Changing databases, approving tickets, and production deployments make discretion risky. Code review, research, and drafts benefit from openness because the model can supply perspectives I missed.</p>
+<p>The criterion is simple: can we afford the cost of AI being wrong? If so, leave room. If not, constrain it.</p>
+<hr>
+<h2 id="테스트에-대해서">Testing</h2><p>There's another reason to constrain behavior: testing.</p>
+<p>A conventional test supplies an input and compares output: <code>assertEquals(expected, actual)</code>. That assumes the same input produces the same output.</p>
+<p>Agents don't reliably satisfy that assumption. The same Skill and input can produce different results with different conversation contexts. Yesterday's test may fail today, and a model update can change them all.</p>
+<p>I decided to test behavioral boundaries rather than exact output values. Did the agent request confirmation before sending a Slack message? Did it skip SQL validation? Did it invent a value for an empty input?</p>
+<p>Here the perspective flips again. Code tests ask whether the right thing happened. Agent tests also need to ask whether the wrong thing was avoided. This resembles security testing more than ordinary unit testing.</p>
+<p>Negative checks alone can give full marks to an agent that does nothing: it violated no prohibition. Positive checks are necessary too. It's a question of priority. Not destroying a DB comes before producing an optimal query. Discuss performance after establishing safety.</p>
+<p>Testing boundaries requires defining them first: prohibitions, invariants, and confirmation gates. Without those, there is nothing clear to test. Making an agent testable therefore reduces interpretive freedom. Testing needs constraints, and constraints reduce flexibility. But deploying without tests isn't acceptable either.</p>
+<hr>
+<h2 id="정리">Conclusion</h2><p>Traditional programming specifies what to do. Prompting often also requires specifying what not to do. Constrain natural language enough, and it becomes indistinguishable from code. Defining, validating, and strengthening those constraints resembles designing a language.</p>
+<p>We don't need to close every door. Close everything, and there's little reason to use an LLM. Leave everything open, and it drifts beyond intent. Knowing what to leave open matters as much as knowing what to constrain.</p>
+
+        </div>
+      </article>
+    <nav class="post-nav" aria-label="Previous and next posts">
+      <a class="post-nav-item post-nav-item--prev" href="/posts/functional-programming-in-spring/">
+        <span class="post-nav-label">previous post</span>
+        <span class="post-nav-title">Essential and Accidental Complexity: How Far Can Functional Programming Go in Spring?</span>
+      </a>
+      <a class="post-nav-item post-nav-item--next" href="/posts/automating-personal-messaging/">
+        <span class="post-nav-label">next post</span>
+        <span class="post-nav-title">Let's Automate My Social Life</span>
+      </a>
+    </nav>
+      <nav class="post-back">
+        <a href="/writing/">← back to posts</a>
+      </nav>
+    </div>
+    <aside class="toc" id="toc" aria-label="Contents">
+      <p class="toc-title">contents</p>
+      <ul class="toc-list">
+        <li class="toc-item toc-item--h2"><a href="#배경" data-target="배경">Background</a></li>
+        <li class="toc-item toc-item--h2"><a href="#코드는-허용-목록이고-프롬프트는-차단-목록이다" data-target="코드는-허용-목록이고-프롬프트는-차단-목록이다">Code is an allowlist; prompts behave like a blocklist</a></li>
+        <li class="toc-item toc-item--h2"><a href="#실제로-어떻게-닫아갔는가" data-target="실제로-어떻게-닫아갔는가">How I narrowed the boundaries</a></li>
+        <li class="toc-item toc-item--h2"><a href="#근데-이러면-llm-쓸-이유가-있나" data-target="근데-이러면-llm-쓸-이유가-있나">Then why use an LLM?</a></li>
+        <li class="toc-item toc-item--h2"><a href="#테스트에-대해서" data-target="테스트에-대해서">Testing</a></li>
+        <li class="toc-item toc-item--h2"><a href="#정리" data-target="정리">Conclusion</a></li>
+      </ul>
+    </aside>
+  </main>
+  <script src="/app.js?v=391ab9a5"></script>
+
+
+</body></html>

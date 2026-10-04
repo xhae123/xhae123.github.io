@@ -4,6 +4,8 @@ import { createHash } from 'node:crypto';
 import * as cheerio from 'cheerio';
 import hljs from 'highlight.js';
 import { marked } from 'marked';
+import { writePortfolio, works, primaryNavigation } from './portfolio.js';
+import { englishPostSlug, legacyRedirect, localizePostUrls, postRoutes } from './post-routes.js';
 
 // Source of truth: closed GitHub Issues authored by the repo owner (minus `excluded` label).
 // Issue body = markdown. Publish = close the issue. Unpublish = reopen or add `excluded`.
@@ -13,8 +15,8 @@ const TOKEN = process.env.GITHUB_TOKEN || '';
 
 const SITE_URL = 'https://xhae123.github.io';
 const SITE_NAME = "xhae123's notes";
-const SITE_DESC = '개발하면서 배운 것과 생각한 것을 기록합니다.';
-const AUTHOR = '김우진';
+const SITE_DESC = 'Notes on software, products, and what I learn along the way.';
+const AUTHOR = 'Woojin Kim';
 const GOOGLE_SITE_VERIFICATION = 'sNrpo16A0vUj7vHmVNEmAGZj85cGykaOeHO44krbqDU';
 
 // Cache-busting versions for local static assets. Set in main() from file hashes
@@ -73,7 +75,7 @@ function parseDate(body) {
   return isNaN(new Date(v).getTime()) ? null : v;
 }
 function stripMeta(body) {
-  return body.replace(/<!--\s*date:[^>]*-->/i, '').trim();
+  return body.replace(/<!--\s*(?:date|slug):[^>]*-->/gi, '').trim();
 }
 
 // Title → URL slug. Keep letters/numbers (incl. Korean), drop punctuation,
@@ -208,7 +210,8 @@ async function fetchIssues() {
       if (iss.state !== 'closed') continue;
       if ((iss.labels || []).some((l) => (l.name || l) === 'excluded')) continue;
 
-      let slug = slugify(iss.title);
+      const declaredSlug = body.match(/<!--\s*slug:\s*([a-z0-9-]+)\s*-->/i)?.[1];
+      let slug = declaredSlug || englishPostSlug(slugify(iss.title));
       while (seenSlugs.has(slug)) slug = `${slug}-${iss.number}`;
       seenSlugs.add(slug);
       const html = await localizeImages(marked.parse(stripMeta(body)));
@@ -234,6 +237,11 @@ async function fetchIssues() {
 // net against wiping /assets/ on a bad build.
 async function pruneAssets(referenced) {
   if (referenced.size === 0) return;
+  // Keep original figures alongside their English siblings for future edits.
+  const manifest = JSON.parse(await readFile('translations/en/figures.json', 'utf8'));
+  for (const figure of manifest.figures) {
+    for (const source of figure.sources) referenced.add(assetKey(source));
+  }
   let entries;
   try {
     entries = await readdir('assets', { withFileTypes: true });
@@ -270,11 +278,18 @@ async function main() {
   for (const item of items) {
     const dir = path.join('posts', item.slug);
     await mkdir(dir, { recursive: true });
-    await writeFile(path.join(dir, 'index.html'), renderPost(item, items));
+    await writeFile(path.join(dir, 'index.html'), localizePostUrls(renderPost(item, items)));
     console.log(`  wrote posts/${item.slug}/index.html`);
   }
 
-  await writeFile('index.html', renderIndex(items));
+  for (const [legacy, slug] of Object.entries(postRoutes)) {
+    if (!items.some(item => item.slug === slug)) continue;
+    const dir = path.join('posts', legacy);
+    await mkdir(dir, { recursive: true });
+    await writeFile(path.join(dir, 'index.html'), legacyRedirect(slug));
+  }
+
+  await writePortfolio(items.map(item => ({ ...item, excerpt: firstParagraph(item.html) })));
   await writeFile('sitemap.xml', renderSitemap(items));
   await writeFile('robots.txt', renderRobots());
   await pruneAssets(referenced);
@@ -340,7 +355,7 @@ function processContent(html) {
   $('h1, h2, h3').each((_, el) => {
     const $el = $(el);
     const text = $el.text().trim();
-    const base = slugifyHeading(text);
+    const base = $el.attr('id') || slugifyHeading(text);
     let id = base;
     let i = 2;
     while (used.has(id)) id = `${base}-${i++}`;
@@ -398,7 +413,7 @@ function head({ title, description, canonical, ogImage, ogType, extraHead = '' }
   return `  <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <meta name="google-site-verification" content="${GOOGLE_SITE_VERIFICATION}" />
-  <title>${esc(title)}</title>
+  <title>woojin kim · ${esc(title.replace(/ · Woojin Kim$/, ''))}</title>
   <meta name="description" content="${esc(description)}" />
   <link rel="canonical" href="${esc(canonical)}" />
   <meta property="og:type" content="${ogType}" />
@@ -406,7 +421,7 @@ function head({ title, description, canonical, ogImage, ogType, extraHead = '' }
   <meta property="og:title" content="${esc(title)}" />
   <meta property="og:description" content="${esc(description)}" />
   <meta property="og:url" content="${esc(canonical)}" />
-  <meta property="og:locale" content="ko_KR" />${
+  <meta property="og:locale" content="en_US" />${
     ogImage ? `\n  <meta property="og:image" content="${esc(ogImage)}" />` : ''
   }
   <meta name="twitter:card" content="${ogImage ? 'summary_large_image' : 'summary'}" />
@@ -419,29 +434,16 @@ function head({ title, description, canonical, ogImage, ogType, extraHead = '' }
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable.css" />
   <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500&display=swap" />
-  <link rel="stylesheet" href="/styles.css?v=${STYLES_VER}" />
-  <link rel="icon" type="image/svg+xml" href="/favicon.svg" />${extraHead}`;
+  <link rel="stylesheet" href="/styles.css?v=gray-2-${STYLES_VER}" />
+  <link rel="stylesheet" href="/navigation.css?v=gray-2" />
+  <link rel="icon" type="image/svg+xml" href="/favicon.svg?v=woojin-w-2" />${extraHead}`;
 }
 
 function siteHeader() {
   return `  <header class="site-header" id="site-header">
     <div class="container">
-      <a class="site-label" href="/">xhae123&#39;s notes</a>
-      <nav class="site-links" aria-label="바로가기">
-        <a class="site-link" href="https://github.com/xhae123" target="_blank" rel="noopener noreferrer" aria-label="GitHub">
-          <svg width="15" height="15" viewBox="0 0 16 16" fill="currentColor" aria-hidden="true">
-            <path fill-rule="evenodd" d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.012 8.012 0 0 0 16 8c0-4.42-3.58-8-8-8z"/>
-          </svg>
-          <span class="site-link-txt">xhae123</span>
-        </a>
-        <a class="site-link" href="mailto:xhae000@gmail.com" aria-label="이메일">
-          <svg width="15" height="15" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.4" aria-hidden="true">
-            <rect x="1.5" y="3" width="13" height="10" rx="1.6"/>
-            <path d="M2 4.2l6 4.3 6-4.3"/>
-          </svg>
-          <span class="site-link-txt">xhae000@gmail.com</span>
-        </a>
-      </nav>
+      <a class="site-label" href="/">Woojin Kim</a>
+      ${primaryNavigation('writing')}
     </div>
   </header>`;
 }
@@ -451,7 +453,7 @@ function renderIndex(items) {
   const counts = Object.fromEntries(CATS.map((c) => [c, items.filter((i) => i.category === c).length]));
 
   const catButtons = [
-    `        <button class="is-on" data-cat="*">전체<span class="n">${total}</span></button>`,
+    `        <button class="is-on" data-cat="*">All<span class="n">${total}</span></button>`,
     ...CATS.map(
       (c) =>
         `        <button data-cat="${esc(c)}"><span class="ic">${CAT_ICONS[c]}</span>${esc(c)}<span class="n">${counts[c]}</span></button>`
@@ -490,7 +492,7 @@ function renderIndex(items) {
   };
 
   return `<!DOCTYPE html>
-<html lang="ko">
+<html lang="en">
 <head>
 ${head({
   title: SITE_NAME,
@@ -523,7 +525,7 @@ ${catButtons}
       <section id="feed-list">
 ${feedItems}
       </section>
-      <p class="feed-empty" id="feed-empty" hidden>이 카테고리에는 아직 글이 없어요.</p>
+      <p class="feed-empty" id="feed-empty" hidden>No posts in this category yet.</p>
     </main>
   </div>
   <script src="/app.js?v=${APP_VER}"></script>
@@ -539,7 +541,7 @@ function renderPost(item, items) {
   const older = idx < items.length - 1 ? items[idx + 1] : null;
 
   const title = item.title || '';
-  const date = formatDate(item.date);
+  const date = item.date.slice(0, 10).replaceAll('-', '.');
   const raw = item.html || '';
   const { body, tocItems } = processContent(raw);
   const excerpt = firstParagraph(raw).slice(0, 160);
@@ -550,7 +552,7 @@ function renderPost(item, items) {
   const tocHtml =
     tocItems.length >= 2
       ? `
-      <p class="toc-title">목차</p>
+      <p class="toc-title">contents</p>
       <ul class="toc-list">
 ${tocItems
   .map(
@@ -564,11 +566,11 @@ ${tocItems
   const prevNextHtml =
     newer || older
       ? `
-    <nav class="post-nav" aria-label="이전/다음 글">
+    <nav class="post-nav" aria-label="Previous and next posts">
       ${
         older
           ? `<a class="post-nav-item post-nav-item--prev" href="/posts/${encodeURIComponent(older.slug)}/">
-        <span class="post-nav-label">이전 글</span>
+        <span class="post-nav-label">previous post</span>
         <span class="post-nav-title">${esc(older.title)}</span>
       </a>`
           : '<span></span>'
@@ -576,7 +578,7 @@ ${tocItems
       ${
         newer
           ? `<a class="post-nav-item post-nav-item--next" href="/posts/${encodeURIComponent(newer.slug)}/">
-        <span class="post-nav-label">다음 글</span>
+        <span class="post-nav-label">next post</span>
         <span class="post-nav-title">${esc(newer.title)}</span>
       </a>`
           : '<span></span>'
@@ -598,7 +600,7 @@ ${tocItems
   };
 
   return `<!DOCTYPE html>
-<html lang="ko">
+<html lang="en">
 <head>
 ${head({
   title: `${title} · ${SITE_NAME}`,
@@ -608,14 +610,14 @@ ${head({
   ogType: 'article',
   extraHead: `
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/github.min.css" />
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/github-dark.min.css" media="(prefers-color-scheme: dark)" />
+  <link rel="stylesheet" href="/blog.css?v=gray-2" />
   <meta property="article:published_time" content="${pubISO}" />
+  ${item.category ? `<meta property="article:section" content="${esc(item.category)}" />` : ''}
   <meta property="article:author" content="${esc(AUTHOR)}" />
   <script type="application/ld+json">${JSON.stringify(jsonLd)}</script>`,
 })}
 </head>
 <body>
-${siteHeader()}
   <main class="post-layout">
     <div class="post-main">
       <article class="post" id="post">${
@@ -624,7 +626,8 @@ ${siteHeader()}
           : ''
       }
         <header class="post-header">
-          <p class="post-meta">${esc(date)}</p>
+          <a class="post-top-back" href="/writing/">← all posts</a>
+          <p class="post-meta"><time datetime="${pubISO.slice(0, 10)}">${esc(date)}</time>${item.category ? `<span aria-hidden="true"> · </span><span class="post-category">${esc(item.category.toLowerCase())}</span>` : ''}</p>
           <h1 class="post-title">${esc(title)}</h1>
         </header>
         <div class="post-body" id="post-body">
@@ -632,10 +635,10 @@ ${body}
         </div>
       </article>${prevNextHtml}
       <nav class="post-back">
-        <a href="/">← 목록으로</a>
+        <a href="/writing/">← back to posts</a>
       </nav>
     </div>
-    <aside class="toc" id="toc" aria-label="목차">${tocHtml}
+    <aside class="toc" id="toc" aria-label="Contents">${tocHtml}
     </aside>
   </main>
   <script src="/app.js?v=${APP_VER}"></script>
@@ -646,6 +649,7 @@ ${body}
 
 function renderSitemap(items) {
   const entries = [
+    ...['writing/', 'about/', ...works.map(w => `work/${w.slug}/`)].map(route => ({ loc: `${SITE_URL}/${route}`, lastmod: new Date().toISOString().split('T')[0] })),
     {
       loc: `${SITE_URL}/`,
       lastmod: (items[0] ? new Date(items[0].date) : new Date()).toISOString().split('T')[0],

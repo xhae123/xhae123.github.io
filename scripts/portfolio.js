@@ -148,7 +148,7 @@ function shell(title, route, content, active = '') {
 <link rel="icon" href="/favicon.svg" type="image/svg+xml"><link rel="stylesheet" href="/portfolio.css?v=gray-2"><link rel="stylesheet" href="/navigation.css?v=gray-2">${active === 'writing' ? '<link rel="stylesheet" href="/blog.css?v=gray-2">' : ''}
 </head><body${isHome ? ' class="folio-home"' : active === 'writing' ? ' class="writing-page"' : ''}><a class="skip" href="#main">Skip to content</a><div class="page">
 ${header}
-<main id="main">${content}</main><footer><span>Woojin Kim</span><span>Software Engineer</span></footer></div></body></html>`;
+<main id="main">${content}</main></div></body></html>`;
 }
 
 function home(items) {

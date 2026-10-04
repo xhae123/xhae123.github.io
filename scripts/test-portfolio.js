@@ -15,6 +15,7 @@ for (const file of pages) {
   const $ = await document(file);
   assert.match($('title').text(), /^woojin kim · /, `${file}: name-first page title`);
   assert.equal($('link[rel="icon"]').attr('href'), '/favicon.svg?v=woojin-w-2', `${file}: shared favicon`);
+  assert.equal($('footer').length, 0, `${file}: no name/signature footer`);
   assert.equal($('h1').length, 1, `${file}: one page heading`);
   assert.deepEqual($('.primary-nav a').toArray().map(el => $(el).attr('href')), ['https://github.com/xhae123'], `${file}: GitHub logo link`);
   assert.equal($('header a[href^="mailto:"]').length, 0, `${file}: no email menu`);

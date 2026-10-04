@@ -1,34 +1,36 @@
-<!DOCTYPE html><html lang="en"><head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <meta name="google-site-verification" content="sNrpo16A0vUj7vHmVNEmAGZj85cGykaOeHO44krbqDU">
-  <title>woojin kim · Why Return to SQL in the Age of Vibe Coding? · xhae123's notes</title>
-  <meta name="description" content="While reviewing AI-generated JPA code, I repeatedly found myself asking: when does this query actually execute?">
-  <link rel="canonical" href="https://xhae123.github.io/posts/sql-in-the-age-of-vibe-coding/">
-  <meta property="og:type" content="article">
-  <meta property="og:site_name" content="xhae123's notes">
-  <meta property="og:title" content="Why Return to SQL in the Age of Vibe Coding? · xhae123's notes">
-  <meta property="og:description" content="While reviewing AI-generated JPA code, I repeatedly found myself asking: when does this query actually execute?">
-  <meta property="og:url" content="https://xhae123.github.io/posts/sql-in-the-age-of-vibe-coding/">
-  <meta property="og:locale" content="en_US">
-  <meta property="og:image" content="https://xhae123.github.io/assets/dacbcbb5-877d-413b-8143-6b28e4352c0f.png">
-  <meta name="twitter:card" content="summary_large_image">
-  <meta name="twitter:title" content="Why Return to SQL in the Age of Vibe Coding? · xhae123's notes">
-  <meta name="twitter:description" content="While reviewing AI-generated JPA code, I repeatedly found myself asking: when does this query actually execute?">
-  <meta name="twitter:image" content="https://xhae123.github.io/assets/dacbcbb5-877d-413b-8143-6b28e4352c0f.png">
-  <link rel="preconnect" href="https://cdn.jsdelivr.net">
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin="">
-  <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable.css">
-  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500&amp;display=swap">
-  <link rel="stylesheet" href="/styles.css?v=lowercase-2">
-  <link rel="stylesheet" href="/navigation.css?v=rose-1">
-  <link rel="icon" type="image/svg+xml" href="/favicon.svg?v=woojin-w-2">
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/github.min.css">
-  <link rel="stylesheet" href="/blog.css?v=lowercase-2">
-  <meta property="article:published_time" content="2026-01-23T09:08:47.000Z">
-  <meta property="article:section" content="Backend">
-  <meta property="article:author" content="Woojin Kim">
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="google-site-verification" content="sNrpo16A0vUj7vHmVNEmAGZj85cGykaOeHO44krbqDU" />
+  <title>woojin kim · Why Return to SQL in the Age of Vibe Coding? · xhae123&#39;s notes</title>
+  <meta name="description" content="While reviewing AI-generated JPA code, I repeatedly found myself asking: when does this query actually execute?" />
+  <link rel="canonical" href="https://xhae123.github.io/posts/sql-in-the-age-of-vibe-coding/" />
+  <meta property="og:type" content="article" />
+  <meta property="og:site_name" content="xhae123&#39;s notes" />
+  <meta property="og:title" content="Why Return to SQL in the Age of Vibe Coding? · xhae123&#39;s notes" />
+  <meta property="og:description" content="While reviewing AI-generated JPA code, I repeatedly found myself asking: when does this query actually execute?" />
+  <meta property="og:url" content="https://xhae123.github.io/posts/sql-in-the-age-of-vibe-coding/" />
+  <meta property="og:locale" content="en_US" />
+  <meta property="og:image" content="https://xhae123.github.io/assets/dacbcbb5-877d-413b-8143-6b28e4352c0f.png" />
+  <meta name="twitter:card" content="summary_large_image" />
+  <meta name="twitter:title" content="Why Return to SQL in the Age of Vibe Coding? · xhae123&#39;s notes" />
+  <meta name="twitter:description" content="While reviewing AI-generated JPA code, I repeatedly found myself asking: when does this query actually execute?" />
+  <meta name="twitter:image" content="https://xhae123.github.io/assets/dacbcbb5-877d-413b-8143-6b28e4352c0f.png" />
+  <link rel="preconnect" href="https://cdn.jsdelivr.net" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable.css" />
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500&display=swap" />
+  <link rel="stylesheet" href="/styles.css?v=lowercase-2" />
+  <link rel="stylesheet" href="/navigation.css?v=rose-1" />
+  <link rel="icon" type="image/svg+xml" href="/favicon.svg?v=woojin-w-2" />
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/github.min.css" />
+  <link rel="stylesheet" href="/blog.css?v=lowercase-2" />
+  <meta property="article:published_time" content="2026-01-23T09:08:47.000Z" />
+  <meta property="article:section" content="Backend" />
+  <meta property="article:author" content="Woojin Kim" />
   <script type="application/ld+json">{"@context":"https://schema.org","@type":"BlogPosting","headline":"Why Return to SQL in the Age of Vibe Coding?","description":"While reviewing AI-generated JPA code, I repeatedly found myself asking: when does this query actually execute?","datePublished":"2026-01-23T09:08:47.000Z","dateModified":"2026-01-23T09:08:47.000Z","author":{"@type":"Person","name":"Woojin Kim"},"url":"https://xhae123.github.io/posts/sql-in-the-age-of-vibe-coding/","mainEntityOfPage":"https://xhae123.github.io/posts/sql-in-the-age-of-vibe-coding/","image":"https://xhae123.github.io/assets/dacbcbb5-877d-413b-8143-6b28e4352c0f.png"}</script>
 </head>
 <body>
@@ -41,7 +43,7 @@
           <h1 class="post-title">Why Return to SQL in the Age of Vibe Coding?</h1>
         </header>
         <div class="post-body" id="post-body">
-<h2 id="0-들어가며">0. Introduction</h2><p>While reviewing AI-generated JPA code, I repeatedly found myself asking: when does this query actually execute?</p>
+<html><head></head><body><h2 id="0-들어가며">0. Introduction</h2><p>While reviewing AI-generated JPA code, I repeatedly found myself asking: when does this query actually execute?</p>
 <p>JPA was productive when people wrote the code themselves. But when reviewing code AI generates without sufficient context, implicit behavior raises verification costs.</p>
 <p>This article explores why Exposed can be a reasonable choice from three perspectives: <strong>I/O predictability, memory usage, and the type system.</strong></p>
 <hr>
@@ -119,7 +121,7 @@
 <h2 id="5-결론">5. Conclusion</h2><p>JPA has hidden complexity behind useful abstractions. When AI generates the code, some of that hidden complexity becomes a review risk.</p>
 <p>Exposed brings more of it to the surface. Query execution and I/O costs are more visible in code, and the compiler provides an initial layer of validation.</p>
 <p>If you're working with AI, Exposed is worth considering.</p>
-
+</body></html>
         </div>
       </article>
     <nav class="post-nav" aria-label="Previous and next posts">
@@ -144,10 +146,10 @@
         <li class="toc-item toc-item--h3"><a href="#11-jpa의-lazy-loading" data-target="11-jpa의-lazy-loading">1.1. JPA lazy loading</a></li>
         <li class="toc-item toc-item--h3"><a href="#12-exposed의-명시적-join" data-target="12-exposed의-명시적-join">1.2. Explicit joins in Exposed</a></li>
         <li class="toc-item toc-item--h2"><a href="#2-메모리-사용" data-target="2-메모리-사용">2. Memory usage</a></li>
-        <li class="toc-item toc-item--h3"><a href="#21-jpa의-persistence-context" data-target="21-jpa의-persistence-context">2.1. JPA's persistence context</a></li>
-        <li class="toc-item toc-item--h3"><a href="#22-exposed의-dsl-방식" data-target="22-exposed의-dsl-방식">2.2. Exposed's DSL approach</a></li>
+        <li class="toc-item toc-item--h3"><a href="#21-jpa의-persistence-context" data-target="21-jpa의-persistence-context">2.1. JPA&#39;s persistence context</a></li>
+        <li class="toc-item toc-item--h3"><a href="#22-exposed의-dsl-방식" data-target="22-exposed의-dsl-방식">2.2. Exposed&#39;s DSL approach</a></li>
         <li class="toc-item toc-item--h2"><a href="#3-타입-시스템" data-target="3-타입-시스템">3. The type system</a></li>
-        <li class="toc-item toc-item--h3"><a href="#31-jpa의-런타임-검증" data-target="31-jpa의-런타임-검증">3.1. JPA's runtime checks</a></li>
+        <li class="toc-item toc-item--h3"><a href="#31-jpa의-런타임-검증" data-target="31-jpa의-런타임-검증">3.1. JPA&#39;s runtime checks</a></li>
         <li class="toc-item toc-item--h3"><a href="#32-exposed의-컴파일-타임-검증" data-target="32-exposed의-컴파일-타임-검증">3.2. Compile-time checks in Exposed</a></li>
         <li class="toc-item toc-item--h2"><a href="#4-trade-off" data-target="4-trade-off">4. Trade-off</a></li>
         <li class="toc-item toc-item--h2"><a href="#5-결론" data-target="5-결론">5. Conclusion</a></li>
@@ -155,6 +157,5 @@
     </aside>
   </main>
   <script src="/app.js?v=391ab9a5"></script>
-
-
-</body></html>
+</body>
+</html>

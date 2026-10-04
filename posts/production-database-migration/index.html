@@ -1,48 +1,50 @@
-<!DOCTYPE html><html lang="en"><head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <meta name="google-site-verification" content="sNrpo16A0vUj7vHmVNEmAGZj85cGykaOeHO44krbqDU">
-  <title>woojin kim · Moving a Production Database: Pressing a Button You Can't Undo · xhae123's notes</title>
-  <meta name="description" content="I stopped just before pressing Enter.">
-  <link rel="canonical" href="https://xhae123.github.io/posts/production-database-migration/">
-  <meta property="og:type" content="article">
-  <meta property="og:site_name" content="xhae123's notes">
-  <meta property="og:title" content="Moving a Production Database: Pressing a Button You Can't Undo · xhae123's notes">
-  <meta property="og:description" content="I stopped just before pressing Enter.">
-  <meta property="og:url" content="https://xhae123.github.io/posts/production-database-migration/">
-  <meta property="og:locale" content="en_US">
-  <meta property="og:image" content="https://xhae123.github.io/assets/covers/cover-24.svg">
-  <meta name="twitter:card" content="summary_large_image">
-  <meta name="twitter:title" content="Moving a Production Database: Pressing a Button You Can't Undo · xhae123's notes">
-  <meta name="twitter:description" content="I stopped just before pressing Enter.">
-  <meta name="twitter:image" content="https://xhae123.github.io/assets/covers/cover-24.svg">
-  <link rel="preconnect" href="https://cdn.jsdelivr.net">
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin="">
-  <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable.css">
-  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500&amp;display=swap">
-  <link rel="stylesheet" href="/styles.css?v=lowercase-2">
-  <link rel="stylesheet" href="/navigation.css?v=rose-1">
-  <link rel="icon" type="image/svg+xml" href="/favicon.svg?v=woojin-w-2">
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/github.min.css">
-  <link rel="stylesheet" href="/blog.css?v=lowercase-2">
-  <meta property="article:published_time" content="2026-06-03T14:41:48.000Z">
-  <meta property="article:section" content="Infra">
-  <meta property="article:author" content="Woojin Kim">
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="google-site-verification" content="sNrpo16A0vUj7vHmVNEmAGZj85cGykaOeHO44krbqDU" />
+  <title>woojin kim · Moving a Production Database: Pressing a Button You Can&#39;t Undo · xhae123&#39;s notes</title>
+  <meta name="description" content="I stopped just before pressing Enter." />
+  <link rel="canonical" href="https://xhae123.github.io/posts/production-database-migration/" />
+  <meta property="og:type" content="article" />
+  <meta property="og:site_name" content="xhae123&#39;s notes" />
+  <meta property="og:title" content="Moving a Production Database: Pressing a Button You Can&#39;t Undo · xhae123&#39;s notes" />
+  <meta property="og:description" content="I stopped just before pressing Enter." />
+  <meta property="og:url" content="https://xhae123.github.io/posts/production-database-migration/" />
+  <meta property="og:locale" content="en_US" />
+  <meta property="og:image" content="https://xhae123.github.io/assets/covers/cover-24.svg" />
+  <meta name="twitter:card" content="summary_large_image" />
+  <meta name="twitter:title" content="Moving a Production Database: Pressing a Button You Can&#39;t Undo · xhae123&#39;s notes" />
+  <meta name="twitter:description" content="I stopped just before pressing Enter." />
+  <meta name="twitter:image" content="https://xhae123.github.io/assets/covers/cover-24.svg" />
+  <link rel="preconnect" href="https://cdn.jsdelivr.net" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable.css" />
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500&display=swap" />
+  <link rel="stylesheet" href="/styles.css?v=lowercase-2" />
+  <link rel="stylesheet" href="/navigation.css?v=rose-1" />
+  <link rel="icon" type="image/svg+xml" href="/favicon.svg?v=woojin-w-2" />
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/github.min.css" />
+  <link rel="stylesheet" href="/blog.css?v=lowercase-2" />
+  <meta property="article:published_time" content="2026-06-03T14:41:48.000Z" />
+  <meta property="article:section" content="Infra" />
+  <meta property="article:author" content="Woojin Kim" />
   <script type="application/ld+json">{"@context":"https://schema.org","@type":"BlogPosting","headline":"Moving a Production Database: Pressing a Button You Can't Undo","description":"I stopped just before pressing Enter.","datePublished":"2026-06-03T14:41:48.000Z","dateModified":"2026-06-03T14:41:48.000Z","author":{"@type":"Person","name":"Woojin Kim"},"url":"https://xhae123.github.io/posts/production-database-migration/","mainEntityOfPage":"https://xhae123.github.io/posts/production-database-migration/","image":"https://xhae123.github.io/assets/covers/cover-24.svg"}</script>
 </head>
 <body>
   <main class="post-layout">
     <div class="post-main">
       <article class="post" id="post">
-        <div class="post-cover"><img src="/assets/covers/cover-24.svg" alt=""></div>
+        <div class="post-cover"><img src="/assets/covers/cover-24.svg" alt="" /></div>
         <header class="post-header">
           <a class="post-top-back" href="/writing/">← all posts</a>
           <p class="post-meta"><time datetime="2026-06-03">2026.06.03</time><span aria-hidden="true"> · </span><span class="post-category">infra</span></p>
-          <h1 class="post-title">Moving a Production Database: Pressing a Button You Can't Undo</h1>
+          <h1 class="post-title">Moving a Production Database: Pressing a Button You Can&#39;t Undo</h1>
         </header>
         <div class="post-body" id="post-body">
-<pre data-lang="dsconfig"><code class="language-dsconfig hljs"><span class="hljs-string">aws</span> <span class="hljs-string">rds</span> <span class="hljs-built_in">delete-db-instance</span> <span class="hljs-built_in">--skip-final-snapshot</span> ...
+<html><head></head><body><pre data-lang="dsconfig"><code class="language-dsconfig hljs"><span class="hljs-string">aws</span> <span class="hljs-string">rds</span> <span class="hljs-built_in">delete-db-instance</span> <span class="hljs-built_in">--skip-final-snapshot</span> ...
 </code></pre>
 <p>I stopped just before pressing Enter.</p>
 <p>If this were code, I'd have pushed it. A bad deployment can be rolled back; a bug can get a hotfix. Most of our work is reversible, so ‘try it and fix it if it breaks’ works. This command was different. Press Enter, and the instance disappears for good.</p>
@@ -72,13 +74,13 @@ blog_posts  <span class="hljs-number">5</span>b2b243ef8ac    <span class="hljs-o
 <p>Debt remained: self-managed backups and monitoring, and a single server whose failure would take both the app and DB down. The 8 GB disk was already 90% full.</p>
 <p>Moving the data took 27 seconds. Everything else was about crossing irreversible boundaries. 139 ms justified the move; one minute justified big-bang cutover; 836 MB justified keeping the instance; 1.7 GB determined swap size; matching hashes justified pressing Enter. Without those numbers, the decisions would have rested on intuition. That matters even more when the work can't be undone.</p>
 <p>More work lacks <code>git revert</code> than we think: deleting a production table, migrating data, sending a payment that can't be recalled. Pausing before those commands isn't cowardice. Use the pause to check that every reason to proceed is green.</p>
-
+</body></html>
         </div>
       </article>
     <nav class="post-nav" aria-label="Previous and next posts">
       <a class="post-nav-item post-nav-item--prev" href="/posts/automating-personal-messaging/">
         <span class="post-nav-label">previous post</span>
-        <span class="post-nav-title">Let's Automate My Social Life</span>
+        <span class="post-nav-title">Let&#39;s Automate My Social Life</span>
       </a>
       <a class="post-nav-item post-nav-item--next" href="/posts/building-the-data-before-the-model/">
         <span class="post-nav-label">next post</span>
@@ -103,6 +105,5 @@ blog_posts  <span class="hljs-number">5</span>b2b243ef8ac    <span class="hljs-o
     </aside>
   </main>
   <script src="/app.js?v=391ab9a5"></script>
-
-
-</body></html>
+</body>
+</html>

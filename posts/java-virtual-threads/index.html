@@ -1,34 +1,36 @@
-<!DOCTYPE html><html lang="en"><head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <meta name="google-site-verification" content="sNrpo16A0vUj7vHmVNEmAGZj85cGykaOeHO44krbqDU">
-  <title>woojin kim · 2.7× Request Throughput: Introducing Java Virtual Threads · xhae123's notes</title>
-  <meta name="description" content="A read API hit a p95 latency of seven seconds in a load test. Requests weren't failing.They were just slow. Throughput wouldn't climb past 16.6 requests per sec">
-  <link rel="canonical" href="https://xhae123.github.io/posts/java-virtual-threads/">
-  <meta property="og:type" content="article">
-  <meta property="og:site_name" content="xhae123's notes">
-  <meta property="og:title" content="2.7× Request Throughput: Introducing Java Virtual Threads · xhae123's notes">
-  <meta property="og:description" content="A read API hit a p95 latency of seven seconds in a load test. Requests weren't failing.They were just slow. Throughput wouldn't climb past 16.6 requests per sec">
-  <meta property="og:url" content="https://xhae123.github.io/posts/java-virtual-threads/">
-  <meta property="og:locale" content="en_US">
-  <meta property="og:image" content="https://xhae123.github.io/assets/en/vt-execution.png">
-  <meta name="twitter:card" content="summary_large_image">
-  <meta name="twitter:title" content="2.7× Request Throughput: Introducing Java Virtual Threads · xhae123's notes">
-  <meta name="twitter:description" content="A read API hit a p95 latency of seven seconds in a load test. Requests weren't failing.They were just slow. Throughput wouldn't climb past 16.6 requests per sec">
-  <meta name="twitter:image" content="https://xhae123.github.io/assets/en/vt-execution.png">
-  <link rel="preconnect" href="https://cdn.jsdelivr.net">
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin="">
-  <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable.css">
-  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500&amp;display=swap">
-  <link rel="stylesheet" href="/styles.css?v=lowercase-2">
-  <link rel="stylesheet" href="/navigation.css?v=rose-1">
-  <link rel="icon" type="image/svg+xml" href="/favicon.svg?v=woojin-w-2">
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/github.min.css">
-  <link rel="stylesheet" href="/blog.css?v=lowercase-2">
-  <meta property="article:published_time" content="2026-09-16T16:02:59.000Z">
-  <meta property="article:section" content="Backend">
-  <meta property="article:author" content="Woojin Kim">
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="google-site-verification" content="sNrpo16A0vUj7vHmVNEmAGZj85cGykaOeHO44krbqDU" />
+  <title>woojin kim · 2.7× Request Throughput: Introducing Java Virtual Threads · xhae123&#39;s notes</title>
+  <meta name="description" content="A read API hit a p95 latency of seven seconds in a load test. Requests weren&#39;t failing.They were just slow. Throughput wouldn&#39;t climb past 16.6 requests per sec" />
+  <link rel="canonical" href="https://xhae123.github.io/posts/java-virtual-threads/" />
+  <meta property="og:type" content="article" />
+  <meta property="og:site_name" content="xhae123&#39;s notes" />
+  <meta property="og:title" content="2.7× Request Throughput: Introducing Java Virtual Threads · xhae123&#39;s notes" />
+  <meta property="og:description" content="A read API hit a p95 latency of seven seconds in a load test. Requests weren&#39;t failing.They were just slow. Throughput wouldn&#39;t climb past 16.6 requests per sec" />
+  <meta property="og:url" content="https://xhae123.github.io/posts/java-virtual-threads/" />
+  <meta property="og:locale" content="en_US" />
+  <meta property="og:image" content="https://xhae123.github.io/assets/en/vt-execution.png" />
+  <meta name="twitter:card" content="summary_large_image" />
+  <meta name="twitter:title" content="2.7× Request Throughput: Introducing Java Virtual Threads · xhae123&#39;s notes" />
+  <meta name="twitter:description" content="A read API hit a p95 latency of seven seconds in a load test. Requests weren&#39;t failing.They were just slow. Throughput wouldn&#39;t climb past 16.6 requests per sec" />
+  <meta name="twitter:image" content="https://xhae123.github.io/assets/en/vt-execution.png" />
+  <link rel="preconnect" href="https://cdn.jsdelivr.net" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable.css" />
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500&display=swap" />
+  <link rel="stylesheet" href="/styles.css?v=lowercase-2" />
+  <link rel="stylesheet" href="/navigation.css?v=rose-1" />
+  <link rel="icon" type="image/svg+xml" href="/favicon.svg?v=woojin-w-2" />
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/github.min.css" />
+  <link rel="stylesheet" href="/blog.css?v=lowercase-2" />
+  <meta property="article:published_time" content="2026-09-16T16:02:59.000Z" />
+  <meta property="article:section" content="Backend" />
+  <meta property="article:author" content="Woojin Kim" />
   <script type="application/ld+json">{"@context":"https://schema.org","@type":"BlogPosting","headline":"2.7× Request Throughput: Introducing Java Virtual Threads","description":"A read API hit a p95 latency of seven seconds in a load test. Requests weren't failing.They were just slow. Throughput wouldn't climb past 16.6 requests per sec","datePublished":"2026-09-16T16:02:59.000Z","dateModified":"2026-09-16T16:02:59.000Z","author":{"@type":"Person","name":"Woojin Kim"},"url":"https://xhae123.github.io/posts/java-virtual-threads/","mainEntityOfPage":"https://xhae123.github.io/posts/java-virtual-threads/","image":"https://xhae123.github.io/assets/en/vt-execution.png"}</script>
 </head>
 <body>
@@ -41,7 +43,7 @@
           <h1 class="post-title">2.7× Request Throughput: Introducing Java Virtual Threads</h1>
         </header>
         <div class="post-body" id="post-body">
-<p>A read API hit a p95 latency of seven seconds in a load test. Requests weren't failing.<br>They were just slow. Throughput wouldn't climb past 16.6 requests per second either. Seven seconds wasn't something I could leave alone.</p>
+<html><head></head><body><p>A read API hit a p95 latency of seven seconds in a load test. Requests weren't failing.<br>They were just slow. Throughput wouldn't climb past 16.6 requests per second either. Seven seconds wasn't something I could leave alone.</p>
 <p>Since the API queried a database, I suspected the DB first. But its CPU was mostly idle. The congestion was on the application side: up to 36 requests were waiting to borrow connections from a HikariCP pool of four. Thirty-six requests queued for four connections.</p>
 <p>At that point, the diagnosis looked obvious. Too few connections: the database was idle, but the narrow channel was holding requests up. Increasing the pool seemed like the answer.</p>
 <p>Before acting on that diagnosis, something bothered me. If connections were the bottleneck, more connections should let the DB finish more work. But the DB was already idle. There was no guarantee that lending more connections and finishing requests faster would move together. Before changing the pool size, I decided to change one other variable: how we handled requests while they waited.</p>
@@ -165,7 +167,7 @@
 <p>Read A, which started at a seven-second p95, ended at 2.4 seconds. Its peak platform-thread count fell from 68 to 33.</p>
 <p>I initially thought four connections were too few. What was lacking wasn't connections, but an efficient way to share half a core across requests. Connections led to an idle database; CPU for processing requests was the scarce resource. Keeping the pool fixed and changing how we handled requests took Read A from 16.6 to 45.5 completed requests per second.</p>
 <p>Increasing concurrency can increase throughput when CPU capacity remains. Once CPU is the bottleneck, it is closer to cutting the same pie into smaller pieces. The connection queue was simply the first conspicuous number in this problem.</p>
-
+</body></html>
         </div>
       </article>
     <nav class="post-nav" aria-label="Previous and next posts">
@@ -196,6 +198,5 @@
     </aside>
   </main>
   <script src="/app.js?v=391ab9a5"></script>
-
-
-</body></html>
+</body>
+</html>

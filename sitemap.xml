@@ -1,11 +1,11 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
+  <url><loc>https://xhae123.github.io/writing/</loc><lastmod>2026-10-04</lastmod></url>
+  <url><loc>https://xhae123.github.io/about/</loc><lastmod>2026-10-04</lastmod></url>
+  <url><loc>https://xhae123.github.io/work/adelante/</loc><lastmod>2026-10-04</lastmod></url>
+  <url><loc>https://xhae123.github.io/work/afinit/</loc><lastmod>2026-10-04</lastmod></url>
+  <url><loc>https://xhae123.github.io/work/raspy/</loc><lastmod>2026-10-04</lastmod></url>
   <url><loc>https://xhae123.github.io/</loc><lastmod>2026-09-22</lastmod></url>
-  <url><loc>https://xhae123.github.io/writing/</loc></url>
-  <url><loc>https://xhae123.github.io/about/</loc></url>
-  <url><loc>https://xhae123.github.io/work/afinit/</loc></url>
-  <url><loc>https://xhae123.github.io/work/raspy/</loc></url>
-  <url><loc>https://xhae123.github.io/work/adelante/</loc></url>
   <url><loc>https://xhae123.github.io/posts/netty-direct-memory-limit/</loc><lastmod>2026-09-22</lastmod></url>
   <url><loc>https://xhae123.github.io/posts/java-virtual-threads/</loc><lastmod>2026-09-16</lastmod></url>
   <url><loc>https://xhae123.github.io/posts/curriculum-level-learning-diagnostics/</loc><lastmod>2026-07-30</lastmod></url>

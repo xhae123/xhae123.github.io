@@ -1,34 +1,36 @@
-<!DOCTYPE html><html lang="en"><head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <meta name="google-site-verification" content="sNrpo16A0vUj7vHmVNEmAGZj85cGykaOeHO44krbqDU">
-  <title>woojin kim · Choosing Transaction Boundaries: Narrowing Them with the Outbox Pattern · xhae123's notes</title>
-  <meta name="description" content="The reward-earning API, POST /rewards/earn, records a completed order in our database, writes an audit log, and synchronizes with a partner API.">
-  <link rel="canonical" href="https://xhae123.github.io/posts/transaction-boundaries-and-outbox/">
-  <meta property="og:type" content="article">
-  <meta property="og:site_name" content="xhae123's notes">
-  <meta property="og:title" content="Choosing Transaction Boundaries: Narrowing Them with the Outbox Pattern · xhae123's notes">
-  <meta property="og:description" content="The reward-earning API, POST /rewards/earn, records a completed order in our database, writes an audit log, and synchronizes with a partner API.">
-  <meta property="og:url" content="https://xhae123.github.io/posts/transaction-boundaries-and-outbox/">
-  <meta property="og:locale" content="en_US">
-  <meta property="og:image" content="https://xhae123.github.io/assets/8312cbb5-87b5-445d-babc-0add71b28fd8.png">
-  <meta name="twitter:card" content="summary_large_image">
-  <meta name="twitter:title" content="Choosing Transaction Boundaries: Narrowing Them with the Outbox Pattern · xhae123's notes">
-  <meta name="twitter:description" content="The reward-earning API, POST /rewards/earn, records a completed order in our database, writes an audit log, and synchronizes with a partner API.">
-  <meta name="twitter:image" content="https://xhae123.github.io/assets/8312cbb5-87b5-445d-babc-0add71b28fd8.png">
-  <link rel="preconnect" href="https://cdn.jsdelivr.net">
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin="">
-  <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable.css">
-  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500&amp;display=swap">
-  <link rel="stylesheet" href="/styles.css?v=lowercase-2">
-  <link rel="stylesheet" href="/navigation.css?v=rose-1">
-  <link rel="icon" type="image/svg+xml" href="/favicon.svg?v=woojin-w-2">
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/github.min.css">
-  <link rel="stylesheet" href="/blog.css?v=lowercase-2">
-  <meta property="article:published_time" content="2026-02-19T09:39:12.000Z">
-  <meta property="article:section" content="Backend">
-  <meta property="article:author" content="Woojin Kim">
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="google-site-verification" content="sNrpo16A0vUj7vHmVNEmAGZj85cGykaOeHO44krbqDU" />
+  <title>woojin kim · Choosing Transaction Boundaries: Narrowing Them with the Outbox Pattern · xhae123&#39;s notes</title>
+  <meta name="description" content="The reward-earning API, POST /rewards/earn, records a completed order in our database, writes an audit log, and synchronizes with a partner API." />
+  <link rel="canonical" href="https://xhae123.github.io/posts/transaction-boundaries-and-outbox/" />
+  <meta property="og:type" content="article" />
+  <meta property="og:site_name" content="xhae123&#39;s notes" />
+  <meta property="og:title" content="Choosing Transaction Boundaries: Narrowing Them with the Outbox Pattern · xhae123&#39;s notes" />
+  <meta property="og:description" content="The reward-earning API, POST /rewards/earn, records a completed order in our database, writes an audit log, and synchronizes with a partner API." />
+  <meta property="og:url" content="https://xhae123.github.io/posts/transaction-boundaries-and-outbox/" />
+  <meta property="og:locale" content="en_US" />
+  <meta property="og:image" content="https://xhae123.github.io/assets/8312cbb5-87b5-445d-babc-0add71b28fd8.png" />
+  <meta name="twitter:card" content="summary_large_image" />
+  <meta name="twitter:title" content="Choosing Transaction Boundaries: Narrowing Them with the Outbox Pattern · xhae123&#39;s notes" />
+  <meta name="twitter:description" content="The reward-earning API, POST /rewards/earn, records a completed order in our database, writes an audit log, and synchronizes with a partner API." />
+  <meta name="twitter:image" content="https://xhae123.github.io/assets/8312cbb5-87b5-445d-babc-0add71b28fd8.png" />
+  <link rel="preconnect" href="https://cdn.jsdelivr.net" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable.css" />
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500&display=swap" />
+  <link rel="stylesheet" href="/styles.css?v=lowercase-2" />
+  <link rel="stylesheet" href="/navigation.css?v=rose-1" />
+  <link rel="icon" type="image/svg+xml" href="/favicon.svg?v=woojin-w-2" />
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/github.min.css" />
+  <link rel="stylesheet" href="/blog.css?v=lowercase-2" />
+  <meta property="article:published_time" content="2026-02-19T09:39:12.000Z" />
+  <meta property="article:section" content="Backend" />
+  <meta property="article:author" content="Woojin Kim" />
   <script type="application/ld+json">{"@context":"https://schema.org","@type":"BlogPosting","headline":"Choosing Transaction Boundaries: Narrowing Them with the Outbox Pattern","description":"The reward-earning API, POST /rewards/earn, records a completed order in our database, writes an audit log, and synchronizes with a partner API.","datePublished":"2026-02-19T09:39:12.000Z","dateModified":"2026-02-19T09:39:12.000Z","author":{"@type":"Person","name":"Woojin Kim"},"url":"https://xhae123.github.io/posts/transaction-boundaries-and-outbox/","mainEntityOfPage":"https://xhae123.github.io/posts/transaction-boundaries-and-outbox/","image":"https://xhae123.github.io/assets/8312cbb5-87b5-445d-babc-0add71b28fd8.png"}</script>
 </head>
 <body>
@@ -41,7 +43,7 @@
           <h1 class="post-title">Choosing Transaction Boundaries: Narrowing Them with the Outbox Pattern</h1>
         </header>
         <div class="post-body" id="post-body">
-<h2 id="0-테스트-환경--관측-지표">0. Test environment and metrics</h2><ul>
+<html><head></head><body><h2 id="0-테스트-환경--관측-지표">0. Test environment and metrics</h2><ul>
 <li>Load generator: k6 (<code>ramping-vus</code>).</li>
 <li>Database: MySQL, InnoDB.</li>
 <li>ORM: Spring Data JPA.</li>
@@ -353,7 +355,7 @@
 <li>An Outbox isn't magic. It's a basic mechanism for durable asynchronous work.</li>
 <li>You pay for it with delayed consistency, operational work, and idempotency design.</li>
 </ul>
-
+</body></html>
         </div>
       </article>
     <nav class="post-nav" aria-label="Previous and next posts">
@@ -387,7 +389,7 @@
         <li class="toc-item toc-item--h2"><a href="#9-트랜잭션-경계-축소--outbox" data-target="9-트랜잭션-경계-축소--outbox">9. Narrower transactions with an Outbox</a></li>
         <li class="toc-item toc-item--h2"><a href="#10-감수한-트레이드오프" data-target="10-감수한-트레이드오프">10. Trade-offs accepted</a></li>
         <li class="toc-item toc-item--h3"><a href="#101-즉시성-대신-최대-지연을-정의했다" data-target="101-즉시성-대신-최대-지연을-정의했다">10.1. Define delay instead of promising immediacy</a></li>
-        <li class="toc-item toc-item--h3"><a href="#102-exactly-once는-자동으로-생기지-않는다" data-target="102-exactly-once는-자동으로-생기지-않는다">10.2. Exactly-once doesn't appear automatically</a></li>
+        <li class="toc-item toc-item--h3"><a href="#102-exactly-once는-자동으로-생기지-않는다" data-target="102-exactly-once는-자동으로-생기지-않는다">10.2. Exactly-once doesn&#39;t appear automatically</a></li>
         <li class="toc-item toc-item--h3"><a href="#103-outbox는-새로운-운영-대상이다" data-target="103-outbox는-새로운-운영-대상이다">10.3. The Outbox is another operational component</a></li>
         <li class="toc-item toc-item--h2"><a href="#11-결과" data-target="11-결과">11. Results</a></li>
         <li class="toc-item toc-item--h2"><a href="#12-핵심-인사이트" data-target="12-핵심-인사이트">12. Key takeaways</a></li>
@@ -395,6 +397,5 @@
     </aside>
   </main>
   <script src="/app.js?v=391ab9a5"></script>
-
-
-</body></html>
+</body>
+</html>

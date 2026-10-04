@@ -1,34 +1,36 @@
-<!DOCTYPE html><html lang="en"><head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <meta name="google-site-verification" content="sNrpo16A0vUj7vHmVNEmAGZj85cGykaOeHO44krbqDU">
-  <title>woojin kim · Refactoring an LLM Pipeline: Finding Where Tokens Leak · xhae123's notes</title>
-  <meta name="description" content="I have a pipeline that reads English technical articles and turns them into Korean introduction cards. It checks feeds from 178 vendors, selects useful material">
-  <link rel="canonical" href="https://xhae123.github.io/posts/llm-pipeline-token-optimization/">
-  <meta property="og:type" content="article">
-  <meta property="og:site_name" content="xhae123's notes">
-  <meta property="og:title" content="Refactoring an LLM Pipeline: Finding Where Tokens Leak · xhae123's notes">
-  <meta property="og:description" content="I have a pipeline that reads English technical articles and turns them into Korean introduction cards. It checks feeds from 178 vendors, selects useful material">
-  <meta property="og:url" content="https://xhae123.github.io/posts/llm-pipeline-token-optimization/">
-  <meta property="og:locale" content="en_US">
-  <meta property="og:image" content="https://xhae123.github.io/assets/llm-pipeline-09-served-cards.png?v=1">
-  <meta name="twitter:card" content="summary_large_image">
-  <meta name="twitter:title" content="Refactoring an LLM Pipeline: Finding Where Tokens Leak · xhae123's notes">
-  <meta name="twitter:description" content="I have a pipeline that reads English technical articles and turns them into Korean introduction cards. It checks feeds from 178 vendors, selects useful material">
-  <meta name="twitter:image" content="https://xhae123.github.io/assets/llm-pipeline-09-served-cards.png?v=1">
-  <link rel="preconnect" href="https://cdn.jsdelivr.net">
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin="">
-  <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable.css">
-  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500&amp;display=swap">
-  <link rel="stylesheet" href="/styles.css?v=lowercase-2">
-  <link rel="stylesheet" href="/navigation.css?v=rose-1">
-  <link rel="icon" type="image/svg+xml" href="/favicon.svg?v=woojin-w-2">
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/github.min.css">
-  <link rel="stylesheet" href="/blog.css?v=lowercase-2">
-  <meta property="article:published_time" content="2026-07-22T15:54:18.000Z">
-  <meta property="article:section" content="AI">
-  <meta property="article:author" content="Woojin Kim">
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="google-site-verification" content="sNrpo16A0vUj7vHmVNEmAGZj85cGykaOeHO44krbqDU" />
+  <title>woojin kim · Refactoring an LLM Pipeline: Finding Where Tokens Leak · xhae123&#39;s notes</title>
+  <meta name="description" content="I have a pipeline that reads English technical articles and turns them into Korean introduction cards. It checks feeds from 178 vendors, selects useful material" />
+  <link rel="canonical" href="https://xhae123.github.io/posts/llm-pipeline-token-optimization/" />
+  <meta property="og:type" content="article" />
+  <meta property="og:site_name" content="xhae123&#39;s notes" />
+  <meta property="og:title" content="Refactoring an LLM Pipeline: Finding Where Tokens Leak · xhae123&#39;s notes" />
+  <meta property="og:description" content="I have a pipeline that reads English technical articles and turns them into Korean introduction cards. It checks feeds from 178 vendors, selects useful material" />
+  <meta property="og:url" content="https://xhae123.github.io/posts/llm-pipeline-token-optimization/" />
+  <meta property="og:locale" content="en_US" />
+  <meta property="og:image" content="https://xhae123.github.io/assets/llm-pipeline-09-served-cards.png?v=1" />
+  <meta name="twitter:card" content="summary_large_image" />
+  <meta name="twitter:title" content="Refactoring an LLM Pipeline: Finding Where Tokens Leak · xhae123&#39;s notes" />
+  <meta name="twitter:description" content="I have a pipeline that reads English technical articles and turns them into Korean introduction cards. It checks feeds from 178 vendors, selects useful material" />
+  <meta name="twitter:image" content="https://xhae123.github.io/assets/llm-pipeline-09-served-cards.png?v=1" />
+  <link rel="preconnect" href="https://cdn.jsdelivr.net" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable.css" />
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500&display=swap" />
+  <link rel="stylesheet" href="/styles.css?v=lowercase-2" />
+  <link rel="stylesheet" href="/navigation.css?v=rose-1" />
+  <link rel="icon" type="image/svg+xml" href="/favicon.svg?v=woojin-w-2" />
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/github.min.css" />
+  <link rel="stylesheet" href="/blog.css?v=lowercase-2" />
+  <meta property="article:published_time" content="2026-07-22T15:54:18.000Z" />
+  <meta property="article:section" content="AI" />
+  <meta property="article:author" content="Woojin Kim" />
   <script type="application/ld+json">{"@context":"https://schema.org","@type":"BlogPosting","headline":"Refactoring an LLM Pipeline: Finding Where Tokens Leak","description":"I have a pipeline that reads English technical articles and turns them into Korean introduction cards. It checks feeds from 178 vendors, selects useful material","datePublished":"2026-07-22T15:54:18.000Z","dateModified":"2026-07-22T15:54:18.000Z","author":{"@type":"Person","name":"Woojin Kim"},"url":"https://xhae123.github.io/posts/llm-pipeline-token-optimization/","mainEntityOfPage":"https://xhae123.github.io/posts/llm-pipeline-token-optimization/","image":"https://xhae123.github.io/assets/llm-pipeline-09-served-cards.png?v=1"}</script>
 </head>
 <body>
@@ -41,7 +43,7 @@
           <h1 class="post-title">Refactoring an LLM Pipeline: Finding Where Tokens Leak</h1>
         </header>
         <div class="post-body" id="post-body">
-<p>I have a pipeline that reads English technical articles and turns them into Korean introduction cards. It checks feeds from 178 vendors, selects useful material, writes cards, and serves them automatically. The output looks like this.</p>
+<html><head></head><body><p>I have a pipeline that reads English technical articles and turns them into Korean introduction cards. It checks feeds from 178 vendors, selects useful material, writes cards, and serves them automatically. The output looks like this.</p>
 <p><img src="/assets/llm-pipeline-09-served-cards.png?v=1" alt="Illustration: Refactoring an LLM Pipeline: Finding Where Tokens Leak" loading="lazy"></p>
 <p>Writing and assembly needed no human review. But I still had to inspect every selection and card. Is that automation, or has the work merely moved one step sideways?</p>
 <p>I took the pipeline apart, starting with a simple question: why does one card cost so many tokens? There were 929 sources awaiting triage. Writing all of them would take over 40 million tokens. Even a small per-card saving would matter.</p>
@@ -576,7 +578,7 @@ Quotation marks and line breaks in the body need no JSON escaping.
 <hr>
 <p>I started with token optimization. The two findings that mattered most weren't optimizations: one in four outputs had been unusable without me knowing, and I'd been working along only one cost axis.</p>
 <p>Neither would have surfaced without measurement. Neither was what I'd set out to find.</p>
-
+</body></html>
         </div>
       </article>
     <nav class="post-nav" aria-label="Previous and next posts">
@@ -598,21 +600,21 @@ Quotation marks and line breaks in the body need no JSON escaping.
       <ul class="toc-list">
         <li class="toc-item toc-item--h2"><a href="#전체-구조" data-target="전체-구조">Overall structure</a></li>
         <li class="toc-item toc-item--h3"><a href="#핵심-설계--파일-존재가-곧-상태다" data-target="핵심-설계--파일-존재가-곧-상태다">Core design: file existence is state</a></li>
-        <li class="toc-item toc-item--h3"><a href="#왜-이-구조인가--안-고른-길들" data-target="왜-이-구조인가--안-고른-길들">Why this structure: paths I didn't take</a></li>
+        <li class="toc-item toc-item--h3"><a href="#왜-이-구조인가--안-고른-길들" data-target="왜-이-구조인가--안-고른-길들">Why this structure: paths I didn&#39;t take</a></li>
         <li class="toc-item toc-item--h2"><a href="#1-수급--원문이-토대다" data-target="1-수급--원문이-토대다">[1] Ingestion: the source is the foundation</a></li>
         <li class="toc-item toc-item--h2"><a href="#2-선별--안목이-상품이다" data-target="2-선별--안목이-상품이다">[2] Triage: selection is the product</a></li>
         <li class="toc-item toc-item--h3"><a href="#8라운드-40건" data-target="8라운드-40건">Eight rounds, 40 articles</a></li>
         <li class="toc-item toc-item--h2"><a href="#3-집필--크래프트가-해자다" data-target="3-집필--크래프트가-해자다">[3] Writing: craft is the moat</a></li>
         <li class="toc-item toc-item--h3"><a href="#모델을-내려도-입력은-그대로다" data-target="모델을-내려도-입력은-그대로다">A cheaper model still reads the same input</a></li>
-        <li class="toc-item toc-item--h3"><a href="#측정-방법을-바꾸다--파일-크기는-답이-아니었다" data-target="측정-방법을-바꾸다--파일-크기는-답이-아니었다">Change the measurement: file size wasn't the answer</a></li>
+        <li class="toc-item toc-item--h3"><a href="#측정-방법을-바꾸다--파일-크기는-답이-아니었다" data-target="측정-방법을-바꾸다--파일-크기는-답이-아니었다">Change the measurement: file size wasn&#39;t the answer</a></li>
         <li class="toc-item toc-item--h3"><a href="#진짜-레버--프리픽스-캐시는-바이트-단위다" data-target="진짜-레버--프리픽스-캐시는-바이트-단위다">The real lever: exact prefix reuse</a></li>
         <li class="toc-item toc-item--h3"><a href="#도구-왕복--13콜이-5콜이-되다" data-target="도구-왕복--13콜이-5콜이-되다">Tool round trips: thirteen calls became five</a></li>
         <li class="toc-item toc-item--h3"><a href="#그러다-발견한-것--4장-중-1장이-사라지고-있었다" data-target="그러다-발견한-것--4장-중-1장이-사라지고-있었다">Then I found one in four outputs was unusable</a></li>
         <li class="toc-item toc-item--h3"><a href="#이번엔-세션이-틀렸다--그리고-저는-믿을-뻔했다" data-target="이번엔-세션이-틀렸다--그리고-저는-믿을-뻔했다">This time the session was wrong—and I almost believed it</a></li>
         <li class="toc-item toc-item--h3"><a href="#집필-계층--결과" data-target="집필-계층--결과">Writing-stage results</a></li>
         <li class="toc-item toc-item--h2"><a href="#4-조립--llm-0" data-target="4-조립--llm-0">[4] Assembly: no LLM</a></li>
-        <li class="toc-item toc-item--h2"><a href="#사람의-자리--검수를-기준으로-흡수시키기" data-target="사람의-자리--검수를-기준으로-흡수시키기">The human's role: absorb review into criteria</a></li>
-        <li class="toc-item toc-item--h3"><a href="#비용은-한-축이-아니었다" data-target="비용은-한-축이-아니었다">Cost isn't one-dimensional</a></li>
+        <li class="toc-item toc-item--h2"><a href="#사람의-자리--검수를-기준으로-흡수시키기" data-target="사람의-자리--검수를-기준으로-흡수시키기">The human&#39;s role: absorb review into criteria</a></li>
+        <li class="toc-item toc-item--h3"><a href="#비용은-한-축이-아니었다" data-target="비용은-한-축이-아니었다">Cost isn&#39;t one-dimensional</a></li>
         <li class="toc-item toc-item--h3"><a href="#사람을-루프-안에-두되-매번-부르지는-않는다" data-target="사람을-루프-안에-두되-매번-부르지는-않는다">Keep humans in the loop without calling them every time</a></li>
         <li class="toc-item toc-item--h3"><a href="#개정이-개선인지-어떻게-아나--계측-먼저" data-target="개정이-개선인지-어떻게-아나--계측-먼저">Is a revision an improvement? Measure first</a></li>
         <li class="toc-item toc-item--h2"><a href="#정리" data-target="정리">Conclusion</a></li>
@@ -620,6 +622,5 @@ Quotation marks and line breaks in the body need no JSON escaping.
     </aside>
   </main>
   <script src="/app.js?v=391ab9a5"></script>
-
-
-</body></html>
+</body>
+</html>

@@ -1,34 +1,36 @@
-<!DOCTYPE html><html lang="en"><head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <meta name="google-site-verification" content="sNrpo16A0vUj7vHmVNEmAGZj85cGykaOeHO44krbqDU">
-  <title>woojin kim · Catching gRPC Schema Drift Automatically in Kubernetes · xhae123's notes</title>
-  <meta name="description" content="A client suddenly throws a runtime error, even though nobody changed its code. Hours of investigation often led to the same cause: someone changed a proto and d">
-  <link rel="canonical" href="https://xhae123.github.io/posts/grpc-schema-drift-in-kubernetes/">
-  <meta property="og:type" content="article">
-  <meta property="og:site_name" content="xhae123's notes">
-  <meta property="og:title" content="Catching gRPC Schema Drift Automatically in Kubernetes · xhae123's notes">
-  <meta property="og:description" content="A client suddenly throws a runtime error, even though nobody changed its code. Hours of investigation often led to the same cause: someone changed a proto and d">
-  <meta property="og:url" content="https://xhae123.github.io/posts/grpc-schema-drift-in-kubernetes/">
-  <meta property="og:locale" content="en_US">
-  <meta property="og:image" content="https://xhae123.github.io/assets/36a5f808-5f61-46bd-910b-c3198e7287b7.png">
-  <meta name="twitter:card" content="summary_large_image">
-  <meta name="twitter:title" content="Catching gRPC Schema Drift Automatically in Kubernetes · xhae123's notes">
-  <meta name="twitter:description" content="A client suddenly throws a runtime error, even though nobody changed its code. Hours of investigation often led to the same cause: someone changed a proto and d">
-  <meta name="twitter:image" content="https://xhae123.github.io/assets/36a5f808-5f61-46bd-910b-c3198e7287b7.png">
-  <link rel="preconnect" href="https://cdn.jsdelivr.net">
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin="">
-  <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable.css">
-  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500&amp;display=swap">
-  <link rel="stylesheet" href="/styles.css?v=lowercase-2">
-  <link rel="stylesheet" href="/navigation.css?v=rose-1">
-  <link rel="icon" type="image/svg+xml" href="/favicon.svg?v=woojin-w-2">
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/github.min.css">
-  <link rel="stylesheet" href="/blog.css?v=lowercase-2">
-  <meta property="article:published_time" content="2025-12-04T04:31:24.000Z">
-  <meta property="article:section" content="Infra">
-  <meta property="article:author" content="Woojin Kim">
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="google-site-verification" content="sNrpo16A0vUj7vHmVNEmAGZj85cGykaOeHO44krbqDU" />
+  <title>woojin kim · Catching gRPC Schema Drift Automatically in Kubernetes · xhae123&#39;s notes</title>
+  <meta name="description" content="A client suddenly throws a runtime error, even though nobody changed its code. Hours of investigation often led to the same cause: someone changed a proto and d" />
+  <link rel="canonical" href="https://xhae123.github.io/posts/grpc-schema-drift-in-kubernetes/" />
+  <meta property="og:type" content="article" />
+  <meta property="og:site_name" content="xhae123&#39;s notes" />
+  <meta property="og:title" content="Catching gRPC Schema Drift Automatically in Kubernetes · xhae123&#39;s notes" />
+  <meta property="og:description" content="A client suddenly throws a runtime error, even though nobody changed its code. Hours of investigation often led to the same cause: someone changed a proto and d" />
+  <meta property="og:url" content="https://xhae123.github.io/posts/grpc-schema-drift-in-kubernetes/" />
+  <meta property="og:locale" content="en_US" />
+  <meta property="og:image" content="https://xhae123.github.io/assets/36a5f808-5f61-46bd-910b-c3198e7287b7.png" />
+  <meta name="twitter:card" content="summary_large_image" />
+  <meta name="twitter:title" content="Catching gRPC Schema Drift Automatically in Kubernetes · xhae123&#39;s notes" />
+  <meta name="twitter:description" content="A client suddenly throws a runtime error, even though nobody changed its code. Hours of investigation often led to the same cause: someone changed a proto and d" />
+  <meta name="twitter:image" content="https://xhae123.github.io/assets/36a5f808-5f61-46bd-910b-c3198e7287b7.png" />
+  <link rel="preconnect" href="https://cdn.jsdelivr.net" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable.css" />
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500&display=swap" />
+  <link rel="stylesheet" href="/styles.css?v=lowercase-2" />
+  <link rel="stylesheet" href="/navigation.css?v=rose-1" />
+  <link rel="icon" type="image/svg+xml" href="/favicon.svg?v=woojin-w-2" />
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/github.min.css" />
+  <link rel="stylesheet" href="/blog.css?v=lowercase-2" />
+  <meta property="article:published_time" content="2025-12-04T04:31:24.000Z" />
+  <meta property="article:section" content="Infra" />
+  <meta property="article:author" content="Woojin Kim" />
   <script type="application/ld+json">{"@context":"https://schema.org","@type":"BlogPosting","headline":"Catching gRPC Schema Drift Automatically in Kubernetes","description":"A client suddenly throws a runtime error, even though nobody changed its code. Hours of investigation often led to the same cause: someone changed a proto and d","datePublished":"2025-12-04T04:31:24.000Z","dateModified":"2025-12-04T04:31:24.000Z","author":{"@type":"Person","name":"Woojin Kim"},"url":"https://xhae123.github.io/posts/grpc-schema-drift-in-kubernetes/","mainEntityOfPage":"https://xhae123.github.io/posts/grpc-schema-drift-in-kubernetes/","image":"https://xhae123.github.io/assets/36a5f808-5f61-46bd-910b-c3198e7287b7.png"}</script>
 </head>
 <body>
@@ -41,7 +43,7 @@
           <h1 class="post-title">Catching gRPC Schema Drift Automatically in Kubernetes</h1>
         </header>
         <div class="post-body" id="post-body">
-<p>A client suddenly throws a runtime error, even though nobody changed its code. Hours of investigation often led to the same cause: someone changed a proto and deployed it to Kubernetes without updating BSR, the Buf Schema Registry. The client was built against BSR; the running server used a different schema.</p>
+<html><head></head><body><p>A client suddenly throws a runtime error, even though nobody changed its code. Hours of investigation often led to the same cause: someone changed a proto and deployed it to Kubernetes without updating BSR, the Buf Schema Registry. The client was built against BSR; the running server used a different schema.</p>
 <p>I thought centralizing protos in BSR would prevent this. But a registry is a promise about what should exist, not a guarantee of what's actually running in the cluster. We thought we'd created a single source of truth. In reality, there were two truths, and they diverged.</p>
 <p>That divergence has a name: drift. Terraform has <code>plan</code>, and GitOps has drift detection. Tools catch gaps between declarations and reality. I didn't have an equivalent for gRPC schemas, so I built one in Go and released it as open source.</p>
 <h2 id="손으로-잡기엔-kubernetes가-컸습니다">Kubernetes made manual inspection too large a job</h2><p>The check itself is simple: inspect a Pod's schema and compare it with BSR. Kubernetes complicates it. Pods span namespaces, services use different proto paths, and rolling updates mix versions within a service. More services mean linearly more repetitive checking. Repetitive work belongs in a program, not in someone's routine.</p>
@@ -227,7 +229,7 @@ kubectl port-forward -n protodiff-system svc/protodiff 18080:80
 <h2 id="정리">Conclusion</h2><p>Uploading a schema to a registry can feel like the job is done, but there's always room between declaration and execution. Infrastructure tools call that gap drift and measure it. ProtoDiff measures the corresponding gRPC gap every 30 minutes: discover Pods with client-go, extract runtime schemas with Reflection, fetch declarations with Buf CLI, and compare them.</p>
 <p>It's available under Apache 2.0 for teams running gRPC microservices on Kubernetes.</p>
 <p><strong>GitHub:</strong> <a href="https://github.com/xhae123/protodiff" target="_blank" rel="noopener noreferrer">https://github.com/xhae123/protodiff</a></p>
-
+</body></html>
         </div>
       </article>
     <nav class="post-nav" aria-label="Previous and next posts">
@@ -262,6 +264,5 @@ kubectl port-forward -n protodiff-system svc/protodiff 18080:80
     </aside>
   </main>
   <script src="/app.js?v=391ab9a5"></script>
-
-
-</body></html>
+</body>
+</html>

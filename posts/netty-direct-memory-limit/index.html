@@ -1,34 +1,36 @@
-<!DOCTYPE html><html lang="en"><head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <meta name="google-site-verification" content="sNrpo16A0vUj7vHmVNEmAGZj85cGykaOeHO44krbqDU">
-  <title>woojin kim · Contributing to Netty: Why Check the Direct Memory Limit? · xhae123's notes</title>
-  <meta name="description" content="Netty is a Java framework for building network servers and clients. It abstracts common work such as accepting connections, reading data, and sending responses,">
-  <link rel="canonical" href="https://xhae123.github.io/posts/netty-direct-memory-limit/">
-  <meta property="og:type" content="article">
-  <meta property="og:site_name" content="xhae123's notes">
-  <meta property="og:title" content="Contributing to Netty: Why Check the Direct Memory Limit? · xhae123's notes">
-  <meta property="og:description" content="Netty is a Java framework for building network servers and clients. It abstracts common work such as accepting connections, reading data, and sending responses,">
-  <meta property="og:url" content="https://xhae123.github.io/posts/netty-direct-memory-limit/">
-  <meta property="og:locale" content="en_US">
-  <meta property="og:image" content="https://xhae123.github.io/assets/en/netty-layout.png">
-  <meta name="twitter:card" content="summary_large_image">
-  <meta name="twitter:title" content="Contributing to Netty: Why Check the Direct Memory Limit? · xhae123's notes">
-  <meta name="twitter:description" content="Netty is a Java framework for building network servers and clients. It abstracts common work such as accepting connections, reading data, and sending responses,">
-  <meta name="twitter:image" content="https://xhae123.github.io/assets/en/netty-layout.png">
-  <link rel="preconnect" href="https://cdn.jsdelivr.net">
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin="">
-  <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable.css">
-  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500&amp;display=swap">
-  <link rel="stylesheet" href="/styles.css?v=lowercase-2">
-  <link rel="stylesheet" href="/navigation.css?v=rose-1">
-  <link rel="icon" type="image/svg+xml" href="/favicon.svg?v=woojin-w-2">
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/github.min.css">
-  <link rel="stylesheet" href="/blog.css?v=lowercase-2">
-  <meta property="article:published_time" content="2026-09-22T00:00:00.000Z">
-  <meta property="article:section" content="Backend">
-  <meta property="article:author" content="Woojin Kim">
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="google-site-verification" content="sNrpo16A0vUj7vHmVNEmAGZj85cGykaOeHO44krbqDU" />
+  <title>woojin kim · Contributing to Netty: Why Check the Direct Memory Limit? · xhae123&#39;s notes</title>
+  <meta name="description" content="Netty is a Java framework for building network servers and clients. It abstracts common work such as accepting connections, reading data, and sending responses," />
+  <link rel="canonical" href="https://xhae123.github.io/posts/netty-direct-memory-limit/" />
+  <meta property="og:type" content="article" />
+  <meta property="og:site_name" content="xhae123&#39;s notes" />
+  <meta property="og:title" content="Contributing to Netty: Why Check the Direct Memory Limit? · xhae123&#39;s notes" />
+  <meta property="og:description" content="Netty is a Java framework for building network servers and clients. It abstracts common work such as accepting connections, reading data, and sending responses," />
+  <meta property="og:url" content="https://xhae123.github.io/posts/netty-direct-memory-limit/" />
+  <meta property="og:locale" content="en_US" />
+  <meta property="og:image" content="https://xhae123.github.io/assets/en/netty-layout.png" />
+  <meta name="twitter:card" content="summary_large_image" />
+  <meta name="twitter:title" content="Contributing to Netty: Why Check the Direct Memory Limit? · xhae123&#39;s notes" />
+  <meta name="twitter:description" content="Netty is a Java framework for building network servers and clients. It abstracts common work such as accepting connections, reading data, and sending responses," />
+  <meta name="twitter:image" content="https://xhae123.github.io/assets/en/netty-layout.png" />
+  <link rel="preconnect" href="https://cdn.jsdelivr.net" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable.css" />
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500&display=swap" />
+  <link rel="stylesheet" href="/styles.css?v=lowercase-2" />
+  <link rel="stylesheet" href="/navigation.css?v=rose-1" />
+  <link rel="icon" type="image/svg+xml" href="/favicon.svg?v=woojin-w-2" />
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/github.min.css" />
+  <link rel="stylesheet" href="/blog.css?v=lowercase-2" />
+  <meta property="article:published_time" content="2026-09-22T00:00:00.000Z" />
+  <meta property="article:section" content="Backend" />
+  <meta property="article:author" content="Woojin Kim" />
   <script type="application/ld+json">{"@context":"https://schema.org","@type":"BlogPosting","headline":"Contributing to Netty: Why Check the Direct Memory Limit?","description":"Netty is a Java framework for building network servers and clients. It abstracts common work such as accepting connections, reading data, and sending responses,","datePublished":"2026-09-22T00:00:00.000Z","dateModified":"2026-09-22T00:00:00.000Z","author":{"@type":"Person","name":"Woojin Kim"},"url":"https://xhae123.github.io/posts/netty-direct-memory-limit/","mainEntityOfPage":"https://xhae123.github.io/posts/netty-direct-memory-limit/","image":"https://xhae123.github.io/assets/en/netty-layout.png"}</script>
 </head>
 <body>
@@ -41,7 +43,7 @@
           <h1 class="post-title">Contributing to Netty: Why Check the Direct Memory Limit?</h1>
         </header>
         <div class="post-body" id="post-body">
-<p>Netty is a Java framework for building network servers and clients. It abstracts common work such as accepting connections, reading data, and sending responses, so application developers can focus on what to do with incoming data.</p>
+<html><head></head><body><p>Netty is a Java framework for building network servers and clients. It abstracts common work such as accepting connections, reading data, and sending responses, so application developers can focus on what to do with incoming data.</p>
 <p><img src="/assets/en/netty-layout.png" alt="Java heap contains the DirectByteBuffer object, pointing to off-heap byte data" loading="lazy"></p>
 <p>Direct memory is allocated outside the heap, where ordinary Java objects live. It can help reduce intermediate copying when reading and writing network data.</p>
 <p>A networking framework and memory that holds data: the connection seems natural. But reading Netty's code takes you a little deeper.</p>
@@ -106,7 +108,7 @@
 <p>This issue sat in a small part of that chain. Determining a memory limit required reading launch arguments, which required interpreting strings. The condition was small, but its result wasn't just a string-processing result: it could become a memory-management value.</p>
 <p>Correctness here isn't only about computing a valid value. It's also about accepting the right inputs as configuration and leaving unrelated inputs alone. Changing an implementation must preserve not only return values, but also the meaning of the inputs that produce them.</p>
 <p>Before converting <code>64m</code> to a number, we had to ask whether that <code>64m</code> was actually a memory setting. That's why one line of string checking mattered to Netty's memory management.</p>
-
+</body></html>
         </div>
       </article>
     <nav class="post-nav" aria-label="Previous and next posts">
@@ -127,12 +129,11 @@
         <li class="toc-item toc-item--h2"><a href="#더-빠른-메모리가-아니라-덜-복사하는-경로" data-target="더-빠른-메모리가-아니라-덜-복사하는-경로">Not faster memory, but a path with less copying</a></li>
         <li class="toc-item toc-item--h2"><a href="#메모리의-위치를-정했다면-사용-한도도-필요하다" data-target="메모리의-위치를-정했다면-사용-한도도-필요하다">Choosing where memory lives also requires a budget</a></li>
         <li class="toc-item toc-item--h2"><a href="#옵션처럼-보이는-문자열은-정말-옵션일까" data-target="옵션처럼-보이는-문자열은-정말-옵션일까">Is a string that looks like an option actually an option?</a></li>
-        <li class="toc-item toc-item--h2"><a href="#잘못-읽은-것은-jvm-설정이-아니라-netty의-판단이다" data-target="잘못-읽은-것은-jvm-설정이-아니라-netty의-판단이다">The JVM setting stays unchanged; Netty's interpretation does not</a></li>
+        <li class="toc-item toc-item--h2"><a href="#잘못-읽은-것은-jvm-설정이-아니라-netty의-판단이다" data-target="잘못-읽은-것은-jvm-설정이-아니라-netty의-판단이다">The JVM setting stays unchanged; Netty&#39;s interpretation does not</a></li>
         <li class="toc-item toc-item--h2"><a href="#버퍼에서-실행-옵션까지" data-target="버퍼에서-실행-옵션까지">From buffers to launch options</a></li>
       </ul>
     </aside>
   </main>
   <script src="/app.js?v=391ab9a5"></script>
-
-
-</body></html>
+</body>
+</html>

@@ -1,34 +1,36 @@
-<!DOCTYPE html><html lang="en"><head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <meta name="google-site-verification" content="sNrpo16A0vUj7vHmVNEmAGZj85cGykaOeHO44krbqDU">
-  <title>woojin kim · A Familiar N+1 Problem: The 26× Speedup from Caching · xhae123's notes</title>
-  <meta name="description" content="While operating a sports social platform, I noticed how slowly the feed loaded. Introducing Caffeine caching reduced average response time from roughly 800 ms t">
-  <link rel="canonical" href="https://xhae123.github.io/posts/fixing-n-plus-one-with-caching/">
-  <meta property="og:type" content="article">
-  <meta property="og:site_name" content="xhae123's notes">
-  <meta property="og:title" content="A Familiar N+1 Problem: The 26× Speedup from Caching · xhae123's notes">
-  <meta property="og:description" content="While operating a sports social platform, I noticed how slowly the feed loaded. Introducing Caffeine caching reduced average response time from roughly 800 ms t">
-  <meta property="og:url" content="https://xhae123.github.io/posts/fixing-n-plus-one-with-caching/">
-  <meta property="og:locale" content="en_US">
-  <meta property="og:image" content="https://xhae123.github.io/assets/c6bb270b-7282-44ac-83dd-52898c7a8374.png">
-  <meta name="twitter:card" content="summary_large_image">
-  <meta name="twitter:title" content="A Familiar N+1 Problem: The 26× Speedup from Caching · xhae123's notes">
-  <meta name="twitter:description" content="While operating a sports social platform, I noticed how slowly the feed loaded. Introducing Caffeine caching reduced average response time from roughly 800 ms t">
-  <meta name="twitter:image" content="https://xhae123.github.io/assets/c6bb270b-7282-44ac-83dd-52898c7a8374.png">
-  <link rel="preconnect" href="https://cdn.jsdelivr.net">
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin="">
-  <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable.css">
-  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500&amp;display=swap">
-  <link rel="stylesheet" href="/styles.css?v=lowercase-2">
-  <link rel="stylesheet" href="/navigation.css?v=rose-1">
-  <link rel="icon" type="image/svg+xml" href="/favicon.svg?v=woojin-w-2">
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/github.min.css">
-  <link rel="stylesheet" href="/blog.css?v=lowercase-2">
-  <meta property="article:published_time" content="2025-11-05T13:06:27.000Z">
-  <meta property="article:section" content="Backend">
-  <meta property="article:author" content="Woojin Kim">
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="google-site-verification" content="sNrpo16A0vUj7vHmVNEmAGZj85cGykaOeHO44krbqDU" />
+  <title>woojin kim · A Familiar N+1 Problem: The 26× Speedup from Caching · xhae123&#39;s notes</title>
+  <meta name="description" content="While operating a sports social platform, I noticed how slowly the feed loaded. Introducing Caffeine caching reduced average response time from roughly 800 ms t" />
+  <link rel="canonical" href="https://xhae123.github.io/posts/fixing-n-plus-one-with-caching/" />
+  <meta property="og:type" content="article" />
+  <meta property="og:site_name" content="xhae123&#39;s notes" />
+  <meta property="og:title" content="A Familiar N+1 Problem: The 26× Speedup from Caching · xhae123&#39;s notes" />
+  <meta property="og:description" content="While operating a sports social platform, I noticed how slowly the feed loaded. Introducing Caffeine caching reduced average response time from roughly 800 ms t" />
+  <meta property="og:url" content="https://xhae123.github.io/posts/fixing-n-plus-one-with-caching/" />
+  <meta property="og:locale" content="en_US" />
+  <meta property="og:image" content="https://xhae123.github.io/assets/c6bb270b-7282-44ac-83dd-52898c7a8374.png" />
+  <meta name="twitter:card" content="summary_large_image" />
+  <meta name="twitter:title" content="A Familiar N+1 Problem: The 26× Speedup from Caching · xhae123&#39;s notes" />
+  <meta name="twitter:description" content="While operating a sports social platform, I noticed how slowly the feed loaded. Introducing Caffeine caching reduced average response time from roughly 800 ms t" />
+  <meta name="twitter:image" content="https://xhae123.github.io/assets/c6bb270b-7282-44ac-83dd-52898c7a8374.png" />
+  <link rel="preconnect" href="https://cdn.jsdelivr.net" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable.css" />
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500&display=swap" />
+  <link rel="stylesheet" href="/styles.css?v=lowercase-2" />
+  <link rel="stylesheet" href="/navigation.css?v=rose-1" />
+  <link rel="icon" type="image/svg+xml" href="/favicon.svg?v=woojin-w-2" />
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/github.min.css" />
+  <link rel="stylesheet" href="/blog.css?v=lowercase-2" />
+  <meta property="article:published_time" content="2025-11-05T13:06:27.000Z" />
+  <meta property="article:section" content="Backend" />
+  <meta property="article:author" content="Woojin Kim" />
   <script type="application/ld+json">{"@context":"https://schema.org","@type":"BlogPosting","headline":"A Familiar N+1 Problem: The 26× Speedup from Caching","description":"While operating a sports social platform, I noticed how slowly the feed loaded. Introducing Caffeine caching reduced average response time from roughly 800 ms t","datePublished":"2025-11-05T13:06:27.000Z","dateModified":"2025-11-05T13:06:27.000Z","author":{"@type":"Person","name":"Woojin Kim"},"url":"https://xhae123.github.io/posts/fixing-n-plus-one-with-caching/","mainEntityOfPage":"https://xhae123.github.io/posts/fixing-n-plus-one-with-caching/","image":"https://xhae123.github.io/assets/c6bb270b-7282-44ac-83dd-52898c7a8374.png"}</script>
 </head>
 <body>
@@ -41,7 +43,7 @@
           <h1 class="post-title">A Familiar N+1 Problem: The 26× Speedup from Caching</h1>
         </header>
         <div class="post-body" id="post-body">
-<h2 id="개요">Overview</h2><p>While operating a sports social platform, I noticed how slowly the feed loaded. Introducing Caffeine caching reduced average response time from roughly 800 ms to 38 ms.</p>
+<html><head></head><body><h2 id="개요">Overview</h2><p>While operating a sports social platform, I noticed how slowly the feed loaded. Introducing Caffeine caching reduced average response time from roughly 800 ms to 38 ms.</p>
 <p><strong>Key metrics</strong></p>
 <ul>
 <li>Response time: 800 ms → 38 ms, a 95% improvement.</li>
@@ -453,7 +455,7 @@ Other: <span class="hljs-number">15m</span>s <span class="hljs-punctuation">(</s
 <li>Up to hundreds of MB of additional memory.</li>
 <li>More code complexity.</li>
 </ul>
-
+</body></html>
         </div>
       </article>
     <nav class="post-nav" aria-label="Previous and next posts">
@@ -500,6 +502,5 @@ Other: <span class="hljs-number">15m</span>s <span class="hljs-punctuation">(</s
     </aside>
   </main>
   <script src="/app.js?v=391ab9a5"></script>
-
-
-</body></html>
+</body>
+</html>

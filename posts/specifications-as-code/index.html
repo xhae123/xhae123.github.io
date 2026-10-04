@@ -1,48 +1,50 @@
-<!DOCTYPE html><html lang="en"><head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <meta name="google-site-verification" content="sNrpo16A0vUj7vHmVNEmAGZj85cGykaOeHO44krbqDU">
-  <title>woojin kim · A Sufficiently Detailed Specification Is Indistinguishable from Code · xhae123's notes</title>
-  <meta name="description" content="When Karpathy called English the hottest new programming language, many people nodded. So did I. After writing natural-language documents to control agents and ">
-  <link rel="canonical" href="https://xhae123.github.io/posts/specifications-as-code/">
-  <meta property="og:type" content="article">
-  <meta property="og:site_name" content="xhae123's notes">
-  <meta property="og:title" content="A Sufficiently Detailed Specification Is Indistinguishable from Code · xhae123's notes">
-  <meta property="og:description" content="When Karpathy called English the hottest new programming language, many people nodded. So did I. After writing natural-language documents to control agents and ">
-  <meta property="og:url" content="https://xhae123.github.io/posts/specifications-as-code/">
-  <meta property="og:locale" content="en_US">
-  <meta property="og:image" content="https://xhae123.github.io/assets/covers/cover-41.svg">
-  <meta name="twitter:card" content="summary_large_image">
-  <meta name="twitter:title" content="A Sufficiently Detailed Specification Is Indistinguishable from Code · xhae123's notes">
-  <meta name="twitter:description" content="When Karpathy called English the hottest new programming language, many people nodded. So did I. After writing natural-language documents to control agents and ">
-  <meta name="twitter:image" content="https://xhae123.github.io/assets/covers/cover-41.svg">
-  <link rel="preconnect" href="https://cdn.jsdelivr.net">
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin="">
-  <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable.css">
-  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500&amp;display=swap">
-  <link rel="stylesheet" href="/styles.css?v=lowercase-2">
-  <link rel="stylesheet" href="/navigation.css?v=rose-1">
-  <link rel="icon" type="image/svg+xml" href="/favicon.svg?v=woojin-w-2">
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/github.min.css">
-  <link rel="stylesheet" href="/blog.css?v=lowercase-2">
-  <meta property="article:published_time" content="2026-03-23T13:47:16.000Z">
-  <meta property="article:section" content="AI">
-  <meta property="article:author" content="Woojin Kim">
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="google-site-verification" content="sNrpo16A0vUj7vHmVNEmAGZj85cGykaOeHO44krbqDU" />
+  <title>woojin kim · A Sufficiently Detailed Specification Is Indistinguishable from Code · xhae123&#39;s notes</title>
+  <meta name="description" content="When Karpathy called English the hottest new programming language, many people nodded. So did I. After writing natural-language documents to control agents and " />
+  <link rel="canonical" href="https://xhae123.github.io/posts/specifications-as-code/" />
+  <meta property="og:type" content="article" />
+  <meta property="og:site_name" content="xhae123&#39;s notes" />
+  <meta property="og:title" content="A Sufficiently Detailed Specification Is Indistinguishable from Code · xhae123&#39;s notes" />
+  <meta property="og:description" content="When Karpathy called English the hottest new programming language, many people nodded. So did I. After writing natural-language documents to control agents and " />
+  <meta property="og:url" content="https://xhae123.github.io/posts/specifications-as-code/" />
+  <meta property="og:locale" content="en_US" />
+  <meta property="og:image" content="https://xhae123.github.io/assets/covers/cover-41.svg" />
+  <meta name="twitter:card" content="summary_large_image" />
+  <meta name="twitter:title" content="A Sufficiently Detailed Specification Is Indistinguishable from Code · xhae123&#39;s notes" />
+  <meta name="twitter:description" content="When Karpathy called English the hottest new programming language, many people nodded. So did I. After writing natural-language documents to control agents and " />
+  <meta name="twitter:image" content="https://xhae123.github.io/assets/covers/cover-41.svg" />
+  <link rel="preconnect" href="https://cdn.jsdelivr.net" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable.css" />
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500&display=swap" />
+  <link rel="stylesheet" href="/styles.css?v=lowercase-2" />
+  <link rel="stylesheet" href="/navigation.css?v=rose-1" />
+  <link rel="icon" type="image/svg+xml" href="/favicon.svg?v=woojin-w-2" />
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/github.min.css" />
+  <link rel="stylesheet" href="/blog.css?v=lowercase-2" />
+  <meta property="article:published_time" content="2026-03-23T13:47:16.000Z" />
+  <meta property="article:section" content="AI" />
+  <meta property="article:author" content="Woojin Kim" />
   <script type="application/ld+json">{"@context":"https://schema.org","@type":"BlogPosting","headline":"A Sufficiently Detailed Specification Is Indistinguishable from Code","description":"When Karpathy called English the hottest new programming language, many people nodded. So did I. After writing natural-language documents to control agents and ","datePublished":"2026-03-23T13:47:16.000Z","dateModified":"2026-03-23T13:47:16.000Z","author":{"@type":"Person","name":"Woojin Kim"},"url":"https://xhae123.github.io/posts/specifications-as-code/","mainEntityOfPage":"https://xhae123.github.io/posts/specifications-as-code/","image":"https://xhae123.github.io/assets/covers/cover-41.svg"}</script>
 </head>
 <body>
   <main class="post-layout">
     <div class="post-main">
       <article class="post" id="post">
-        <div class="post-cover"><img src="/assets/covers/cover-41.svg" alt=""></div>
+        <div class="post-cover"><img src="/assets/covers/cover-41.svg" alt="" /></div>
         <header class="post-header">
           <a class="post-top-back" href="/writing/">← all posts</a>
           <p class="post-meta"><time datetime="2026-03-23">2026.03.23</time><span aria-hidden="true"> · </span><span class="post-category">ai</span></p>
           <h1 class="post-title">A Sufficiently Detailed Specification Is Indistinguishable from Code</h1>
         </header>
         <div class="post-body" id="post-body">
-<p>When Karpathy called English the hottest new programming language, many people nodded. So did I. After writing natural-language documents to control agents and repeatedly watching them break, I started to wonder: perhaps English hasn't become a programming language. Perhaps it only works when we write it like one.</p>
+<html><head></head><body><p>When Karpathy called English the hottest new programming language, many people nodded. So did I. After writing natural-language documents to control agents and repeatedly watching them break, I started to wonder: perhaps English hasn't become a programming language. Perhaps it only works when we write it like one.</p>
 <hr>
 <h2 id="배경">Background</h2><p>Claude Code has a system called Skills. Put a Markdown document under <code>.claude/skills/</code>, and AI reads it to perform a task: send a Slack message, approve a database change, or validate code.</p>
 <p>I spent a while building and breaking these. The same document worked one day and failed the next. Different conversation contexts made AI interpret the same sentence differently. I built a framework to validate Skill documents. These are the observations that came out of it.</p>
@@ -130,7 +132,7 @@
 <hr>
 <h2 id="정리">Conclusion</h2><p>Traditional programming specifies what to do. Prompting often also requires specifying what not to do. Constrain natural language enough, and it becomes indistinguishable from code. Defining, validating, and strengthening those constraints resembles designing a language.</p>
 <p>We don't need to close every door. Close everything, and there's little reason to use an LLM. Leave everything open, and it drifts beyond intent. Knowing what to leave open matters as much as knowing what to constrain.</p>
-
+</body></html>
         </div>
       </article>
     <nav class="post-nav" aria-label="Previous and next posts">
@@ -140,7 +142,7 @@
       </a>
       <a class="post-nav-item post-nav-item--next" href="/posts/automating-personal-messaging/">
         <span class="post-nav-label">next post</span>
-        <span class="post-nav-title">Let's Automate My Social Life</span>
+        <span class="post-nav-title">Let&#39;s Automate My Social Life</span>
       </a>
     </nav>
       <nav class="post-back">
@@ -160,6 +162,5 @@
     </aside>
   </main>
   <script src="/app.js?v=391ab9a5"></script>
-
-
-</body></html>
+</body>
+</html>

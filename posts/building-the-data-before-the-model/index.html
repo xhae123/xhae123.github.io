@@ -1,34 +1,36 @@
-<!DOCTYPE html><html lang="en"><head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <meta name="google-site-verification" content="sNrpo16A0vUj7vHmVNEmAGZj85cGykaOeHO44krbqDU">
-  <title>woojin kim · An ML Project Where We Decided Not to Build the ML Yet · xhae123's notes</title>
-  <meta name="description" content="For a semester-long team project, we built an Android app called Zansol. Open YouTube or Instagram during a study session, and a nudging popup appears within 0.">
-  <link rel="canonical" href="https://xhae123.github.io/posts/building-the-data-before-the-model/">
-  <meta property="og:type" content="article">
-  <meta property="og:site_name" content="xhae123's notes">
-  <meta property="og:title" content="An ML Project Where We Decided Not to Build the ML Yet · xhae123's notes">
-  <meta property="og:description" content="For a semester-long team project, we built an Android app called Zansol. Open YouTube or Instagram during a study session, and a nudging popup appears within 0.">
-  <meta property="og:url" content="https://xhae123.github.io/posts/building-the-data-before-the-model/">
-  <meta property="og:locale" content="en_US">
-  <meta property="og:image" content="https://xhae123.github.io/assets/c276cbc19d848bab.png">
-  <meta name="twitter:card" content="summary_large_image">
-  <meta name="twitter:title" content="An ML Project Where We Decided Not to Build the ML Yet · xhae123's notes">
-  <meta name="twitter:description" content="For a semester-long team project, we built an Android app called Zansol. Open YouTube or Instagram during a study session, and a nudging popup appears within 0.">
-  <meta name="twitter:image" content="https://xhae123.github.io/assets/c276cbc19d848bab.png">
-  <link rel="preconnect" href="https://cdn.jsdelivr.net">
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin="">
-  <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable.css">
-  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500&amp;display=swap">
-  <link rel="stylesheet" href="/styles.css?v=lowercase-2">
-  <link rel="stylesheet" href="/navigation.css?v=rose-1">
-  <link rel="icon" type="image/svg+xml" href="/favicon.svg?v=woojin-w-2">
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/github.min.css">
-  <link rel="stylesheet" href="/blog.css?v=lowercase-2">
-  <meta property="article:published_time" content="2026-06-20T00:00:00.000Z">
-  <meta property="article:section" content="Product">
-  <meta property="article:author" content="Woojin Kim">
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="google-site-verification" content="sNrpo16A0vUj7vHmVNEmAGZj85cGykaOeHO44krbqDU" />
+  <title>woojin kim · An ML Project Where We Decided Not to Build the ML Yet · xhae123&#39;s notes</title>
+  <meta name="description" content="For a semester-long team project, we built an Android app called Zansol. Open YouTube or Instagram during a study session, and a nudging popup appears within 0." />
+  <link rel="canonical" href="https://xhae123.github.io/posts/building-the-data-before-the-model/" />
+  <meta property="og:type" content="article" />
+  <meta property="og:site_name" content="xhae123&#39;s notes" />
+  <meta property="og:title" content="An ML Project Where We Decided Not to Build the ML Yet · xhae123&#39;s notes" />
+  <meta property="og:description" content="For a semester-long team project, we built an Android app called Zansol. Open YouTube or Instagram during a study session, and a nudging popup appears within 0." />
+  <meta property="og:url" content="https://xhae123.github.io/posts/building-the-data-before-the-model/" />
+  <meta property="og:locale" content="en_US" />
+  <meta property="og:image" content="https://xhae123.github.io/assets/c276cbc19d848bab.png" />
+  <meta name="twitter:card" content="summary_large_image" />
+  <meta name="twitter:title" content="An ML Project Where We Decided Not to Build the ML Yet · xhae123&#39;s notes" />
+  <meta name="twitter:description" content="For a semester-long team project, we built an Android app called Zansol. Open YouTube or Instagram during a study session, and a nudging popup appears within 0." />
+  <meta name="twitter:image" content="https://xhae123.github.io/assets/c276cbc19d848bab.png" />
+  <link rel="preconnect" href="https://cdn.jsdelivr.net" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable.css" />
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500&display=swap" />
+  <link rel="stylesheet" href="/styles.css?v=lowercase-2" />
+  <link rel="stylesheet" href="/navigation.css?v=rose-1" />
+  <link rel="icon" type="image/svg+xml" href="/favicon.svg?v=woojin-w-2" />
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/github.min.css" />
+  <link rel="stylesheet" href="/blog.css?v=lowercase-2" />
+  <meta property="article:published_time" content="2026-06-20T00:00:00.000Z" />
+  <meta property="article:section" content="Product" />
+  <meta property="article:author" content="Woojin Kim" />
   <script type="application/ld+json">{"@context":"https://schema.org","@type":"BlogPosting","headline":"An ML Project Where We Decided Not to Build the ML Yet","description":"For a semester-long team project, we built an Android app called Zansol. Open YouTube or Instagram during a study session, and a nudging popup appears within 0.","datePublished":"2026-06-20T00:00:00.000Z","dateModified":"2026-06-20T00:00:00.000Z","author":{"@type":"Person","name":"Woojin Kim"},"url":"https://xhae123.github.io/posts/building-the-data-before-the-model/","mainEntityOfPage":"https://xhae123.github.io/posts/building-the-data-before-the-model/","image":"https://xhae123.github.io/assets/c276cbc19d848bab.png"}</script>
 </head>
 <body>
@@ -41,7 +43,7 @@
           <h1 class="post-title">An ML Project Where We Decided Not to Build the ML Yet</h1>
         </header>
         <div class="post-body" id="post-body">
-<p>For a semester-long team project, we built an Android app called Zansol. Open YouTube or Instagram during a study session, and a nudging popup appears within 0.2 seconds. Return to studying, and your character earns coins. Ignore it, and the character loses health.</p>
+<html><head></head><body><p>For a semester-long team project, we built an Android app called Zansol. Open YouTube or Instagram during a study session, and a nudging popup appears within 0.2 seconds. Return to studying, and your character earns coins. Ignore it, and the character loses health.</p>
 <p><img src="/assets/c276cbc19d848bab.png" alt="Image" loading="lazy"><img src="/assets/9c1a64e1546cd7ce.png" alt="Image" loading="lazy"></p>
 <p><em>Left: a nudge overlay four seconds after distraction detection. Right: the home screen.</em></p>
 <p>It was a course project that originally had a place for ML. We decided to remove that part at the start of the semester. Looking back, that was the best decision we made.</p>
@@ -107,13 +109,13 @@
 <p>Still, I think our early decision was right: with zero data, build a place for the model before squeezing a model in. By the end of the semester, our ‘ML project without ML’ had nearly ten thousand labeled events, a working collection pipeline, and a next step explored through simulation.</p>
 <p>We don't yet have the model. We do have a foundation for it.</p>
 <p>When we fill that space, there's one thing I want to find out first: what kind of nudge will the trained model choose for me?</p>
-
+</body></html>
         </div>
       </article>
     <nav class="post-nav" aria-label="Previous and next posts">
       <a class="post-nav-item post-nav-item--prev" href="/posts/production-database-migration/">
         <span class="post-nav-label">previous post</span>
-        <span class="post-nav-title">Moving a Production Database: Pressing a Button You Can't Undo</span>
+        <span class="post-nav-title">Moving a Production Database: Pressing a Button You Can&#39;t Undo</span>
       </a>
       <a class="post-nav-item post-nav-item--next" href="/posts/design-context-to-code/">
         <span class="post-nav-label">next post</span>
@@ -130,19 +132,18 @@
         <li class="toc-item toc-item--h2"><a href="#왜-하필-잔소리인가" data-target="왜-하필-잔소리인가">Why nudging?</a></li>
         <li class="toc-item toc-item--h2"><a href="#만들고-싶었던-것-사람을-가려-긁는-잔소리" data-target="만들고-싶었던-것-사람을-가려-긁는-잔소리">What we wanted: nudges that work for each person</a></li>
         <li class="toc-item toc-item--h2"><a href="#그래서-ml을-뺐습니다" data-target="그래서-ml을-뺐습니다">So we took the ML out</a></li>
-        <li class="toc-item toc-item--h2"><a href="#규칙은-회의실에서-정하면-안-된다" data-target="규칙은-회의실에서-정하면-안-된다">Rules shouldn't come from a meeting room</a></li>
+        <li class="toc-item toc-item--h2"><a href="#규칙은-회의실에서-정하면-안-된다" data-target="규칙은-회의실에서-정하면-안-된다">Rules shouldn&#39;t come from a meeting room</a></li>
         <li class="toc-item toc-item--h2"><a href="#02초--서버가-죽어도-잔소리는-뜬다" data-target="02초--서버가-죽어도-잔소리는-뜬다">0.2 seconds: nudges still appear when the server is down</a></li>
         <li class="toc-item toc-item--h2"><a href="#보상은-복귀-버튼이-아니라-버틴-시간에-걸었다" data-target="보상은-복귀-버튼이-아니라-버틴-시간에-걸었다">Reward sustained focus, not the return button</a></li>
         <li class="toc-item toc-item--h2"><a href="#진짜-설계는-화면이-아니라-로그였다" data-target="진짜-설계는-화면이-아니라-로그였다">The real design was in the logs, not the screens</a></li>
         <li class="toc-item toc-item--h2"><a href="#배포-팀-넷에서-152명으로" data-target="배포-팀-넷에서-152명으로">Deployment: from four teammates to 152 users</a></li>
-        <li class="toc-item toc-item--h2"><a href="#ㅋㅋ-공부한다고-해놓고--문구가-승부를-가른다" data-target="ㅋㅋ-공부한다고-해놓고--문구가-승부를-가른다">‘Weren't you supposed to be studying?’: wording matters</a></li>
+        <li class="toc-item toc-item--h2"><a href="#ㅋㅋ-공부한다고-해놓고--문구가-승부를-가른다" data-target="ㅋㅋ-공부한다고-해놓고--문구가-승부를-가른다">‘Weren&#39;t you supposed to be studying?’: wording matters</a></li>
         <li class="toc-item toc-item--h2"><a href="#낚일-뻔한-그래프-석-장" data-target="낚일-뻔한-그래프-석-장">Three charts that nearly fooled me</a></li>
-        <li class="toc-item toc-item--h2"><a href="#사람은-자기에게-먹히는-잔소리를-모른다" data-target="사람은-자기에게-먹히는-잔소리를-모른다">People don't know which nudges work for them</a></li>
+        <li class="toc-item toc-item--h2"><a href="#사람은-자기에게-먹히는-잔소리를-모른다" data-target="사람은-자기에게-먹히는-잔소리를-모른다">People don&#39;t know which nudges work for them</a></li>
         <li class="toc-item toc-item--h2"><a href="#남은-것" data-target="남은-것">What remains</a></li>
       </ul>
     </aside>
   </main>
   <script src="/app.js?v=391ab9a5"></script>
-
-
-</body></html>
+</body>
+</html>

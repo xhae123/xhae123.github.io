@@ -1,0 +1,236 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="google-site-verification" content="sNrpo16A0vUj7vHmVNEmAGZj85cGykaOeHO44krbqDU" />
+  <title>woojin kim · Designing and Operating a University Festival Platform · xhae123&#39;s notes</title>
+  <meta name="description" content="At a Korean university festival, concerts and student-run booths take over the campus. Departments and clubs also set up temporary pubs, serving food and drinks" />
+  <link rel="canonical" href="https://xhae123.github.io/posts/university-festival-platform/" />
+  <meta property="og:type" content="article" />
+  <meta property="og:site_name" content="xhae123&#39;s notes" />
+  <meta property="og:title" content="Designing and Operating a University Festival Platform · xhae123&#39;s notes" />
+  <meta property="og:description" content="At a Korean university festival, concerts and student-run booths take over the campus. Departments and clubs also set up temporary pubs, serving food and drinks" />
+  <meta property="og:url" content="https://xhae123.github.io/posts/university-festival-platform/" />
+  <meta property="og:locale" content="en_US" />
+  <meta property="og:image" content="https://xhae123.github.io/assets/festival-platform/instagram-home-and-performances-en-display.webp" />
+  <meta name="twitter:card" content="summary_large_image" />
+  <meta name="twitter:title" content="Designing and Operating a University Festival Platform · xhae123&#39;s notes" />
+  <meta name="twitter:description" content="At a Korean university festival, concerts and student-run booths take over the campus. Departments and clubs also set up temporary pubs, serving food and drinks" />
+  <meta name="twitter:image" content="https://xhae123.github.io/assets/festival-platform/instagram-home-and-performances-en-display.webp" />
+  <link rel="preconnect" href="https://cdn.jsdelivr.net" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable.css" />
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500&display=swap" />
+  <link rel="stylesheet" href="/styles.css?v=lowercase-2" />
+  <link rel="stylesheet" href="/navigation.css?v=rose-1" />
+  <link rel="icon" type="image/svg+xml" href="/favicon.svg?v=woojin-w-2" />
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/github.min.css" />
+  <link rel="stylesheet" href="/blog.css?v=lowercase-2" />
+  <meta property="article:published_time" content="2026-10-11T00:00:00.000Z" />
+  <meta property="article:section" content="Backend" />
+  <meta property="article:author" content="Woojin Kim" />
+  <script type="application/ld+json">{"@context":"https://schema.org","@type":"BlogPosting","headline":"Designing and Operating a University Festival Platform","description":"At a Korean university festival, concerts and student-run booths take over the campus. Departments and clubs also set up temporary pubs, serving food and drinks","datePublished":"2026-10-11T00:00:00.000Z","dateModified":"2026-10-11T00:00:00.000Z","author":{"@type":"Person","name":"Woojin Kim"},"url":"https://xhae123.github.io/posts/university-festival-platform/","mainEntityOfPage":"https://xhae123.github.io/posts/university-festival-platform/","image":"https://xhae123.github.io/assets/festival-platform/instagram-home-and-performances-en-display.webp"}</script>
+</head>
+<body>
+  <main class="post-layout">
+    <div class="post-main">
+      <article class="post" id="post">
+        <header class="post-header">
+          <a class="post-top-back" href="/writing/">← all posts</a>
+          <p class="post-meta"><time datetime="2026-10-11">2026.10.11</time><span aria-hidden="true"> · </span><span class="post-category">backend</span></p>
+          <h1 class="post-title">Designing and Operating a University Festival Platform</h1>
+        </header>
+        <div class="post-body post-body--festival" id="post-body">
+<html><head></head><body><p>At a Korean university festival, concerts and student-run booths take over the campus. Departments and clubs also set up temporary pubs, serving food and drinks themselves. A student might spend the afternoon enjoying the festival and the evening managing tables at their department's pub.</p>
+<p>Visitors need performance times and booth locations. Students running the pubs need to track available tables and call waiting guests. When the concert venue fills up, its organizers need to manage admission queues. These different kinds of work happen at the same time, across the same campus.</p>
+<p>We built a platform connecting festival information with these on-site operations for <strong>Adelante</strong>, Kyung Hee University's festival at its Global Campus on September 28–30, 2026. Our team at the university's <strong>LIKELION</strong> chapter developed it in about a month. As <strong>engineering lead</strong>, I led system design, deployment, and production operations.</p>
+<h2 id="connecting-festival-information-with-on-site-operations">Connecting festival information with on-site operations</h2>
+<h3 id="one-website-for-performances-and-booths">One website for performances and booths</h3>
+<p>Visitors could open a single website without installing an app. The home screen collected festival announcements, while the performance page showed each day's lineup and the current running order.</p>
+<figure>
+<a href="/assets/festival-platform/instagram-home-and-performances-en.webp" aria-label="View figure at full size"><img src="/assets/festival-platform/instagram-home-and-performances-en-display.webp" alt="English launch cards showing the festival home screen and performance schedule" width="2880" height="1800" loading="lazy"></a>
+<figcaption>Figure 1. Festival home and performance schedule.</figcaption>
+</figure><p>Notices and the campus map lived on the same website. Selecting a booth on the map opened its location and operating information, giving visitors one place to find what they needed on campus.</p>
+<figure>
+<a href="/assets/festival-platform/instagram-notices-and-map-en.webp" aria-label="View figure at full size"><img src="/assets/festival-platform/instagram-notices-and-map-en-display.webp" alt="English launch cards showing notices, the campus map, and booth details" width="2880" height="1800" loading="lazy"></a>
+<figcaption>Figure 2. Notices, map, and booth details for visitors at the festival.</figcaption>
+</figure><h3 id="table-management-and-admission-queues">Table management and admission queues</h3>
+<p>For on-site operations, we provided a separate service called <strong>SPOT</strong>. Students running a pub could start, extend, and end a table's use from their phones, then call waiting guests when a table became available. The open-air concert venue's organizers managed registration and admission. The public website used these operational states to show pub and venue queue information.</p>
+<figure>
+<a href="/assets/festival-platform/instagram-pub-and-stage-status-en.webp" aria-label="View figure at full size"><img src="/assets/festival-platform/instagram-pub-and-stage-status-en-display.webp" alt="English launch cards showing public pub and concert venue queue status" width="2880" height="1800" loading="lazy"></a>
+<figcaption>Figure 3. Public queue status, maintained by each venue's operational service.</figcaption>
+</figure><p>Guests registered on iPads placed at the venues. We separated guest-facing registration from the screens used by student operators. Each pub could manage only its own tables and queue.</p>
+<figure>
+<a href="/assets/festival-platform/instagram-stage-and-pub-ipad-en.webp" aria-label="View figure at full size"><img src="/assets/festival-platform/instagram-stage-and-pub-ipad-en-display.webp" alt="English launch cards showing the concert venue and pub registration iPads" width="2880" height="1800" loading="lazy"></a>
+<figcaption>Figure 4. Guest registration and operator tools use separate accounts and permissions.</figcaption>
+</figure><h3 id="following-a-queue-from-registration-to-the-call">Following a queue from registration to the call</h3>
+<p>After registering, guests received a personal status link. They could check how many parties were ahead of them while exploring the festival, then return when a KakaoTalk notification arrived. <strong>Registration, status updates, and the call back to the venue were one product flow.</strong></p>
+<figure>
+<a href="/assets/festival-platform/instagram-stage-and-pub-personal-queue-en.webp" aria-label="View figure at full size"><img src="/assets/festival-platform/instagram-stage-and-pub-personal-queue-en-display.webp" alt="English launch cards showing personal queue links for the concert venue and pubs" width="2880" height="1800" loading="lazy"></a>
+<figcaption>Figure 5. Personal queue screens show position and call status after registration.</figcaption>
+</figure><p>At the concert venue, a call led to admission instructions. Cancellation before a call and admission after it were separate transitions, so the guest's view matched the organizer's actions.</p>
+<figure>
+<a href="/assets/festival-platform/instagram-stage-called-and-queue-cancel-en.webp" aria-label="View figure at full size"><img src="/assets/festival-platform/instagram-stage-called-and-queue-cancel-en-display.webp" alt="English launch cards showing concert admission after a call and queue cancellation" width="2880" height="1800" loading="lazy"></a>
+<figcaption>Figure 6. Concert admission and personal queue cancellation.</figcaption>
+</figure><p>For pubs, the notification explained where to return and how much time remained. Deferring a turn and missing the call window also had their own states. This flow made table state changes and notification delivery part of the same design problem.</p>
+<figure>
+<a href="/assets/festival-platform/instagram-pub-called-and-queue-defer-en.webp" aria-label="View figure at full size"><img src="/assets/festival-platform/instagram-pub-called-and-queue-defer-en-display.webp" alt="English launch cards showing pub call notifications and deferring a turn" width="2880" height="1800" loading="lazy"></a>
+<figcaption>Figure 7. Pub calls and queue deferral.</figcaption>
+</figure><h3 id="photo-verification-for-a-campus-event">Photo verification for a campus event</h3>
+<p>In a sticker-hunt event, visitors found stickers around the festival and submitted photos. An AI model evaluated each photo; the festival API committed verification records and issued reward coupons. Visitors then used the coupons for a prize draw at the student council booth. Photo recognition and the physical reward were connected in one flow.</p>
+<figure>
+<a href="/assets/festival-platform/instagram-sticker-event-and-reward-en.webp" aria-label="View figure at full size"><img src="/assets/festival-platform/instagram-sticker-event-and-reward-en-display.webp" alt="English launch cards showing AI photo verification and the sticker event reward" width="2880" height="1800" loading="lazy"></a>
+<figcaption>Figure 8. AI photo verification connects to verification records and coupon rewards.</figcaption>
+</figure><h2 id="a-month-to-build-three-days-to-operate">A month to build, three days to operate</h2>
+<p>I led the architecture, shared authentication foundation, pub operations, AWS infrastructure and deployment, and performance validation. I divided features into issues that gave teammates room to understand the full flow and make implementation decisions. I defined common design rules and service contracts, reviewed changes across the system, and brought those features through to production.</p>
+<p>We had a month to launch, and both content and operational state would keep changing during the festival. Pub operations had to continue while we updated performance features. Calling a guest had to leave the queue state and notification work in agreement. The design started with three decisions: <strong>where changes should be isolated, which states must commit together, and how failures would be recovered.</strong></p>
+<blockquote>
+<p><strong>Build only as much system as the problem needs.</strong> Deciding what “enough” means requires understanding both the work that must keep running and the operational cost the team can carry.</p>
+</blockquote>
+<p>That principle shaped our choices. APIs that needed independent replacement were separated, while physical RDS and Redis resources were shared. We chose managed ECS rather than a cluster we would have to operate ourselves. We sized the database connection pool by measuring throughput. Every technical choice needed a clear problem to solve.</p>
+<p>The result was a successful launch and three days of real use: <strong>17,308 estimated unique visitors</strong> and <strong>1,634,031 CloudFront requests</strong>. Thirteen pubs used SPOT, accumulating <strong>1,386 hours and 45 minutes of table use</strong> across 648 sessions. That is time summed across tables, including concurrent use. The rest of this article explains the boundaries and failure-handling rules behind that operation.</p>
+<figure>
+<a href="/assets/festival-platform/figure-01-operation-results-en.png" aria-label="View figure at full size"><img src="/assets/festival-platform/figure-01-operation-results-en.png" alt="Three-day results: 17,308 estimated unique visitors, peak one-minute average of 38.2 RPS, CloudFront requests, and cumulative table-use time" width="1920" height="1040" loading="lazy"></a>
+<figcaption>Figure 9. Measured festival operation. Peak RPS is the highest one-minute request count divided by 60.</figcaption>
+</figure><h2 id="service-boundaries-followed-data-ownership">Service boundaries followed data ownership</h2>
+<p>The visitor website brought information together. Operational permissions followed the responsibilities of the student council, pub operators, and concert organizers. Guest-facing iPads could register people but could not run the venue. <strong>Who could change which state was the starting point for service boundaries.</strong></p>
+<h3 id="separate-the-units-that-need-independent-deployment">Separate the units that need independent deployment</h3>
+<p>A modular monolith would have simplified builds, deployment, and local integration. Our priority was the <strong>scope of changes and failures at each venue</strong>, rather than throughput. Replacing a pub server to update performance information would expose on-site work to an unrelated deployment. We wanted to control deployment, processes, and capacity separately for each domain.</p>
+<p>We split festival information, pub operations, and concert admission into three Spring Boot API services. Each owned its contracts, domain model, migrations, and authentication. The visitor frontend composed their responses. This was a <strong>microservices architecture with independent deployment and explicit data ownership</strong>: services did not query each other's databases directly.</p>
+<figure>
+<a href="/assets/festival-platform/diagram-service-data-ownership-en.png" aria-label="View figure at full size"><img src="/assets/festival-platform/diagram-service-data-ownership-en.png" alt="Three domain APIs own separate logical databases and migrations while sharing a physical RDS instance" width="1920" height="944" loading="lazy"></a>
+<figcaption>Figure 10. Separate logical databases and credentials; shared physical RDS. Direct cross-service SQL access is prohibited.</figcaption>
+</figure><p>The split came with real costs: separate images, deployment pipelines, observability, and API contracts. We had to build that foundation within the same month as the product. Shared build and deployment rules in the monorepo, generated clients, and a common local launcher reduced repetitive work. <strong>We paid the integration cost before the festival so we could replace only the services that needed changing during it.</strong></p>
+<p>We also limited the split. Work that had to commit together stayed in one service, and we shared physical RDS and Redis resources at our initial scale. This kept <strong>change independence without multiplying storage infrastructure</strong>. Connection-pool limits, monitoring, and redundancy addressed the contention and shared failure risks that remained.</p>
+<p>We used that boundary on the first festival day when adding cross-pub table inspection and control to the operations console. Deployment-selection validation chose only <code>pub-waiting-api</code> and <code>god-console</code>. It did not require replacing the other APIs or any of the six web apps.</p>
+<p><strong>Seating a party and starting its table session stayed in the same pub API transaction.</strong> Those two actions had to succeed together, so we kept them within one service.</p>
+<h3 id="an-execution-environment-the-team-could-operate">An execution environment the team could operate</h3>
+<p>The team's Kubernetes experience made container orchestration a familiar approach. We needed task replacement, a maintained task count, and per-service resource controls. With a month to launch, <strong>AWS ECS</strong> gave us those capabilities within an operational scope we could manage.</p>
+<p>The three APIs and operations console ran on Fargate. The AI service ran on ECS on EC2 because its model had different memory and startup characteristics. It was private, reached through Service Connect. The six React apps ran on S3 and CloudFront. We could adjust resources and deployments for <strong>five ECS services independently</strong>, with Terraform managing the infrastructure and normal versus festival capacity.</p>
+<figure>
+<a href="/assets/festival-platform/diagram-ecs-service-topology-en.png" aria-label="View figure at full size"><img src="/assets/festival-platform/diagram-ecs-service-topology-en.png" alt="CloudFront and S3 serve static apps; ALB routes to three APIs and an operations console; Service Connect reaches the private AI service" width="1920" height="1320" loading="lazy"></a>
+<figcaption>Figure 11. Static web delivery and five ECS services. The console uses ALB host routing; AI uses private Service Connect.</figcaption>
+</figure><p>Redis held login sessions outside the tasks, preserving sessions through replacement without sticky routing. Each owning API checked permissions and pub scope. A cache failure could fall back to the database; a session-validation failure was <strong>fail-closed</strong>. Recovering a read and verifying authority required different failure policies.</p>
+<p>The operations console's delegated JWT bound the HTTP method, path, body hash, and actor. The owning API atomically registered the <code>jti</code> in Redis to reject reuse. Centralized operational access still passed through each service's business checks.</p>
+<h2 id="defining-what-concurrency-and-notifications-must-guarantee">Defining what concurrency and notifications must guarantee</h2>
+<p>A pub table serves several parties in one evening. An interrupted response can cause an operator's request to arrive again. Before choosing a mechanism, we defined <strong>which table session a command referred to and what a repeated command must preserve.</strong></p>
+<h3 id="a-lock-cannot-identify-the-session-a-command-meant">A lock cannot identify the session a command meant</h3>
+<p>In pre-launch concurrency validation, we found that a delayed request to end one party's session could end the next party's session. The lock was working: requests ran in order, and the late request changed the latest row. <strong>A lock orders changes. It does not establish which table session a request intended to change.</strong></p>
+<p>The operator screen sent the <code>rowVersion</code> it had displayed as <code>expectedVersion</code> on end and extension requests. Under the lock, the server compared it with the current version and rejected a mismatch with <code>409 STALE_TABLE_STATE</code>. The command now referred to both the table number and <strong>the state the operator had actually seen</strong>.</p>
+<figure>
+<a href="/assets/festival-platform/diagram-stale-table-command-en.png" aria-label="View figure at full size"><img src="/assets/festival-platform/diagram-stale-table-command-en.png" alt="A command created for party A at version 7 is rejected after party B is seated and the row reaches version 9" width="1920" height="1024" loading="lazy"></a>
+<figcaption>Figure 12. A simplified example of the reproduced concurrency problem. Version numbers are illustrative.</figcaption>
+</figure><p>The operator screen supplied the version. The operations console required it in a separate <code>lockTarget</code> check before invoking the same business method. The method permitted omission for those already-validated internal calls. However, the HTTP contract also left it optional, so an authenticated request without a version bypassed the stale-state check. <strong>Protection in the operator UI and console was not an API-wide guarantee.</strong> Closing that gap requires mandatory versions at the HTTP boundary and a separate path for validated internal calls.</p>
+<p>Repeated call and seating commands preserved the committed state without creating another notification. The console used an operation ID and result ledger to identify retries. <strong>State versions reject stale intent; operation IDs identify repeated work.</strong></p>
+<h3 id="preserve-the-notification-intent-and-track-an-uncertain-resu">Preserve the notification intent and track an uncertain result</h3>
+<p>Calling a guest includes getting the instructions to them. The database and an external messaging provider could not share a transaction. We therefore addressed three failure windows: a crash after saving the call, slow delivery submission, and a lost acceptance response.</p>
+<figure>
+<a href="/assets/festival-platform/diagram-notification-failure-windows-en.png" aria-label="View figure at full size"><img src="/assets/festival-platform/diagram-notification-failure-windows-en.png" alt="Three failure windows in direct notification submission: crash after commit, slow provider, and lost acceptance response" width="1920" height="1384" loading="lazy"></a>
+<figcaption>Figure 13. Failure scenarios addressed by the design.</figcaption>
+</figure><p>We saved the call state and <strong>the final message content and sending intent in the same database transaction</strong>. A transactional outbox relay forwarded the work to SQS, and a Lambda worker submitted it to the provider. A process crash left the intent in the database, and the operator's request no longer waited for the provider. Workers claimed ledger entries and recorded results through the owning API.</p>
+<figure>
+<a href="/assets/festival-platform/diagram-transactional-outbox-en.png" aria-label="View figure at full size"><img src="/assets/festival-platform/diagram-transactional-outbox-en.png" alt="Call state and notification intent commit together; a relay sends to SQS, and Lambda claims and records results through the owning API" width="1920" height="1104" loading="lazy"></a>
+<figcaption>Figure 14. Business state and sending intent commit atomically. SQS and Lambda execute the work; the owning service retains the ledger.</figcaption>
+</figure><p>Conditional claims handled duplicate SQS Standard deliveries. The harder case was <strong>not knowing whether the provider had accepted a submission</strong>. Retrying it could send the same instructions twice, so we separated the outcomes:</p>
+<ul>
+<li>A confirmed failure before submission allowed bounded retries, then the DLQ.</li>
+<li>Confirmed acceptance recorded the provider's receipt ID and prevented resubmission.</li>
+<li>An uncertain result after submission became <code>UNKNOWN</code>. Automatic resubmission stopped while we reconciled the provider's history with the ledger.</li>
+</ul>
+<blockquote>
+<p><strong>Preserving the intent to send and preventing duplicate external sends are different guarantees.</strong> An explicit uncertain state keeps the evidence needed to make a recovery decision.</p>
+</blockquote>
+<p>This policy <strong>accepted a possible notification delay while acceptance was checked, in exchange for avoiding blind duplicate submissions</strong>. Recording <code>UNKNOWN</code> was only the start of that process. The worker immediately reported the incident to the operations channel, and a five-minute scheduled job checked for unreported incidents and rechecked notification ledgers.</p>
+<p>The console showed the current business state alongside the provider's history. Resending required a reason and acknowledgement of the duplicate risk. The owning API checked link validity and business deadlines, then created <strong>a new send ID while preserving the original record</strong>. A resend did not close the original investigation: the receipt ID or evidence of non-acceptance had to be recorded separately. We built the evidence trail and operational recovery path alongside the retry logic.</p>
+<p>Across the festival, <strong>all 582 notifications obtained unique provider acceptance IDs on their first submission attempt</strong>. Final delivery to the recipient's device was tracked separately. Content translation also used source-version checks so a late translation could not overwrite newer content.</p>
+<p>AI verification followed the same ownership rule. A teammate's YOLO and DINOv2 models evaluated photos; the festival API used participant locks and database constraints to commit sticker credit and coupons. We validated the first credit for a new participant too. <strong>Inference and reward commitment had separate responsibilities.</strong></p>
+<h2 id="deployment-included-a-path-back-to-a-working-release">Deployment included a path back to a working release</h2>
+<p>We promoted validated <code>main</code> revisions to <code>prod</code>, selecting deployment targets from changed paths and shared-package dependencies. GitHub OIDC access was restricted to the repository and production environment. Application deployment permissions were separated from Terraform and business-data permissions.</p>
+<h3 id="replace-tasks-while-preserving-business-state">Replace tasks while preserving business state</h3>
+<p>ECS prepared the new version while keeping healthy old tasks running. Login and business state stayed in PostgreSQL and Redis. Readiness and ALB target health governed replacement; a failed rollout could return to the previous task definition through the deployment circuit breaker.</p>
+<figure>
+<a href="/assets/festival-platform/diagram-rolling-deployment-en.png" aria-label="View figure at full size"><img src="/assets/festival-platform/diagram-rolling-deployment-en.png" alt="Change selection leads to ECS rollout, with old tasks serving while new tasks start and business state kept in external stores" width="1920" height="1208" loading="lazy"></a>
+<figcaption>Figure 15. Selective deployment and rolling replacement. Task counts are illustrative; sessions and business state remain outside tasks.</figcaption>
+</figure><p>We used that recovery path during preparation. A booth-image conversion change passed CI but exhausted the memory of two new API tasks. We restored the previous task definition, then removed server-side decoding and re-encoding that duplicated compression already done in the browser. The API retained bounded file validation. <strong>Deployment had to cover resource constraints and recovery from a failed release as well as functional checks.</strong></p>
+<p>During a festival API rollout on September 30, the running task count went <strong>2 → 4 → 2</strong>, while one-minute observations showed at least two healthy ALB targets. We checked both completion of the deployment and the continued presence of targets able to serve requests.</p>
+<h3 id="redundancy-needs-separate-failure-domains">Redundancy needs separate failure domains</h3>
+<p><strong>A single point of failure does not disappear just because there are two tasks.</strong> If both run on one host, one host failure can take them down together. The VPC and ALB spanned two Availability Zones; the APIs and console had at least two tasks. AI tasks used <code>distinctInstance</code> and AZ spread across two EC2 hosts. RDS had a Multi-AZ standby, and Redis had a replica with automatic failover.</p>
+<figure>
+<a href="/assets/festival-platform/diagram-multi-az-failure-domains-en.png" aria-label="View figure at full size"><img src="/assets/festival-platform/diagram-multi-az-failure-domains-en.png" alt="Availability across two zones, separate AI hosts, an RDS standby, and Redis replication and failover" width="1920" height="1288" loading="lazy"></a>
+<figcaption>Figure 16. Illustrative failure-domain layout. RDS standby is for failover; this is not a measurement of task placement at a particular moment.</figcaption>
+</figure><p>Shared storage still connected the services' failure exposure. We retained fail-closed session validation while providing recovery paths for those stores.</p>
+<h3 id="alerts-carried-the-evidence-an-ai-agent-needed">Alerts carried the evidence an AI agent needed</h3>
+<p>We also used Codex and Claude Code, with access to GitHub and AWS, in operations. An alert needed enough context to start an investigation and carry it through code inspection, changes, and recovery checks.</p>
+<p>CloudWatch → SNS → Lambda enriched each Discord incident with logs from the relevant time and target, plus the host, error code, route, and request ID. An operator handed that incident to an agent, connecting <strong>evidence collection, investigation, changes, and recovery verification</strong>.</p>
+<figure>
+<a href="/assets/festival-platform/diagram-ai-assisted-incident-response-en.png" aria-label="View figure at full size"><img src="/assets/festival-platform/diagram-ai-assisted-incident-response-en.png" alt="CloudWatch alerts are enriched with log evidence and sent to Discord; an operator hands them to Claude Code or Codex for GitHub and AWS investigation" width="1920" height="1096" loading="lazy"></a>
+<figcaption>Figure 17. AI-native alerting. Evidence enrichment is automatic; an operator handles agent handoff, change review, and recovery verification.</figcaption>
+</figure><figure>
+<a href="/assets/festival-platform/diagram-incident-evidence-en.png" aria-label="View figure at full size"><img src="/assets/festival-platform/diagram-incident-evidence-en.png" alt="An English reconstruction of a real alert with timestamp, region, host, CloudFront 503 POST, pub API route pattern, and OriginError" width="1920" height="1168" loading="lazy"></a>
+<figcaption>Figure 18. A real October 1 alert reconstructed in English. It falls outside the festival measurement period; the error sample narrows the investigation.</figcaption>
+</figure><p>I handed over incidents, directed authorized work, and verified recovery. Code changes followed review and release procedures. Infrastructure changes required Terraform plan review and apply approval. We separated automatic evidence collection from agent execution, monitored the alert relay itself, and kept failed relay work in an encrypted queue.</p>
+<h2 id="measure-throughput-before-adding-resources">Measure throughput before adding resources</h2>
+<p>During pre-launch load testing, database connection waits accumulated. A larger pool was an obvious candidate, but database CPU usage was low. We observed the JVM, container, and database together, then compared configurations by <strong>how many requests they actually completed</strong>.</p>
+<p>With 0.5 vCPU, 1 GB of memory, four connections, and 40 virtual users, enabling virtual threads increased performance-query throughput from <strong>16.6 to 45.5 RPS</strong>. Pub queries rose from <strong>68.3 to 134.8</strong>, and concert-queue queries from <strong>39.4 to 79.5</strong>. Platform threads on the performance path fell from 68 to 33, but connection waits barely changed, from 36 to 34. The throughput gain could not be explained by eliminating pool waits.</p>
+<figure>
+<a href="/assets/festival-platform/performance-experiments.png" aria-label="View figure at full size"><img src="/assets/festival-platform/performance-experiments.png" alt="Separate experiments comparing virtual threads at 40 users and connection-pool sizes at 64 users" width="1920" height="1504" loading="lazy"></a>
+<figcaption>Figure 19. Pre-launch comparisons under different conditions: thread modes at 40 users and pool size at 64 users with virtual threads enabled.</figcaption>
+</figure><p>In a separate 64-user experiment, increasing the pool from four to 32 reduced waits but lowered throughput from <strong>43.7 to 23.6 RPS</strong>. Database CPU stayed at 6–8%, usually with only one query executing. Involuntary context switches per request rose from 1.13 to 2.66. This supported increased application-side execution contention with the larger pool. We chose settings by throughput and latency without assigning an exact share of the slowdown to each cause.</p>
+<p><strong>We enabled virtual threads and kept the pool at four connections.</strong> Allowing more concurrent requests had to translate into more completed work. For AI, processing and queue limits bounded accepted work; readiness checks and pinned code and model hashes controlled startup and reproducibility.</p>
+<h2 id="production-gave-us-a-baseline-for-the-next-festival">Production gave us a baseline for the next festival</h2>
+<p>Real traffic peaked at <strong>38.2 RPS averaged over one minute</strong>. That is measured incoming traffic, not a benchmark of maximum server capacity. Each of the three APIs and the console maintained at least two healthy ALB targets across 4,320 one-minute samples. <strong>No service-wide interruption was observed</strong>; 46 individual ALB or target 5xx responses were tracked separately.</p>
+<p>All six primary read paths met the 500 ms server-processing p95 target during operation. The map measured 111.2 ms; the other paths were between 11.8 and 25.4 ms.</p>
+<figure>
+<a href="/assets/festival-platform/18-server-p95-versus-goal.png" aria-label="View figure at full size"><img src="/assets/festival-platform/18-server-p95-versus-goal.png" alt="Measured server-processing p95 for map, performances, booths, goods, pubs, and concert status against a shared 500 ms target" width="1920" height="1136" loading="lazy"></a>
+<figcaption>Figure 20. Server-processing p95 from structured logs, compared with the 500 ms target.</figcaption>
+</figure><p>Across 14,617 browser LCP observations, p50 was 648 ms and p95 was <strong>3,060 ms</strong>. LCP measures when the largest visible content appears. Its population and measurement boundary differ from server processing, so subtracting the two percentiles would not identify the cause. Meeting the server target still left <strong>a long tail in visible page loading</strong>. The next step is to relate LCP to device, connection, page, and image data.</p>
+<p>CloudFront's weighted cache hit rate was 35.35%. We cached selected shared public responses, while map and booth details that needed immediate updates used <code>no-store</code>. <strong>Raising a cache hit rate also means deciding which information can tolerate a delay in freshness.</strong> We evaluated Redis session lookups separately from cache hits.</p>
+<p>Before this first deployment, we had no production baseline. We now have business records, logs, and metrics to plan the next festival around <strong>actual demand by feature and time of day, and the state transitions people really used</strong>.</p>
+<p>My role as lead was to bring <strong>the team's implementations under common business rules, failure-handling standards, and release procedures</strong>. I connected features across the system, aligning change boundaries, command validity, and the handling of uncertain sends. The team built and operated that design within a month, adding the boundaries we needed and keeping the operational scope within what we could carry.</p>
+<h3 id="a-platform-that-worked-in-the-field">A platform that worked in the field</h3>
+<p>We took a one-month build into three days of live use, supporting <strong>17,308 estimated unique visitors and operations at 13 student-run pubs</strong>. Visitors used it to find performances and booths; student operators used SPOT to manage tables. The <strong>1,386 hours and 45 minutes of cumulative table use</strong> put the system to work in real pub operations.</p>
+<p>Under that demand, <strong>all six primary read paths met their response-time target, and we completed the festival with no observed service-wide interruption</strong>. All 582 notifications received provider acceptance on the first submission attempt. The service boundaries, business consistency rules, and deployment and recovery paths were implemented together and exercised in production. We launched as a team, supported real work on campus, and left a working system and measured baseline for the next festival.</p>
+</body></html>
+        </div>
+      </article>
+    <nav class="post-nav" aria-label="Previous and next posts">
+      <a class="post-nav-item post-nav-item--prev" href="/posts/netty-direct-memory-limit/">
+        <span class="post-nav-label">previous post</span>
+        <span class="post-nav-title">Contributing to Netty: Why Check the Direct Memory Limit?</span>
+      </a>
+      <span></span>
+    </nav>
+      <nav class="post-back">
+        <a href="/writing/">← back to posts</a>
+      </nav>
+    </div>
+    <aside class="toc" id="toc" aria-label="Contents">
+      <p class="toc-title">contents</p>
+      <ul class="toc-list">
+        <li class="toc-item toc-item--h2"><a href="#connecting-festival-information-with-on-site-operations" data-target="connecting-festival-information-with-on-site-operations">Connecting festival information with on-site operations</a></li>
+        <li class="toc-item toc-item--h3"><a href="#one-website-for-performances-and-booths" data-target="one-website-for-performances-and-booths">One website for performances and booths</a></li>
+        <li class="toc-item toc-item--h3"><a href="#table-management-and-admission-queues" data-target="table-management-and-admission-queues">Table management and admission queues</a></li>
+        <li class="toc-item toc-item--h3"><a href="#following-a-queue-from-registration-to-the-call" data-target="following-a-queue-from-registration-to-the-call">Following a queue from registration to the call</a></li>
+        <li class="toc-item toc-item--h3"><a href="#photo-verification-for-a-campus-event" data-target="photo-verification-for-a-campus-event">Photo verification for a campus event</a></li>
+        <li class="toc-item toc-item--h2"><a href="#a-month-to-build-three-days-to-operate" data-target="a-month-to-build-three-days-to-operate">A month to build, three days to operate</a></li>
+        <li class="toc-item toc-item--h2"><a href="#service-boundaries-followed-data-ownership" data-target="service-boundaries-followed-data-ownership">Service boundaries followed data ownership</a></li>
+        <li class="toc-item toc-item--h3"><a href="#separate-the-units-that-need-independent-deployment" data-target="separate-the-units-that-need-independent-deployment">Separate the units that need independent deployment</a></li>
+        <li class="toc-item toc-item--h3"><a href="#an-execution-environment-the-team-could-operate" data-target="an-execution-environment-the-team-could-operate">An execution environment the team could operate</a></li>
+        <li class="toc-item toc-item--h2"><a href="#defining-what-concurrency-and-notifications-must-guarantee" data-target="defining-what-concurrency-and-notifications-must-guarantee">Defining what concurrency and notifications must guarantee</a></li>
+        <li class="toc-item toc-item--h3"><a href="#a-lock-cannot-identify-the-session-a-command-meant" data-target="a-lock-cannot-identify-the-session-a-command-meant">A lock cannot identify the session a command meant</a></li>
+        <li class="toc-item toc-item--h3"><a href="#preserve-the-notification-intent-and-track-an-uncertain-resu" data-target="preserve-the-notification-intent-and-track-an-uncertain-resu">Preserve the notification intent and track an uncertain result</a></li>
+        <li class="toc-item toc-item--h2"><a href="#deployment-included-a-path-back-to-a-working-release" data-target="deployment-included-a-path-back-to-a-working-release">Deployment included a path back to a working release</a></li>
+        <li class="toc-item toc-item--h3"><a href="#replace-tasks-while-preserving-business-state" data-target="replace-tasks-while-preserving-business-state">Replace tasks while preserving business state</a></li>
+        <li class="toc-item toc-item--h3"><a href="#redundancy-needs-separate-failure-domains" data-target="redundancy-needs-separate-failure-domains">Redundancy needs separate failure domains</a></li>
+        <li class="toc-item toc-item--h3"><a href="#alerts-carried-the-evidence-an-ai-agent-needed" data-target="alerts-carried-the-evidence-an-ai-agent-needed">Alerts carried the evidence an AI agent needed</a></li>
+        <li class="toc-item toc-item--h2"><a href="#measure-throughput-before-adding-resources" data-target="measure-throughput-before-adding-resources">Measure throughput before adding resources</a></li>
+        <li class="toc-item toc-item--h2"><a href="#production-gave-us-a-baseline-for-the-next-festival" data-target="production-gave-us-a-baseline-for-the-next-festival">Production gave us a baseline for the next festival</a></li>
+        <li class="toc-item toc-item--h3"><a href="#a-platform-that-worked-in-the-field" data-target="a-platform-that-worked-in-the-field">A platform that worked in the field</a></li>
+      </ul>
+    </aside>
+  </main>
+  <script src="/app.js?v=391ab9a5"></script>
+</body>
+</html>

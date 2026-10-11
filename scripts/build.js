@@ -630,7 +630,7 @@ ${head({
           <p class="post-meta"><time datetime="${pubISO.slice(0, 10)}">${esc(date)}</time>${item.category ? `<span aria-hidden="true"> · </span><span class="post-category">${esc(item.category.toLowerCase())}</span>` : ''}</p>
           <h1 class="post-title">${esc(title)}</h1>
         </header>
-        <div class="post-body" id="post-body">
+        <div class="post-body${slug === 'university-festival-platform' ? ' post-body--festival' : ''}" id="post-body">
 ${body}
         </div>
       </article>${prevNextHtml}

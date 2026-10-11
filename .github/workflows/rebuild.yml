@@ -29,6 +29,9 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+        with:
+          # Queued issue events can point to an older commit than the last rebuild.
+          ref: main
 
       - uses: actions/setup-node@v4
         with:
@@ -46,13 +49,35 @@ jobs:
         run: npm run test:portfolio && npm run test:translations
 
       - name: Commit if changed
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git add -A index.html posts sitemap.xml robots.txt assets about work writing
-          if git diff --staged --quiet; then
-            echo "No changes — skipping commit."
-          else
+          for attempt in 1 2 3; do
+            git add -A index.html posts sitemap.xml robots.txt assets about work writing
+            if git diff --staged --quiet; then
+              echo "No changes — skipping commit."
+              exit 0
+            fi
+            base=$(git rev-parse HEAD)
             git commit -m "rebuild: sync from issues $(date -u +%Y-%m-%d) [skip ci]"
-            git push
-          fi
+            if git push origin HEAD:main; then
+              exit 0
+            fi
+
+            git fetch origin main
+            if [ "$attempt" -eq 3 ] || [ "$(git rev-parse origin/main)" = "$base" ]; then
+              echo "::error::Could not publish generated site."
+              exit 1
+            fi
+
+            # A source push can still arrive during the build. Regenerate on top
+            # of it instead of merging stale HTML or overwriting the remote.
+            echo "main advanced during the build; rebuilding before retry $((attempt + 1))."
+            git reset --hard origin/main
+            npm install --no-package-lock
+            node scripts/build.js
+            npm run test:portfolio
+            npm run test:translations
+          done

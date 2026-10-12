@@ -34,10 +34,11 @@ for (const dir of await readdir('posts', { withFileTypes: true })) {
   await writeFile(`posts/${dir.name}/index.html`, localizePostUrls($.html()));
   const image = $('meta[property="og:image"]').attr('content') || $('.post-content img, .post-cover img').first().attr('src');
   const cover = image ? { src: image.replace(/^https:\/\/xhae123\.github\.io(?=\/)/, '') } : undefined;
-  items.push({ slug: dir.name, title: $('h1.post-title').text(), date, excerpt: $('meta[name="description"]').attr('content'), category, cover });
+  const modifiedDate = $('meta[property="article:modified_time"]').attr('content') || date;
+  items.push({ slug: dir.name, title: $('h1.post-title').text(), date, modifiedDate, excerpt: $('meta[name="description"]').attr('content'), category, cover });
 }
 items.sort((a,b) => b.date.localeCompare(a.date));
 await writePortfolio(items);
-const routes = [{ route: '/', date: items[0]?.date.slice(0, 10) }, ...['writing/', 'about/', 'work/afinit/', 'work/raspy/', 'work/adelante/'].map(route => ({ route: `/${route}` })), ...items.map(item => ({ route: `/posts/${item.slug}/`, date: item.date.slice(0, 10) }))];
+const routes = [{ route: '/' }, ...['writing/', 'about/', 'work/afinit/', 'work/raspy/', 'work/adelante/'].map(route => ({ route: `/${route}` })), ...items.map(item => ({ route: `/posts/${item.slug}/`, date: item.modifiedDate.slice(0, 10) }))];
 await writeFile('sitemap.xml', `<?xml version="1.0" encoding="UTF-8"?>\n<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n${routes.map(({ route, date }) => `  <url><loc>https://xhae123.github.io${route}</loc>${date ? `<lastmod>${date}</lastmod>` : ''}</url>`).join('\n')}\n</urlset>\n`);
 console.log(`Portfolio built locally; ${items.length} existing posts preserved.`);

@@ -1,5 +1,6 @@
 import { readFileSync } from 'node:fs';
 import { createHash } from 'node:crypto';
+import { finalizeDocumentHead } from './page-head.js';
 
 // Version the actual shared stylesheet so a style correction replaces cached CSS.
 const stylesheetVersions = Object.fromEntries(['styles', 'blog'].map(name => [
@@ -17,14 +18,14 @@ export function localizePostUrls(html) {
       html = html.replaceAll(`/posts/${source}/`, `/posts/${slug}/`);
     }
   }
-  return html.replaceAll('gray-2', 'rose-1')
+  return finalizeDocumentHead(html.replaceAll('gray-2', 'rose-1')
     .replace(/\/(styles|blog)\.css\?v=[^"'\s<>]+/g, (_, name) => `/${name}.css?v=${stylesheetVersions[name]}`)
     .replace(/href="\/favicon\.svg(?:\?[^"<>]*)?"/g, 'href="/favicon.svg?v=woojin-w-2"')
     .replace(/<title>([^<]*)<\/title>/g, (_, current) => {
       let title = current.replace(/ · Woojin Kim$/, '').replace(/^woojin kim · /, '');
       if (['Software Engineer', 'Writing', 'About', 'Post moved'].includes(title)) title = title.toLowerCase();
       return `<title>woojin kim · ${title}</title>`;
-    });
+    }));
 }
 
 export function legacyRedirect(slug) {

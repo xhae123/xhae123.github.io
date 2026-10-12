@@ -222,6 +222,7 @@ async function fetchIssues() {
         title: iss.title.trim(),
         slug,
         date: parseDate(body) || iss.created_at,
+        modifiedDate: iss.updated_at,
         html,
         cover: coverFor(slug, html),
         category: categoryOf(iss.labels),
@@ -553,6 +554,7 @@ function renderPost(item, items) {
   const ogImage = item.cover.src.startsWith('/') ? `${SITE_URL}${item.cover.src}` : item.cover.src;
   const canonical = `${SITE_URL}/posts/${encodeURIComponent(slug)}/`;
   const pubISO = new Date(item.date).toISOString();
+  const modifiedISO = new Date(Math.max(Date.parse(item.date), Date.parse(item.modifiedDate || item.date))).toISOString();
 
   const tocHtml =
     tocItems.length >= 2
@@ -597,7 +599,7 @@ ${tocItems
     headline: title,
     description: excerpt,
     datePublished: pubISO,
-    dateModified: pubISO,
+    dateModified: modifiedISO,
     author: { '@type': 'Person', name: AUTHOR },
     url: canonical,
     mainEntityOfPage: canonical,
@@ -617,6 +619,7 @@ ${head({
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/github.min.css" />
   <link rel="stylesheet" href="/blog.css?v=gray-2" />
   <meta property="article:published_time" content="${pubISO}" />
+  <meta property="article:modified_time" content="${modifiedISO}" />
   ${item.category ? `<meta property="article:section" content="${esc(item.category)}" />` : ''}
   <meta property="article:author" content="${esc(AUTHOR)}" />
   <script type="application/ld+json">${JSON.stringify(jsonLd)}</script>`,
@@ -654,19 +657,18 @@ ${body}
 
 function renderSitemap(items) {
   const entries = [
-    ...['writing/', 'about/', ...works.map(w => `work/${w.slug}/`)].map(route => ({ loc: `${SITE_URL}/${route}`, lastmod: new Date().toISOString().split('T')[0] })),
+    ...['writing/', 'about/', ...works.map(w => `work/${w.slug}/`)].map(route => ({ loc: `${SITE_URL}/${route}` })),
     {
       loc: `${SITE_URL}/`,
-      lastmod: (items[0] ? new Date(items[0].date) : new Date()).toISOString().split('T')[0],
     },
     ...items.map((item) => ({
       loc: `${SITE_URL}/posts/${encodeURIComponent(item.slug)}/`,
-      lastmod: new Date(item.date).toISOString().split('T')[0],
+      lastmod: new Date(Math.max(Date.parse(item.date), Date.parse(item.modifiedDate || item.date))).toISOString().split('T')[0],
     })),
   ];
   return `<?xml version="1.0" encoding="UTF-8"?>
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
-${entries.map((e) => `  <url><loc>${e.loc}</loc><lastmod>${e.lastmod}</lastmod></url>`).join('\n')}
+${entries.map((e) => `  <url><loc>${e.loc}</loc>${e.lastmod ? `<lastmod>${e.lastmod}</lastmod>` : ''}</url>`).join('\n')}
 </urlset>
 `;
 }

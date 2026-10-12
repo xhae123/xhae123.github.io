@@ -1,4 +1,10 @@
 import { readFileSync } from 'node:fs';
+import { createHash } from 'node:crypto';
+
+// Version the actual shared stylesheet so a style correction replaces cached CSS.
+const stylesheetVersions = Object.fromEntries(['styles', 'blog'].map(name => [
+  name, `shared-${createHash('sha1').update(readFileSync(new URL(`../${name}.css`, import.meta.url))).digest('hex').slice(0, 8)}`,
+]));
 
 export const postRoutes = JSON.parse(readFileSync(new URL('../translations/en/routes.json', import.meta.url), 'utf8'));
 export const englishPostSlug = slug => postRoutes[slug] || slug;
@@ -12,7 +18,7 @@ export function localizePostUrls(html) {
     }
   }
   return html.replaceAll('gray-2', 'rose-1')
-    .replace(/\/(styles|blog)\.css\?v=[^"'\s<>]+/g, '/$1.css?v=lowercase-2')
+    .replace(/\/(styles|blog)\.css\?v=[^"'\s<>]+/g, (_, name) => `/${name}.css?v=${stylesheetVersions[name]}`)
     .replace(/href="\/favicon\.svg(?:\?[^"<>]*)?"/g, 'href="/favicon.svg?v=woojin-w-2"')
     .replace(/<title>([^<]*)<\/title>/g, (_, current) => {
       let title = current.replace(/ · Woojin Kim$/, '').replace(/^woojin kim · /, '');

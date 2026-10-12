@@ -74,14 +74,11 @@ body { letter-spacing: -.02em; line-height: 1.8; }
 .post-body h2 { font-size: 26px; margin: 56px 0 20px; }
 .post-body h3 { font-size: 21px; margin: 36px 0 16px; }
 .post-body strong { font-weight: 400; color: var(--ink); background: var(--highlight); padding: 1px 2px; box-decoration-break: clone; -webkit-box-decoration-break: clone; }
-.post-body--festival strong { font-weight: 600; background: none; padding: 0; }
-.post-body--festival figure { margin: 32px 0 40px; }
-.post-body--festival figure img { display: block; width: 100%; height: auto; margin: 0; }
-.post-body--festival figcaption { margin-top: 12px; color: var(--muted); font-style: normal; }
-.post-body--festival figure > a { display: block; cursor: zoom-in; }
 .post-body img { border-radius: 0; margin: 32px auto; }
-.post-body figure { margin: 32px 0; }
-.post-body figcaption { font-size: 13px; line-height: 1.8; }
+.post-body figure { margin: 32px 0 40px; }
+.post-body figure img { display: block; width: 100%; height: auto; margin: 0; }
+.post-body figcaption { font-size: 13px; line-height: 1.8; margin-top: 12px; color: var(--muted); font-style: normal; }
+.post-body figure > a { display: block; cursor: zoom-in; }
 .post-body ul, .post-body ol { margin: 24px 0; padding-left: 24px; }
 .post-body li { margin: 8px 0; }
 .post-body li::marker { color: var(--accent); }

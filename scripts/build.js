@@ -6,6 +6,7 @@ import hljs from 'highlight.js';
 import { marked } from 'marked';
 import { writePortfolio, works, primaryNavigation } from './portfolio.js';
 import { englishPostSlug, legacyRedirect, localizePostUrls, postRoutes } from './post-routes.js';
+import { requireSemanticArticle, requireSharedEmphasis, requireSharedArticleFrame } from './article-presentation.js';
 
 // Source of truth: closed GitHub Issues authored by the repo owner (minus `excluded` label).
 // Issue body = markdown. Publish = close the issue. Unpublish = reopen or add `excluded`.
@@ -215,6 +216,7 @@ async function fetchIssues() {
       while (seenSlugs.has(slug)) slug = `${slug}-${iss.number}`;
       seenSlugs.add(slug);
       const html = await localizeImages(marked.parse(stripMeta(body)));
+      requireSemanticArticle(html, `Issue #${iss.number}`);
       items.push({
         number: iss.number,
         title: iss.title.trim(),
@@ -261,6 +263,7 @@ async function pruneAssets(referenced) {
 }
 
 async function main() {
+  requireSharedEmphasis(await readFile('blog.css', 'utf8'));
   const ver = async (f) => createHash('sha1').update(await readFile(f)).digest('hex').slice(0, 8);
   STYLES_VER = await ver('styles.css');
   APP_VER = await ver('app.js');
@@ -278,7 +281,9 @@ async function main() {
   for (const item of items) {
     const dir = path.join('posts', item.slug);
     await mkdir(dir, { recursive: true });
-    await writeFile(path.join(dir, 'index.html'), localizePostUrls(renderPost(item, items)));
+    const page = localizePostUrls(renderPost(item, items));
+    requireSharedArticleFrame(page, item.slug);
+    await writeFile(path.join(dir, 'index.html'), page);
     console.log(`  wrote posts/${item.slug}/index.html`);
   }
 
@@ -630,7 +635,7 @@ ${head({
           <p class="post-meta"><time datetime="${pubISO.slice(0, 10)}">${esc(date)}</time>${item.category ? `<span aria-hidden="true"> · </span><span class="post-category">${esc(item.category.toLowerCase())}</span>` : ''}</p>
           <h1 class="post-title">${esc(title)}</h1>
         </header>
-        <div class="post-body${slug === 'university-festival-platform' ? ' post-body--festival' : ''}" id="post-body">
+        <div class="post-body" id="post-body">
 ${body}
         </div>
       </article>${prevNextHtml}

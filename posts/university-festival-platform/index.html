@@ -1,4 +1,6 @@
-<!DOCTYPE html><html lang="en"><head>
+<!DOCTYPE html>
+<html lang="en">
+<head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <meta name="google-site-verification" content="sNrpo16A0vUj7vHmVNEmAGZj85cGykaOeHO44krbqDU">
@@ -25,7 +27,7 @@
   <link rel="stylesheet" href="/navigation.css?v=rose-1">
   <link rel="icon" type="image/svg+xml" href="/favicon.svg?v=woojin-w-2">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/github.min.css">
-  <link rel="stylesheet" href="/blog.css?v=9e2597e0">
+  <link rel="stylesheet" href="/blog.css?v=shared-9e2597e0">
   <meta property="article:published_time" content="2026-10-11T00:00:00.000Z">
   <meta property="article:modified_time" content="2026-10-11T08:13:16.000Z">
   <meta property="article:section" content="Backend">
@@ -42,7 +44,7 @@
           <h1 class="post-title">Designing and Operating a University Festival Platform</h1>
         </header>
         <div class="post-body" id="post-body">
-<p>At a Korean university festival, concerts and student-run booths take over the campus. Departments and clubs also set up temporary pubs, serving food and drinks themselves. A student might spend the afternoon enjoying the festival and the evening managing tables at their department's pub.</p>
+<html><head></head><body><p>At a Korean university festival, concerts and student-run booths take over the campus. Departments and clubs also set up temporary pubs, serving food and drinks themselves. A student might spend the afternoon enjoying the festival and the evening managing tables at their department's pub.</p>
 <p>Visitors need performance times and booth locations. Students running the pubs need to track available tables and call waiting guests. When the concert venue fills up, its organizers need to manage admission queues. These different kinds of work happen at the same time, across the same campus.</p>
 <p>We built a platform connecting festival information with these on-site operations for <strong>Adelante</strong>, Kyung Hee University's festival at its Global Campus on September 28–30, 2026. Our team at the university's <strong>LIKELION</strong> chapter developed it in about a month. As <strong>engineering lead</strong>, I led system design, deployment, and production operations.</p>
 <h2 id="connecting-festival-information-with-on-site-operations">A look inside the platform</h2>
@@ -208,7 +210,7 @@
 <h3 id="a-platform-that-worked-in-the-field">A platform that worked in the field</h3>
 <p>We took a one-month build into three days of live use, supporting <strong>17,308 estimated unique visitors and operations at 13 student-run pubs</strong>. Visitors used it to find performances and booths; student operators used SPOT to manage tables. The <strong>1,386 hours and 45 minutes of cumulative table use</strong> put the system to work in real pub operations.</p>
 <p>Under that demand, <strong>all six primary read paths met their response-time target, and we completed the festival with no observed service-wide interruption</strong>. All 582 notifications received provider acceptance on the first submission attempt. The service boundaries, business consistency rules, and deployment and recovery paths were implemented together and exercised in production. We launched as a team, supported real work on campus, and left a working system and measured baseline for the next festival.</p>
-
+</body></html>
         </div>
       </article>
     <nav class="post-nav" aria-label="Previous and next posts">
@@ -224,10 +226,25 @@
     </div>
     <aside class="toc" id="toc" aria-label="Contents">
       <p class="toc-title">contents</p>
-      <ul class="toc-list"><li class="toc-item toc-item--h2"><a href="#connecting-festival-information-with-on-site-operations" data-target="connecting-festival-information-with-on-site-operations">A look inside the platform</a></li><li class="toc-item toc-item--h2"><a href="#a-month-to-build-three-days-to-operate" data-target="a-month-to-build-three-days-to-operate">A month to build, three days to operate</a></li><li class="toc-item toc-item--h2"><a href="#service-boundaries-followed-data-ownership" data-target="service-boundaries-followed-data-ownership">Service boundaries followed data ownership</a></li><li class="toc-item toc-item--h3"><a href="#separate-the-units-that-need-independent-deployment" data-target="separate-the-units-that-need-independent-deployment">Separate the units that need independent deployment</a></li><li class="toc-item toc-item--h3"><a href="#an-execution-environment-the-team-could-operate" data-target="an-execution-environment-the-team-could-operate">An execution environment the team could operate</a></li><li class="toc-item toc-item--h2"><a href="#defining-what-concurrency-and-notifications-must-guarantee" data-target="defining-what-concurrency-and-notifications-must-guarantee">Defining what concurrency and notifications must guarantee</a></li><li class="toc-item toc-item--h3"><a href="#a-lock-cannot-identify-the-session-a-command-meant" data-target="a-lock-cannot-identify-the-session-a-command-meant">A lock cannot identify the session a command meant</a></li><li class="toc-item toc-item--h3"><a href="#preserve-the-notification-intent-and-track-an-uncertain-resu" data-target="preserve-the-notification-intent-and-track-an-uncertain-resu">Preserve the notification intent and track an uncertain result</a></li><li class="toc-item toc-item--h2"><a href="#deployment-included-a-path-back-to-a-working-release" data-target="deployment-included-a-path-back-to-a-working-release">Deployment included a path back to a working release</a></li><li class="toc-item toc-item--h3"><a href="#replace-tasks-while-preserving-business-state" data-target="replace-tasks-while-preserving-business-state">Replace tasks while preserving business state</a></li><li class="toc-item toc-item--h3"><a href="#redundancy-needs-separate-failure-domains" data-target="redundancy-needs-separate-failure-domains">Redundancy needs separate failure domains</a></li><li class="toc-item toc-item--h3"><a href="#alerts-carried-the-evidence-an-ai-agent-needed" data-target="alerts-carried-the-evidence-an-ai-agent-needed">Alerts carried the evidence an AI agent needed</a></li><li class="toc-item toc-item--h2"><a href="#measure-throughput-before-adding-resources" data-target="measure-throughput-before-adding-resources">Measure throughput before adding resources</a></li><li class="toc-item toc-item--h2"><a href="#production-gave-us-a-baseline-for-the-next-festival" data-target="production-gave-us-a-baseline-for-the-next-festival">Production gave us a baseline for the next festival</a></li><li class="toc-item toc-item--h3"><a href="#a-platform-that-worked-in-the-field" data-target="a-platform-that-worked-in-the-field">A platform that worked in the field</a></li></ul>
+      <ul class="toc-list">
+        <li class="toc-item toc-item--h2"><a href="#connecting-festival-information-with-on-site-operations" data-target="connecting-festival-information-with-on-site-operations">A look inside the platform</a></li>
+        <li class="toc-item toc-item--h2"><a href="#a-month-to-build-three-days-to-operate" data-target="a-month-to-build-three-days-to-operate">A month to build, three days to operate</a></li>
+        <li class="toc-item toc-item--h2"><a href="#service-boundaries-followed-data-ownership" data-target="service-boundaries-followed-data-ownership">Service boundaries followed data ownership</a></li>
+        <li class="toc-item toc-item--h3"><a href="#separate-the-units-that-need-independent-deployment" data-target="separate-the-units-that-need-independent-deployment">Separate the units that need independent deployment</a></li>
+        <li class="toc-item toc-item--h3"><a href="#an-execution-environment-the-team-could-operate" data-target="an-execution-environment-the-team-could-operate">An execution environment the team could operate</a></li>
+        <li class="toc-item toc-item--h2"><a href="#defining-what-concurrency-and-notifications-must-guarantee" data-target="defining-what-concurrency-and-notifications-must-guarantee">Defining what concurrency and notifications must guarantee</a></li>
+        <li class="toc-item toc-item--h3"><a href="#a-lock-cannot-identify-the-session-a-command-meant" data-target="a-lock-cannot-identify-the-session-a-command-meant">A lock cannot identify the session a command meant</a></li>
+        <li class="toc-item toc-item--h3"><a href="#preserve-the-notification-intent-and-track-an-uncertain-resu" data-target="preserve-the-notification-intent-and-track-an-uncertain-resu">Preserve the notification intent and track an uncertain result</a></li>
+        <li class="toc-item toc-item--h2"><a href="#deployment-included-a-path-back-to-a-working-release" data-target="deployment-included-a-path-back-to-a-working-release">Deployment included a path back to a working release</a></li>
+        <li class="toc-item toc-item--h3"><a href="#replace-tasks-while-preserving-business-state" data-target="replace-tasks-while-preserving-business-state">Replace tasks while preserving business state</a></li>
+        <li class="toc-item toc-item--h3"><a href="#redundancy-needs-separate-failure-domains" data-target="redundancy-needs-separate-failure-domains">Redundancy needs separate failure domains</a></li>
+        <li class="toc-item toc-item--h3"><a href="#alerts-carried-the-evidence-an-ai-agent-needed" data-target="alerts-carried-the-evidence-an-ai-agent-needed">Alerts carried the evidence an AI agent needed</a></li>
+        <li class="toc-item toc-item--h2"><a href="#measure-throughput-before-adding-resources" data-target="measure-throughput-before-adding-resources">Measure throughput before adding resources</a></li>
+        <li class="toc-item toc-item--h2"><a href="#production-gave-us-a-baseline-for-the-next-festival" data-target="production-gave-us-a-baseline-for-the-next-festival">Production gave us a baseline for the next festival</a></li>
+        <li class="toc-item toc-item--h3"><a href="#a-platform-that-worked-in-the-field" data-target="a-platform-that-worked-in-the-field">A platform that worked in the field</a></li>
+      </ul>
     </aside>
   </main>
   <script src="/app.js?v=3eb51ad7"></script>
-
-
-</body></html>
+</body>
+</html>

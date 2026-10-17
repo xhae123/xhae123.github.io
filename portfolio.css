@@ -17,7 +17,7 @@ a:focus-visible, button:focus-visible { outline: 2px solid var(--accent); outlin
 .folio-home .page { max-width: 1160px; padding: 0 48px; }
 .skip { position: absolute; top: -100px; left: 16px; padding: 9px 16px; background: white; z-index: 30; }
 .skip:focus { top: 10px; }
-.identity { display: flex; justify-content: space-between; align-items: center; gap: 32px; padding: 56px 0 32px; border-bottom: 1px solid var(--rule); }
+.identity { display: flex; justify-content: space-between; align-items: center; gap: 32px; padding: 56px 0 32px; }
 .identity-home { display: flex; flex-direction: column; gap: 9px; }
 .identity-home:hover { text-decoration: none; }
 .identity h1 { font-size: 58px; font-weight: 300; line-height: 1.1; letter-spacing: -.055em; margin: 0; }

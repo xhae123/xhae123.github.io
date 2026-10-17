@@ -51,6 +51,14 @@ assert.match($('#about-me').text(), /working through problems/);
 assert.match($('#about-me').text(), /Software lets me turn those ideas into something real quickly/);
 assert.match($('#about-me').text(), /I treat the problems I take on as my own/);
 assert.doesNotMatch($('#about-me').text(), /lost sight of|focused only on building/);
+assert.deepEqual($('main > section').toArray().map(el => $(el).attr('id')),
+  ['recent-writing', 'about-me'], 'Home shows recent posts followed by about me');
+assert.equal($('.folio-entry, .background-row').length, 0, 'Remaining home sections are hidden');
+
+// Keep checking the preserved portfolio content inside the HTML comment.
+const hidden = $('main').contents().toArray().filter(node => node.type === 'comment').map(node => node.data).join('');
+{
+const $ = cheerio.load(hidden);
 assert.doesNotMatch($('#work, #projects, #community, #open-source, #awards').text(), /Hook|Puppeteer|Thompson Sampling|connection pool|polling|EventLoop|Promise/);
 assert.equal($('.case-study, .case-studies, #selected-work').length, 0);
 assert.equal($('.folio-bullets').length, 11, 'Experience and OSS use bullets; awards and activities use compact entries');
@@ -62,7 +70,7 @@ assert.equal($('#case-adelante .folio-role').text(), 'Development Lead');
 assert.doesNotMatch($('main').text(), /Case studies/);
 assert.equal($('.folio-entry').length, 19, 'Five selected open-source entries plus the remaining history');
 assert.deepEqual($('main > section > h2, .recent-writing-heading h2, .folio-group-heading h2').toArray().map(el => $(el).text()),
-  ['about me', 'recent posts', 'work experience', 'selected projects', 'awards & activities', 'education', 'open source']);
+  ['work experience', 'selected projects', 'awards & activities', 'education', 'open source']);
 assert.equal($('#open-source .folio-entry').length, 5);
 assert.equal($('.oss-directory').length, 0, 'Open source shares the standard entry layout');
 assert.equal($('#open-source > .folio-entry').length, 5);
@@ -112,7 +120,7 @@ assert.equal($('.folio-entry-links a').length, 5, 'Selected open-source reposito
 assert.equal($('#open-source .folio-date .folio-entry-links a').length, 5, 'Repository links sit next to the year');
 assert.equal($('#open-source .folio-entry-body .folio-entry-links').length, 0, 'No duplicate links below open-source descriptions');
 assert.equal($('.folio-entry a[href^="/work/"], .folio-entry a[href^="/posts/"]').length, 0, 'No detail or retrospective links beneath entries');
-assert.equal($('.background-row').length, 2, 'Education and certification remain visible');
+assert.equal($('.background-row').length, 2, 'Education and certification remain preserved');
 assert.deepEqual($('#work h3').toArray().map(el => $(el).text()),
   ['Afinit', 'Raspy', 'JamCoding Academy, Bundang']);
 assert.deepEqual($('#projects h3').toArray().map(el => $(el).text()),
@@ -155,6 +163,7 @@ assert.match(teaching.text(), /three regular classes/);
 assert.match($('#jansol').text(), /Registered 152 users/);
 assert.doesNotMatch($('#jansol').text(), /Policy comparison is a synthetic simulation/);
 assert.doesNotMatch($('main').text(), /\[object Object\]|undefined/);
+}
 const writing = await document('writing/index.html');
 assert.equal($('#about-me .hiring-email').text(), 'xhae000@gmail.com');
 assert.equal($('#about-me .hiring-note a').length, 0, 'Hiring contact is plain text, not a link');
@@ -181,4 +190,4 @@ for (const el of writing('.feed .item').toArray()) {
     assert.equal(article(label).text(), article(label).text().toLowerCase(), 'Detail UI labels are lowercase');
   }
 }
-console.log(`Portfolio checks passed: 11 bullet-list entries, 8 compact awards/activities, 2 background entries, ${writing('.feed .item').length} posts.`);
+console.log(`Portfolio checks passed: recent posts and about me visible, hidden portfolio preserved, ${writing('.feed .item').length} posts.`);

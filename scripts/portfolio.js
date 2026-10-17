@@ -378,7 +378,7 @@ function writing(items) {
 
 export async function writePortfolio(items) {
   const pages = [['index.html', home(items)], ['about/index.html', about()], ['writing/index.html', writing(items)]];
-  for (const w of works) pages.push([`work/${w.slug}/index.html`, shell(w.name, `/work/${w.slug}/`, `<a class="back" href="/#case-${w.slug}">← Portfolio</a><section class="page-intro"><p class="eyebrow">${escape(w.type)} / ${w.date}</p><h1>${w.name}</h1><p class="intro">${w.lead}</p><p class="meta">${w.role}</p></section><div class="prose">${w.body}</div>${w.related.length ? `<section class="related"><h2>Related posts</h2>${w.related.map(([s,t]) => `<a class="writing-row" href="${post(s)}">${t} ↗</a>`).join('')}</section>` : ''}<nav class="next-work" aria-label="Other experience">${works.filter(x => x !== w).map(x => `<a href="/work/${x.slug}/">${x.name} ↗</a>`).join('')}</nav>`, 'work')]);
+  for (const w of works) pages.push([`work/${w.slug}/index.html`, shell(w.name, `/work/${w.slug}/`, `<a class="back" href="/#about-me">← Portfolio</a><section class="page-intro"><p class="eyebrow">${escape(w.type)} / ${w.date}</p><h1>${w.name}</h1><p class="intro">${w.lead}</p><p class="meta">${w.role}</p></section><div class="prose">${w.body}</div>${w.related.length ? `<section class="related"><h2>Related posts</h2>${w.related.map(([s,t]) => `<a class="writing-row" href="${post(s)}">${t} ↗</a>`).join('')}</section>` : ''}<nav class="next-work" aria-label="Other experience">${works.filter(x => x !== w).map(x => `<a href="/work/${x.slug}/">${x.name} ↗</a>`).join('')}</nav>`, 'work')]);
   for (const [file, html] of pages) {
     const dir = file.slice(0, file.lastIndexOf('/'));
     if (dir) await mkdir(dir, { recursive: true });

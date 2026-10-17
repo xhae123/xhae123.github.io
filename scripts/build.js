@@ -7,6 +7,7 @@ import { marked } from 'marked';
 import { writePortfolio, works, primaryNavigation } from './portfolio.js';
 import { englishPostSlug, legacyRedirect, localizePostUrls, postRoutes } from './post-routes.js';
 import { requireSemanticArticle, requireSharedEmphasis, requireSharedArticleFrame } from './article-presentation.js';
+import { applyArticleSections } from './article-sections.js';
 
 // Source of truth: closed GitHub Issues authored by the repo owner (minus `excluded` label).
 // Issue body = markdown. Publish = close the issue. Unpublish = reopen or add `excluded`.
@@ -215,7 +216,8 @@ async function fetchIssues() {
       let slug = declaredSlug || englishPostSlug(slugify(iss.title));
       while (seenSlugs.has(slug)) slug = `${slug}-${iss.number}`;
       seenSlugs.add(slug);
-      const html = await localizeImages(marked.parse(stripMeta(body)));
+      const html = await applyArticleSections(await localizeImages(marked.parse(stripMeta(body))), slug);
+      collectAssetRefs(html, referenced);
       requireSemanticArticle(html, `Issue #${iss.number}`);
       items.push({
         number: iss.number,

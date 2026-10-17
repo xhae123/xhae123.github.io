@@ -1,6 +1,4 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
+<!DOCTYPE html><html lang="en"><head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <meta name="google-site-verification" content="sNrpo16A0vUj7vHmVNEmAGZj85cGykaOeHO44krbqDU">
@@ -27,7 +25,7 @@
   <link rel="stylesheet" href="/navigation.css?v=rose-1">
   <link rel="icon" type="image/svg+xml" href="/favicon.svg?v=woojin-w-2">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/github.min.css">
-  <link rel="stylesheet" href="/blog.css?v=shared-73e7fe92">
+  <link rel="stylesheet" href="/blog.css?v=9e2597e0">
   <meta property="article:published_time" content="2026-10-11T00:00:00.000Z">
   <meta property="article:modified_time" content="2026-10-11T08:13:16.000Z">
   <meta property="article:section" content="Backend">
@@ -44,47 +42,64 @@
           <h1 class="post-title">Designing and Operating a University Festival Platform</h1>
         </header>
         <div class="post-body" id="post-body">
-<html><head></head><body><p>At a Korean university festival, concerts and student-run booths take over the campus. Departments and clubs also set up temporary pubs, serving food and drinks themselves. A student might spend the afternoon enjoying the festival and the evening managing tables at their department's pub.</p>
+<p>At a Korean university festival, concerts and student-run booths take over the campus. Departments and clubs also set up temporary pubs, serving food and drinks themselves. A student might spend the afternoon enjoying the festival and the evening managing tables at their department's pub.</p>
 <p>Visitors need performance times and booth locations. Students running the pubs need to track available tables and call waiting guests. When the concert venue fills up, its organizers need to manage admission queues. These different kinds of work happen at the same time, across the same campus.</p>
 <p>We built a platform connecting festival information with these on-site operations for <strong>Adelante</strong>, Kyung Hee University's festival at its Global Campus on September 28–30, 2026. Our team at the university's <strong>LIKELION</strong> chapter developed it in about a month. As <strong>engineering lead</strong>, I led system design, deployment, and production operations.</p>
-<h2 id="connecting-festival-information-with-on-site-operations">Connecting festival information with on-site operations</h2>
-<h3 id="one-website-for-performances-and-booths">One website for performances and booths</h3>
-<p>Visitors could open a single website without installing an app. The home screen collected festival announcements, while the performance page showed each day's lineup and the current running order.</p>
-<figure>
-<a href="/assets/festival-platform/instagram-home-and-performances-en.webp" aria-label="View figure at full size"><img src="/assets/festival-platform/instagram-home-and-performances-en-display.webp" alt="English launch cards showing the festival home screen and performance schedule" width="2880" height="1800" loading="lazy"></a>
-<figcaption>Figure 1. Festival home and performance schedule.</figcaption>
-</figure><p>Notices and the campus map lived on the same website. Selecting a booth on the map opened its location and operating information, giving visitors one place to find what they needed on campus.</p>
-<figure>
-<a href="/assets/festival-platform/instagram-notices-and-map-en.webp" aria-label="View figure at full size"><img src="/assets/festival-platform/instagram-notices-and-map-en-display.webp" alt="English launch cards showing notices, the campus map, and booth details" width="2880" height="1800" loading="lazy"></a>
-<figcaption>Figure 2. Notices, map, and booth details for visitors at the festival.</figcaption>
-</figure><h3 id="table-management-and-admission-queues">Table management and admission queues</h3>
-<p>For on-site operations, we provided a separate service called <strong>SPOT</strong>. Students running a pub could start, extend, and end a table's use from their phones, then call waiting guests when a table became available. The open-air concert venue's organizers managed registration and admission. The public website used these operational states to show pub and venue queue information.</p>
-<figure>
-<a href="/assets/festival-platform/instagram-pub-and-stage-status-en.webp" aria-label="View figure at full size"><img src="/assets/festival-platform/instagram-pub-and-stage-status-en-display.webp" alt="English launch cards showing public pub and concert venue queue status" width="2880" height="1800" loading="lazy"></a>
-<figcaption>Figure 3. Public queue status, maintained by each venue's operational service.</figcaption>
-</figure><p>Guests registered on iPads placed at the venues. We separated guest-facing registration from the screens used by student operators. Each pub could manage only its own tables and queue.</p>
-<figure>
-<a href="/assets/festival-platform/instagram-stage-and-pub-ipad-en.webp" aria-label="View figure at full size"><img src="/assets/festival-platform/instagram-stage-and-pub-ipad-en-display.webp" alt="English launch cards showing the concert venue and pub registration iPads" width="2880" height="1800" loading="lazy"></a>
-<figcaption>Figure 4. Guest registration and operator tools use separate accounts and permissions.</figcaption>
-</figure><h3 id="following-a-queue-from-registration-to-the-call">Following a queue from registration to the call</h3>
-<p>After registering, guests received a personal status link. They could check how many parties were ahead of them while exploring the festival, then return when a KakaoTalk notification arrived. <strong>Registration, status updates, and the call back to the venue were one product flow.</strong></p>
-<figure>
-<a href="/assets/festival-platform/instagram-stage-and-pub-personal-queue-en.webp" aria-label="View figure at full size"><img src="/assets/festival-platform/instagram-stage-and-pub-personal-queue-en-display.webp" alt="English launch cards showing personal queue links for the concert venue and pubs" width="2880" height="1800" loading="lazy"></a>
-<figcaption>Figure 5. Personal queue screens show position and call status after registration.</figcaption>
-</figure><p>At the concert venue, a call led to admission instructions. Cancellation before a call and admission after it were separate transitions, so the guest's view matched the organizer's actions.</p>
-<figure>
-<a href="/assets/festival-platform/instagram-stage-called-and-queue-cancel-en.webp" aria-label="View figure at full size"><img src="/assets/festival-platform/instagram-stage-called-and-queue-cancel-en-display.webp" alt="English launch cards showing concert admission after a call and queue cancellation" width="2880" height="1800" loading="lazy"></a>
-<figcaption>Figure 6. Concert admission and personal queue cancellation.</figcaption>
-</figure><p>For pubs, the notification explained where to return and how much time remained. Deferring a turn and missing the call window also had their own states. This flow made table state changes and notification delivery part of the same design problem.</p>
-<figure>
-<a href="/assets/festival-platform/instagram-pub-called-and-queue-defer-en.webp" aria-label="View figure at full size"><img src="/assets/festival-platform/instagram-pub-called-and-queue-defer-en-display.webp" alt="English launch cards showing pub call notifications and deferring a turn" width="2880" height="1800" loading="lazy"></a>
-<figcaption>Figure 7. Pub calls and queue deferral.</figcaption>
-</figure><h3 id="photo-verification-for-a-campus-event">Photo verification for a campus event</h3>
-<p>In a sticker-hunt event, visitors found stickers around the festival and submitted photos. An AI model evaluated each photo; the festival API committed verification records and issued reward coupons. Visitors then used the coupons for a prize draw at the student council booth. Photo recognition and the physical reward were connected in one flow.</p>
-<figure>
-<a href="/assets/festival-platform/instagram-sticker-event-and-reward-en.webp" aria-label="View figure at full size"><img src="/assets/festival-platform/instagram-sticker-event-and-reward-en-display.webp" alt="English launch cards showing AI photo verification and the sticker event reward" width="2880" height="1800" loading="lazy"></a>
-<figcaption>Figure 8. AI photo verification connects to verification records and coupon rewards.</figcaption>
-</figure><h2 id="a-month-to-build-three-days-to-operate">A month to build, three days to operate</h2>
+<h2 id="connecting-festival-information-with-on-site-operations">A look inside the platform</h2>
+<p>Visitors found performances and booths on the festival website. Behind those screens, SPOT let student operators manage tables, waiting guests, and concert admission.</p>
+<section data-gallery="" id="product-tour" aria-label="Adelante product tour">
+  <ol aria-label="Product screens" tabindex="0">
+    <li id="one-website-for-performances-and-booths">
+      <figure>
+        <img src="/assets/festival-platform/instagram-home-and-performances-en-display.webp" alt="Festival home with announcements alongside the daily performance lineup and running order" width="2880" height="1800" loading="lazy" draggable="false">
+        <figcaption><p><span>Figure 1</span>Festival home &amp; performances</p><p>The home screen gathered announcements and festival activities. The performance page showed each day's lineup and current running order, without an app install.</p></figcaption>
+      </figure>
+    </li>
+    <li>
+      <figure>
+        <img src="/assets/festival-platform/instagram-notices-and-map-en-display.webp" alt="Festival notices and campus map with booth locations and operating information" width="2880" height="1800" loading="lazy" draggable="false">
+        <figcaption><p><span>Figure 2</span>Notices &amp; campus map</p><p>Visitors checked notices and explored the campus map in the same website. Selecting a booth opened its location and operating information.</p></figcaption>
+      </figure>
+    </li>
+    <li id="table-management-and-admission-queues">
+      <figure>
+        <img src="/assets/festival-platform/instagram-pub-and-stage-status-en-display.webp" alt="Public queue status for student pubs and the concert venue" width="2880" height="1800" loading="lazy" draggable="false">
+        <figcaption><p><span>Figure 3</span>Pub &amp; concert queues</p><p>SPOT let pub operators start, extend, and end table sessions, then call waiting guests. The public website displayed queue information from the pub and concert services.</p></figcaption>
+      </figure>
+    </li>
+    <li>
+      <figure>
+        <img src="/assets/festival-platform/instagram-stage-and-pub-ipad-en-display.webp" alt="Separate guest registration screens on iPads at pubs and the concert venue" width="2880" height="1800" loading="lazy" draggable="false">
+        <figcaption><p><span>Figure 4</span>Guest registration</p><p>Guests registered on venue iPads. Registration accounts were separate from operator accounts; each pub could manage only its own tables and waiting list.</p></figcaption>
+      </figure>
+    </li>
+    <li id="following-a-queue-from-registration-to-the-call">
+      <figure>
+        <img src="/assets/festival-platform/instagram-stage-and-pub-personal-queue-en-display.webp" alt="Personal status links showing a guest's queue position and call status" width="2880" height="1800" loading="lazy" draggable="false">
+        <figcaption><p><span>Figure 5</span>Personal queue links</p><p>A personal status link showed how many parties were ahead. Guests could explore the festival and return when their KakaoTalk call notification arrived.</p></figcaption>
+      </figure>
+    </li>
+    <li>
+      <figure>
+        <img src="/assets/festival-platform/instagram-stage-called-and-queue-cancel-en-display.webp" alt="Concert admission instructions after a call and queue cancellation before a call" width="2880" height="1800" loading="lazy" draggable="false">
+        <figcaption><p><span>Figure 6</span>Concert admission &amp; cancellation</p><p>Concert guests received admission instructions when called. Cancellation before a call and admission afterward were separate transitions, reflected in the guest's screen.</p></figcaption>
+      </figure>
+    </li>
+    <li>
+      <figure>
+        <img src="/assets/festival-platform/instagram-pub-called-and-queue-defer-en-display.webp" alt="Pub call notification with return instructions and an option to defer a turn" width="2880" height="1800" loading="lazy" draggable="false">
+        <figcaption><p><span>Figure 7</span>Pub calls &amp; queue deferral</p><p>Pub calls explained where to return and how much time remained. Deferring a turn and missing the call window had their own states, connecting table management with notification delivery.</p></figcaption>
+      </figure>
+    </li>
+    <li id="photo-verification-for-a-campus-event">
+      <figure>
+        <img src="/assets/festival-platform/instagram-sticker-event-and-reward-en-display.webp" alt="Photo verification in the sticker hunt leading to a reward coupon for the student council booth" width="2880" height="1800" loading="lazy" draggable="false">
+        <figcaption><p><span>Figure 8</span>Sticker hunt &amp; rewards</p><p>Visitors submitted photos of festival stickers. An AI model evaluated the photos; the festival API recorded verification and issued coupons for a prize draw at the student council booth.</p></figcaption>
+      </figure>
+    </li>
+  </ol>
+</section>
+<h2 id="a-month-to-build-three-days-to-operate">A month to build, three days to operate</h2>
 <p>I led the architecture, shared authentication foundation, pub operations, AWS infrastructure and deployment, and performance validation. I divided features into issues that gave teammates room to understand the full flow and make implementation decisions. I defined common design rules and service contracts, reviewed changes across the system, and brought those features through to production.</p>
 <p>We had a month to launch, and both content and operational state would keep changing during the festival. Pub operations had to continue while we updated performance features. Calling a guest had to leave the queue state and notification work in agreement. The design started with three decisions: <strong>where changes should be isolated, which states must commit together, and how failures would be recovered.</strong></p>
 <blockquote>
@@ -193,7 +208,7 @@
 <h3 id="a-platform-that-worked-in-the-field">A platform that worked in the field</h3>
 <p>We took a one-month build into three days of live use, supporting <strong>17,308 estimated unique visitors and operations at 13 student-run pubs</strong>. Visitors used it to find performances and booths; student operators used SPOT to manage tables. The <strong>1,386 hours and 45 minutes of cumulative table use</strong> put the system to work in real pub operations.</p>
 <p>Under that demand, <strong>all six primary read paths met their response-time target, and we completed the festival with no observed service-wide interruption</strong>. All 582 notifications received provider acceptance on the first submission attempt. The service boundaries, business consistency rules, and deployment and recovery paths were implemented together and exercised in production. We launched as a team, supported real work on campus, and left a working system and measured baseline for the next festival.</p>
-</body></html>
+
         </div>
       </article>
     <nav class="post-nav" aria-label="Previous and next posts">
@@ -209,29 +224,10 @@
     </div>
     <aside class="toc" id="toc" aria-label="Contents">
       <p class="toc-title">contents</p>
-      <ul class="toc-list">
-        <li class="toc-item toc-item--h2"><a href="#connecting-festival-information-with-on-site-operations" data-target="connecting-festival-information-with-on-site-operations">Connecting festival information with on-site operations</a></li>
-        <li class="toc-item toc-item--h3"><a href="#one-website-for-performances-and-booths" data-target="one-website-for-performances-and-booths">One website for performances and booths</a></li>
-        <li class="toc-item toc-item--h3"><a href="#table-management-and-admission-queues" data-target="table-management-and-admission-queues">Table management and admission queues</a></li>
-        <li class="toc-item toc-item--h3"><a href="#following-a-queue-from-registration-to-the-call" data-target="following-a-queue-from-registration-to-the-call">Following a queue from registration to the call</a></li>
-        <li class="toc-item toc-item--h3"><a href="#photo-verification-for-a-campus-event" data-target="photo-verification-for-a-campus-event">Photo verification for a campus event</a></li>
-        <li class="toc-item toc-item--h2"><a href="#a-month-to-build-three-days-to-operate" data-target="a-month-to-build-three-days-to-operate">A month to build, three days to operate</a></li>
-        <li class="toc-item toc-item--h2"><a href="#service-boundaries-followed-data-ownership" data-target="service-boundaries-followed-data-ownership">Service boundaries followed data ownership</a></li>
-        <li class="toc-item toc-item--h3"><a href="#separate-the-units-that-need-independent-deployment" data-target="separate-the-units-that-need-independent-deployment">Separate the units that need independent deployment</a></li>
-        <li class="toc-item toc-item--h3"><a href="#an-execution-environment-the-team-could-operate" data-target="an-execution-environment-the-team-could-operate">An execution environment the team could operate</a></li>
-        <li class="toc-item toc-item--h2"><a href="#defining-what-concurrency-and-notifications-must-guarantee" data-target="defining-what-concurrency-and-notifications-must-guarantee">Defining what concurrency and notifications must guarantee</a></li>
-        <li class="toc-item toc-item--h3"><a href="#a-lock-cannot-identify-the-session-a-command-meant" data-target="a-lock-cannot-identify-the-session-a-command-meant">A lock cannot identify the session a command meant</a></li>
-        <li class="toc-item toc-item--h3"><a href="#preserve-the-notification-intent-and-track-an-uncertain-resu" data-target="preserve-the-notification-intent-and-track-an-uncertain-resu">Preserve the notification intent and track an uncertain result</a></li>
-        <li class="toc-item toc-item--h2"><a href="#deployment-included-a-path-back-to-a-working-release" data-target="deployment-included-a-path-back-to-a-working-release">Deployment included a path back to a working release</a></li>
-        <li class="toc-item toc-item--h3"><a href="#replace-tasks-while-preserving-business-state" data-target="replace-tasks-while-preserving-business-state">Replace tasks while preserving business state</a></li>
-        <li class="toc-item toc-item--h3"><a href="#redundancy-needs-separate-failure-domains" data-target="redundancy-needs-separate-failure-domains">Redundancy needs separate failure domains</a></li>
-        <li class="toc-item toc-item--h3"><a href="#alerts-carried-the-evidence-an-ai-agent-needed" data-target="alerts-carried-the-evidence-an-ai-agent-needed">Alerts carried the evidence an AI agent needed</a></li>
-        <li class="toc-item toc-item--h2"><a href="#measure-throughput-before-adding-resources" data-target="measure-throughput-before-adding-resources">Measure throughput before adding resources</a></li>
-        <li class="toc-item toc-item--h2"><a href="#production-gave-us-a-baseline-for-the-next-festival" data-target="production-gave-us-a-baseline-for-the-next-festival">Production gave us a baseline for the next festival</a></li>
-        <li class="toc-item toc-item--h3"><a href="#a-platform-that-worked-in-the-field" data-target="a-platform-that-worked-in-the-field">A platform that worked in the field</a></li>
-      </ul>
+      <ul class="toc-list"><li class="toc-item toc-item--h2"><a href="#connecting-festival-information-with-on-site-operations" data-target="connecting-festival-information-with-on-site-operations">A look inside the platform</a></li><li class="toc-item toc-item--h2"><a href="#a-month-to-build-three-days-to-operate" data-target="a-month-to-build-three-days-to-operate">A month to build, three days to operate</a></li><li class="toc-item toc-item--h2"><a href="#service-boundaries-followed-data-ownership" data-target="service-boundaries-followed-data-ownership">Service boundaries followed data ownership</a></li><li class="toc-item toc-item--h3"><a href="#separate-the-units-that-need-independent-deployment" data-target="separate-the-units-that-need-independent-deployment">Separate the units that need independent deployment</a></li><li class="toc-item toc-item--h3"><a href="#an-execution-environment-the-team-could-operate" data-target="an-execution-environment-the-team-could-operate">An execution environment the team could operate</a></li><li class="toc-item toc-item--h2"><a href="#defining-what-concurrency-and-notifications-must-guarantee" data-target="defining-what-concurrency-and-notifications-must-guarantee">Defining what concurrency and notifications must guarantee</a></li><li class="toc-item toc-item--h3"><a href="#a-lock-cannot-identify-the-session-a-command-meant" data-target="a-lock-cannot-identify-the-session-a-command-meant">A lock cannot identify the session a command meant</a></li><li class="toc-item toc-item--h3"><a href="#preserve-the-notification-intent-and-track-an-uncertain-resu" data-target="preserve-the-notification-intent-and-track-an-uncertain-resu">Preserve the notification intent and track an uncertain result</a></li><li class="toc-item toc-item--h2"><a href="#deployment-included-a-path-back-to-a-working-release" data-target="deployment-included-a-path-back-to-a-working-release">Deployment included a path back to a working release</a></li><li class="toc-item toc-item--h3"><a href="#replace-tasks-while-preserving-business-state" data-target="replace-tasks-while-preserving-business-state">Replace tasks while preserving business state</a></li><li class="toc-item toc-item--h3"><a href="#redundancy-needs-separate-failure-domains" data-target="redundancy-needs-separate-failure-domains">Redundancy needs separate failure domains</a></li><li class="toc-item toc-item--h3"><a href="#alerts-carried-the-evidence-an-ai-agent-needed" data-target="alerts-carried-the-evidence-an-ai-agent-needed">Alerts carried the evidence an AI agent needed</a></li><li class="toc-item toc-item--h2"><a href="#measure-throughput-before-adding-resources" data-target="measure-throughput-before-adding-resources">Measure throughput before adding resources</a></li><li class="toc-item toc-item--h2"><a href="#production-gave-us-a-baseline-for-the-next-festival" data-target="production-gave-us-a-baseline-for-the-next-festival">Production gave us a baseline for the next festival</a></li><li class="toc-item toc-item--h3"><a href="#a-platform-that-worked-in-the-field" data-target="a-platform-that-worked-in-the-field">A platform that worked in the field</a></li></ul>
     </aside>
   </main>
-  <script src="/app.js?v=391ab9a5"></script>
-</body>
-</html>
+  <script src="/app.js?v=3eb51ad7"></script>
+
+
+</body></html>

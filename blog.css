@@ -79,6 +79,60 @@ body { letter-spacing: -.02em; line-height: 1.8; }
 .post-body figure img { display: block; width: 100%; height: auto; margin: 0; }
 .post-body figcaption { font-size: 13px; line-height: 1.8; margin-top: 12px; color: var(--muted); font-style: normal; }
 .post-body figure > a { display: block; cursor: zoom-in; }
+/* Shared image carousel: controls sit over the images; captions stay in the article. */
+.post-body [data-gallery] { position: relative; margin: 28px 0 40px; }
+.post-body [data-gallery] > ol { display: grid; grid-auto-flow: column; grid-auto-columns: 100%; gap: 0; margin: 0; padding: 0; list-style: none; overflow-x: auto; overscroll-behavior-x: contain; scroll-snap-type: x mandatory; scrollbar-width: thin; scrollbar-color: var(--accent-soft) transparent; }
+.post-body [data-gallery][data-enhanced] > ol { scrollbar-width: none; }
+.post-body [data-gallery][data-enhanced] > ol::-webkit-scrollbar { display: none; }
+.post-body [data-gallery] > ol > li { min-width: 0; margin: 0; padding: 0; scroll-snap-align: start; scroll-snap-stop: always; }
+.post-body [data-gallery] figure { margin: 0; }
+.post-body [data-gallery] figure img { width: 100%; height: auto; aspect-ratio: 8 / 5; object-fit: contain; background: #f2f1ef; cursor: default; user-select: none; -webkit-user-drag: none; }
+.post-body [data-gallery] figcaption { margin: 0; padding: 18px 0 0; text-align: left; }
+.post-body [data-gallery][data-enhanced] figcaption { padding-top: 42px; }
+.post-body [data-gallery] figcaption p { margin: 0; color: var(--body-ink); font-size: 14px; line-height: 1.7; }
+.post-body [data-gallery] figcaption p:first-child { display: flex; align-items: baseline; gap: 12px; margin-bottom: 6px; color: var(--ink); font-size: 16px; font-weight: 500; line-height: 1.5; letter-spacing: -.02em; }
+.post-body [data-gallery] figcaption span { flex: none; color: var(--muted); font: 11px/1.6 var(--sans); letter-spacing: 0; }
+.post-body [data-gallery-overlay] { position: absolute; inset: 0 0 auto; width: 100%; aspect-ratio: 8 / 5; pointer-events: none; }
+.post-body [data-gallery-status] { position: absolute; top: 12px; right: 12px; display: flex; align-items: center; gap: 2px; padding: 2px 3px 2px 11px; border: 1px solid #ffffff20; border-radius: 20px; background: #202020bf; color: #fff; backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px); }
+.post-body [data-gallery-count] { padding-right: 4px; font: 11px/1.5 var(--sans); font-variant-numeric: tabular-nums; letter-spacing: .03em; white-space: nowrap; }
+.post-body [data-gallery-playback] { display: grid; place-items: center; width: 28px; height: 28px; padding: 0; border: 0; border-radius: 50%; background: transparent; color: inherit; cursor: pointer; pointer-events: auto; }
+.post-body [data-gallery-playback]:hover { background: #ffffff1a; }
+.post-body [data-gallery-playback] svg { width: 12px; height: 12px; fill: none; stroke: currentColor; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
+.post-body [data-gallery-progress] { position: absolute; left: 0; right: 0; bottom: 0; height: 3px; transform: translateY(50%); background: #56334024; overflow: hidden; }
+.post-body [data-gallery-progress] > span { display: block; width: 100%; height: 100%; transform: scaleX(0); transform-origin: left; background: linear-gradient(90deg, #85334d, #b34c69 65%, #dc92a7); border-radius: 0 2px 2px 0; }
+.post-body [data-gallery-arrows] { position: absolute; top: 50%; left: 2px; right: 2px; display: flex; justify-content: space-between; transform: translateY(-50%); }
+.post-body [data-gallery-arrows] button { display: grid; place-items: center; width: 68px; height: 68px; padding: 0; border: 0; border-radius: 50%; background: transparent; color: #292929; cursor: pointer; pointer-events: auto; -webkit-tap-highlight-color: transparent; touch-action: manipulation; }
+.post-body [data-gallery-arrows] button > span { display: grid; place-items: center; width: 40px; height: 40px; border: 1px solid #0000000d; border-radius: 50%; background: #fffffff0; box-shadow: 0 2px 8px #00000012, 0 8px 24px #0000000a; backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px); transition: transform .18s ease, background .18s ease, box-shadow .18s ease; }
+.post-body [data-gallery-arrows] button:hover > span { background: #fff; box-shadow: 0 3px 12px #0000001c, 0 8px 24px #0000000d; transform: scale(1.06); }
+.post-body [data-gallery-arrows] button:active > span { transform: scale(.94); }
+.post-body [data-gallery-arrows] button:disabled { visibility: hidden; }
+.post-body [data-gallery-arrows] svg { width: 18px; height: 18px; fill: none; stroke: currentColor; stroke-width: 1.9; stroke-linecap: round; stroke-linejoin: round; }
+.post-body [data-gallery-dots] { position: absolute; top: 100%; left: 50%; display: flex; padding-top: 2px; transform: translateX(-50%); }
+.post-body [data-gallery-dots] button { display: grid; place-items: center; width: 20px; height: 34px; padding: 0; border: 0; border-radius: 0; background: transparent; cursor: pointer; pointer-events: auto; }
+.post-body [data-gallery-dots] button::before { content: ''; width: 5px; height: 5px; border-radius: 50%; background: #d4d2d0; }
+.post-body [data-gallery-dots] button[aria-pressed="true"]::before { background: var(--accent); }
+.post-body [data-gallery] :focus-visible { outline: 2px solid var(--accent); outline-offset: -3px; }
+.post-body [data-gallery-arrows] button:focus-visible { outline: none; }
+.post-body [data-gallery-arrows] button:focus-visible > span { outline: 2px solid var(--accent); outline-offset: 4px; }
+@media (max-width: 600px) {
+  .post-body [data-gallery] { margin-top: 24px; }
+  .post-body [data-gallery-arrows] { left: 0; right: 0; }
+  .post-body [data-gallery-arrows] button { width: 56px; height: 56px; }
+  .post-body [data-gallery-arrows] button > span { width: 36px; height: 36px; }
+  .post-body [data-gallery-status] { top: 8px; right: 8px; padding-left: 9px; }
+  .post-body [data-gallery-count] { font-size: 10px; }
+  .post-body [data-gallery] figcaption p:first-child { gap: 9px; font-size: 15px; }
+  .post-body [data-gallery] figcaption p { font-size: 13px; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .post-body [data-gallery-arrows] button > span { transition: none; }
+}
+@media print {
+  .post-body [data-gallery] > ol { display: block; overflow: visible; }
+  .post-body [data-gallery] > ol > li { break-inside: avoid; margin-bottom: 24px; }
+  .post-body [data-gallery] figcaption { padding-top: 14px; }
+  .post-body [data-gallery-overlay] { display: none; }
+}
 .post-body ul, .post-body ol { margin: 24px 0; padding-left: 24px; }
 .post-body li { margin: 8px 0; }
 .post-body li::marker { color: var(--accent); }

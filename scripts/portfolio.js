@@ -29,7 +29,6 @@ const education = '코딩-시험-결과를-교육과정-단위의-진단으로-�
 // homepage (Google Play downloads) and official Series E announcement, 2026-10-03.
 const afinitCompany = 'A Series E fintech company behind True Balance, a financial platform in India with over 100 million cumulative downloads.';
 const afinitFundingSource = 'https://www.afinit.com/post/어피닛-시리즈e-320억-투자-유치-완료';
-const hiringNote = `<div class="hiring-note"><p>I’d like to work with a team that thinks about which problems to solve, not just what to build. I enjoy building, getting things into users’ hands, and improving them based on what happens. <span class="hiring-invitation">If that’s the kind of engineer you’re looking for, I’d love to hear from you. I’m open to remote roles with teams worldwide.</span></p><p class="hiring-email">xhae000@gmail.com</p></div>`;
 const aboutCopy = `<p>I enjoy <strong>working through problems</strong>. When something is frustrating, I want to know why. When I see a possible fix, I want to try building it. Software lets me turn those ideas into something real quickly. That’s what got me hooked on development.</p><p>I’m studying Software Convergence at Kyung Hee University. I co-founded Raspy, shipped our product, and ran it at live sports tournaments. At <strong>Afinit, a Series E fintech company</strong>, I worked on company-wide AI development infrastructure. I also led a university festival platform used by students and pop-up pub operators. My work has included deciding <strong>what to build</strong>, not just implementing a feature list, and adapting it to how people actually use it.</p><p>Most of my work is in backend systems and infrastructure, but I’ve also built apps and developer tools when the problem called for them. I like <strong>learning unfamiliar technology and digging into what’s blocking me</strong>. I treat the problems I take on as my own. Working code isn’t the finish line; I want to know <strong>whether it’s actually useful</strong>.</p>`;
 
 export const works = [
@@ -38,16 +37,6 @@ export const works = [
     lead: 'Built one platform for festival discovery and on-site pub operations.',
     summary: 'Proposed building and operating the festival service in-house. Led development across festival discovery, pub table management, and waitlists.',
     evidence: '17,308 estimated unique visitors · used by 13 pop-up pubs',
-    overview: {
-      context: 'Kyung Hee University Fall Festival · Student Council collaboration',
-      bullets: [
-        { contribution: 'Led a platform that supported on-site operations as well as festival discovery. Defined product direction and priorities with the Student Council; owned system design, deployment, and live operations.' },
-        { contribution: 'Connected performance and booth discovery with table and waitlist management. Built the operational system used by 13 pop-up pubs during the festival.' },
-        { contribution: 'Designed highly available infrastructure for five AWS ECS services under concentrated, three-day traffic. Distributed services across two Availability Zones, configured ALB routing and API autoscaling, and managed infrastructure with Terraform.' },
-        { contribution: 'Investigated growing database waits in load tests before adding capacity. Compared request execution models under identical resource limits; introducing virtual threads improved throughput by 2.7× in the controlled comparison.' },
-        { contribution: 'The three-day festival recorded 17,308 estimated unique visitors and 1,634,031 requests. Across 13 pubs, cumulative table occupancy reached 1,386 hours and 45 minutes.' },
-      ],
-    },
     body: `<h2>Why we offered to build it</h2>
       <p>The Student Council outsourced the festival website each year, but student engagement was low and the site did little to solve problems at the event. Our team proposed building and operating the service ourselves.</p>
       <p>We wanted students to find performances and booths easily, pub operators to focus on their guests, and future teams to inherit both the system and its usage records.</p>
@@ -72,15 +61,6 @@ export const works = [
     lead: 'Built infrastructure supporting AI-assisted service development across the company.',
     summary: 'Worked in the AI transformation team supporting company-wide AI-assisted development. Improved the shared development harness and built a QA agent for pre-deployment validation.',
     evidence: 'Shared development harness · AI-native QA',
-    overview: {
-      context: afinitCompany,
-      bullets: [
-        { contribution: 'Worked on platform engineering for the company’s goal of enabling each employee to build and operate a customer-facing service with AI. Contributed to the design and development of workflow automation and shared AI development infrastructure.' },
-        { contribution: 'Improved the AI development harness in the company-wide monorepo. Refined agent context and development rules, reinforcing execution workflows where instructions alone were unreliable, then incorporated the changes into the shared environment.' },
-        { contribution: 'Built a QA tool for validating AI-created services before deployment. Dogfooding it at an internal hackathon with roughly 50 services exposed a gap between the tool and actual validation needs, showing why scope had to be defined before implementation.' },
-        { contribution: 'Proposed a human-on-the-loop direction based on using the agent collaboration environment: autonomous collaboration with human oversight rather than intervention at every step. The team adopted it as a long-term direction.' },
-      ],
-    },
     body: `<p>${afinitCompany}</p>
       <p class="note">Based on public company materials · <a href="https://www.afinit.com/">Platform scale</a> · <a href="${afinitFundingSource}">Series E funding</a></p>
       <h2>Why I joined and what I worked on</h2>
@@ -103,15 +83,6 @@ export const works = [
     lead: 'Co-founded a sports social platform and tournament system, leading product delivery and on-site operations.',
     summary: 'Participated in incorporation, built and launched the initial app, and later led the development team. Operated a system used to run live matches while helping determine product and business priorities.',
     evidence: 'Incorporation · app launch · live tournament operations',
-    overview: {
-      context: 'Raspy · Match, a platform for sports records and social connections',
-      bullets: [
-        { contribution: 'Co-founded Match and participated in incorporation. Built the initial frontend, backend, and infrastructure and shipped to app stores; later led the development team, managing priorities, code review, and release quality.' },
-        { contribution: 'Built a real-time tournament system with WebSocket score synchronization and automatic brackets. Operated it at events with hundreds of participants, including Dongdaemun university tournaments and Yonsei–Korea University exchanges.' },
-        { contribution: 'Implemented blue-green deployments, monitoring, and incident alerts because a service failure could halt matches on site. Improved the slow feed by separating shared data retrieval from user-specific data.' },
-        { contribution: 'Observed participants on site and prioritized usability over additional features. Later distinguished event-driven acquisition from organic return visits, assessed the community’s sustainability, and helped decide to close the business.' },
-      ],
-    },
     body: `<h2>A sports platform built around match records</h2>
       <p>We believed amateur matches deserved records, and that those records could connect people. We incorporated and launched the product. Our long-term plan was to grow the community, then expand into venue rentals.</p>
       <h2>Product development and field operations</h2>
@@ -135,232 +106,19 @@ export function primaryNavigation() {
 }
 
 function shell(title, route, content, active = '') {
-  const isHome = route === '/';
   const navigation = primaryNavigation(active === 'writing' ? 'writing' : 'portfolio');
-  const header = isHome
-    ? `<header class="identity"><a class="identity-home" href="/" aria-label="Woojin Kim home"><h1>woojin kim</h1><span>software engineer</span></a>${navigation}</header>`
-    : `<header class="header"><a class="name" href="/">Woojin Kim</a>${navigation}</header>`;
+  const header = `<header class="header"><a class="name" href="/">Woojin Kim</a>${navigation}</header>`;
   return `<!DOCTYPE html>
 <html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
 <meta name="google-site-verification" content="sNrpo16A0vUj7vHmVNEmAGZj85cGykaOeHO44krbqDU">
 <title>${escape(title)} · Woojin Kim</title><meta name="description" content="Woojin Kim, software engineer. Startup co-founder, Series E fintech AI infrastructure, product development, and programming education.">
 <link rel="canonical" href="https://xhae123.github.io${route}"><meta property="og:title" content="${escape(title)} · Woojin Kim"><meta property="og:type" content="website"><meta property="og:url" content="https://xhae123.github.io${route}">
 <link rel="icon" href="/favicon.svg" type="image/svg+xml"><link rel="stylesheet" href="/portfolio.css?v=gray-2"><link rel="stylesheet" href="/navigation.css?v=gray-2">${active === 'writing' ? '<link rel="stylesheet" href="/blog.css?v=gray-2">' : ''}
-</head><body${isHome ? ' class="folio-home"' : active === 'writing' ? ' class="writing-page"' : ''}><a class="skip" href="#main">Skip to content</a><div class="page">
+</head><body${active === 'writing' ? ' class="writing-page"' : ''}><a class="skip" href="#main">Skip to content</a><div class="page">
 ${header}
 <main id="main">${content}</main></div></body></html>`;
 }
 
-function home(items) {
-  const overview = slug => {
-    const { context, bullets, links } = works.find(w => w.slug === slug).overview;
-    return { id: `case-${slug}`, company: context, bullets, links };
-  };
-  const entries = [
-    {
-      name: 'Afinit', date: '2026.01 — 2026.07', kind: 'work',
-      role: 'AI-native Software Engineer (Intern)',
-      ...overview('afinit'),
-    },
-    {
-      name: 'Kyung Hee University Festival Platform', date: '2026', kind: 'project',
-      role: 'Development Lead',
-      ...overview('adelante'),
-      company: '',
-    },
-    {
-      name: 'LikeLion KHU — Organizer & Backend Session Lead', date: '2026.03 — 2026.12', kind: 'activity',
-      role: 'Kyung Hee University chapter',
-      company: 'The Kyung Hee University chapter of the inter-university development community, founded in 2026.',
-      bullets: [
-        { contribution: 'Designed the new chapter’s backend curriculum and ran sessions across both semesters.' },
-        { contribution: 'Created project-based learning where beginners and experienced members could grow together.' },
-        { contribution: 'Ran a system-design study group connecting implementation experience with design reasoning and explanation for members preparing for employment.' },
-      ],
-    },
-    {
-      name: 'LikeLion IT club official website', date: '2026.08 launch', kind: 'project',
-      role: 'PM & Product Owner',
-      scope: 'The chapter’s official service for recruitment, member profiles, and activity records.',
-      bullets: [
-        { contribution: 'Set the product goal: establish the new chapter’s official channel and preserve records for future cohorts. As PM and product owner, defined the launch scope and led design and development to release in about a month.' },
-        { contribution: 'Planned an operational service rather than a brochure site. Built project, activity, and member records with content and recruitment management so routine updates would not depend on developers.' },
-        { contribution: 'Structured asynchronous collaboration so team members and AI shared context and acceptance criteria. Documented how to hand over work context, verification results, and administrative access.' },
-        { contribution: 'Defined success criteria around application conversion and member participation, not simply going live. Specified post-launch measurements and review timing.' },
-      ],
-    },
-    {
-      name: 'Real-Time Intervention System for Digital Distraction During Study', date: '2026', kind: 'project',
-      role: 'Project Lead · Research & Development',
-      id: 'jansol',
-      scope: 'An Android app that detects distractions during study and helps users return.',
-      bullets: [
-        { contribution: 'Used student surveys and expert interviews to define phone distraction during study. Owned product design, team leadership, and end-to-end app development, intervening at the moment of distraction to help users return.' },
-        { contribution: 'Without training data, prioritized shipping a rule-based app over building a personalization model. Captured distraction, intervention, and return events to create the foundation for later experiments.' },
-        { contribution: 'Registered 152 users through Google Play internal testing, with 47 weekly active users and 9,214 intervention events over four weeks.' },
-        { contribution: 'Analyzed user responses and bias in the collected behavior data. Compared personalization policies through simulation to assess the next development step.' },
-      ],
-    },
-    {
-      name: '8th Education Public Data AI Utilization Competition — Bronze Prize', date: '2026.08', kind: 'award',
-      role: 'Ministry of Education · Korea Institute for Curriculum and Evaluation',
-      bullets: [
-        { contribution: 'Built a service translating coding test scores into curriculum-level learning diagnostics for subsequent lessons.' },
-        { contribution: 'Designed assessment and diagnosis around the national curriculum; owned problem definition, planning, development, and presentation.' },
-      ],
-    },
-    {
-      name: 'Netty Open Source Contributions', date: '2026', kind: 'open-source',
-      role: 'Java · networking framework',
-      externalContribution: true,
-      bullets: [
-        { contribution: 'Analyzed a DNS resolver shutdown bug affecting a cache shared by other resolvers. Submitted a fix with regression tests.' },
-        { contribution: 'Reviewed edge cases in WebSocket shutdown and direct-memory configuration handling, proposing fixes and verification approaches.' },
-      ],
-      links: [['https://github.com/netty/netty', 'GitHub']],
-    },
-    {
-      name: 'Raspy', date: '2025.05 — 2025.12', kind: 'work',
-      role: 'Co-founder & Development Lead',
-      ...overview('raspy'),
-      company: 'A startup developing and operating Match, a sports platform for match records, social connections, and tournament operations, with a long-term goal of expanding into venue rentals.',
-    },
-    {
-      name: 'JamCoding Academy, Bundang', date: '2025.06 — Present', kind: 'work',
-      role: 'Programming & Algorithms Instructor',
-      company: 'A programming academy for students preparing for software-specialized high schools, science high schools, and universities abroad.',
-      bullets: [
-        { contribution: 'Teach three regular classes preparing students for admissions and programming competitions. Tailor learning plans to individual levels and goals, covering C++, Python, data structures, and algorithms.' },
-        { contribution: 'Teach students to analyze problems and explain their reasoning rather than reproduce solutions. Adjust pacing, examples, and explanations around where understanding breaks down.' },
-        { contribution: 'Students have earned awards in the Korean Olympiad in Informatics (KOI) and USACO, and gained admission to science high schools through software-focused selection.' },
-      ],
-    },
-    {
-      name: 'Open Source Developer Competition — Bronze Prize', date: '2025.12', kind: 'award',
-      role: 'Ministry of Science and ICT',
-      bullets: [
-        { contribution: 'Awarded for Mock Fox, a standalone API mock server generator.' },
-      ],
-    },
-    {
-      name: 'Youth SW Companion Hackathon — University Mentor', date: '2025.07', kind: 'activity',
-      role: 'Ministry of Science and ICT',
-      bullets: [
-        { contribution: 'Reviewed architecture and technical feasibility to help teams turn ideas into implementable services.' },
-        { contribution: 'Mentored teams through diagnosis and resolution of technical problems during development.' },
-        { contribution: 'Evaluated final products for quality and technical merit and provided engineering feedback.' },
-      ],
-    },
-    {
-      name: 'KVS (KHU Valley Start-up) — Growth Team Prize', date: '2024.11', kind: 'award',
-      role: 'Kyung Hee University LINC 3.0',
-      bullets: [
-        { contribution: 'Planned a gifting platform connecting online purchase with offline use, including service flows, implementation scope, and a commercialization roadmap.' },
-      ],
-    },
-    {
-      name: 'Tourism Data Service Development Competition — Excellence Prize', date: '2024.10', kind: 'award',
-      role: 'Korea Tourism Organization · Kakao',
-      bullets: [
-        { contribution: 'Built a camping curation service consolidating fragmented tourism information into relevant recommendations.' },
-        { contribution: 'Implemented public tourism data integration and behavior-based recommendations.' },
-      ],
-    },
-    {
-      name: 'Youth Digital Problem-Solving Project — University Mentor', date: '2024.08 — 2024.11', kind: 'activity',
-      role: 'Korea Foundation for the Advancement of Science and Creativity',
-      bullets: [
-        { contribution: 'Helped youth teams translate social problems and product ideas into software, defining necessary features and implementation approaches.' },
-        { contribution: 'Visualized complex logic for nontechnical learners and worked through development challenges together.' },
-      ],
-    },
-    {
-      name: 'Gangwon Open Military Startup Competition — Grand Prize', date: '2023.10', kind: 'award',
-      role: 'Kangwon National University · ROK Army II Corps',
-      bullets: [
-        { contribution: 'Planned and prototyped a home-services marketplace addressing information asymmetry.' },
-      ],
-    },
-    {
-      name: 'SQLD (SQL Developer)', date: '2023.08', kind: 'certificate',
-      role: 'Korea Data Agency',
-      text: 'Certified SQL Developer.',
-    },
-    {
-      name: 'Kyung Hee University', date: '2022.03 — 2028.02', kind: 'education',
-      role: 'Software Convergence · Undergraduate',
-      text: 'Expected graduation: February 2028.',
-    },
-  ];
-  // Selected original repositories; forks and student exercise repositories are excluded.
-  // Repository source, README and licenses checked against GitHub on 2026-10-04.
-  entries.push(
-    {
-      name: 'Mock Fox', date: '2025', kind: 'open-source', role: 'Standalone mock server generator',
-      bullets: [
-        { contribution: 'Built a tool that turns API specifications into runnable mock servers so frontend work can proceed without waiting for backend implementation.' },
-        { contribution: 'Led the project and implemented the Go core engine. Generated standalone executables from API specifications so users could run mock APIs without installing a runtime.' },
-      ],
-      links: [['https://github.com/The-Plain-OSS/mock-fox', 'GitHub']],
-    },
-    {
-      name: 'ProtoDiff', date: '2025', kind: 'open-source', role: 'gRPC schema drift detection in Kubernetes',
-      bullets: [
-        { contribution: 'Built a tool detecting contract mismatches between deployed gRPC services and a schema registry. Combined Kubernetes discovery with gRPC Reflection to compare live schemas.' },
-        { contribution: 'Implemented the inspection engine and results dashboard end to end. Inspects live service schemas without adding sidecars.' },
-      ],
-      links: [['https://github.com/xhae123/protodiff', 'GitHub']],
-    },
-    {
-      name: 'issue-blog', date: '2026', kind: 'open-source', role: 'Open-source personal blog engine powered by GitHub Issues',
-      bullets: [
-        { contribution: 'Built a blog engine that manages posts through GitHub Issues without a separate server or database, with installation and publishing workflows for coding agents.' },
-      ],
-      links: [['https://github.com/xhae123/issue-blog', 'GitHub']],
-    },
-    {
-      name: 'hi-web', date: '2026', kind: 'open-source', role: 'Web literacy learning platform',
-      bullets: [
-        { contribution: 'Built a browser-based learning platform with Korean and English curricula, helping learners understand, edit, and verify AI-generated websites without installing tools.' },
-      ],
-      links: [['https://github.com/xhae123/hi-web', 'GitHub']],
-    },
-  );
-  const renderEntry = e => {
-    if (['award', 'activity'].includes(e.kind)) return `<article class="folio-entry compact-entry${e.kind === 'award' ? ' award-entry' : ''}" data-kind="${escape(e.kind)}"><header class="folio-entry-summary"><h3>${escape(e.name)}</h3><p class="folio-role">${escape(e.role)}</p><p class="folio-date">${escape(e.date)}</p></header></article>`;
-    const isWork = e.kind === 'work';
-    const description = `<ul class="folio-bullets">${e.bullets.map(({ contribution, evidence }) => `<li><span class="contribution">${markedContribution(contribution, e.name)}</span>${evidence ? `<ul class="contribution-evidence"><li>${escape(evidence)}</li></ul>` : ''}</li>`).join('')}</ul>`;
-    return `<article class="folio-entry${isWork ? ' folio-entry-primary' : ''}"${e.id ? ` id="${escape(e.id)}"` : ''} data-kind="${escape(e.kind)}"><header class="folio-entry-summary"><h3>${escape(e.name)}</h3>${e.role ? `<p class="folio-role">${escape(e.role)}</p>` : ''}<p class="folio-date${e.kind === 'open-source' ? ' folio-date-linked' : ''}">${escape(e.date)}${e.kind === 'open-source' && e.links?.length ? `<span class="folio-entry-links">${e.links.map(([href,label]) => `<a href="${escape(href)}">${escape(label)} <span aria-hidden="true">↗</span></a>`).join('')}</span>` : ''}</p></header><div class="folio-entry-body">${e.company ? `<p class="folio-company">${escape(e.company)}</p>` : ''}${e.scope ? `<p class="folio-scope">${escape(e.scope)}</p>` : ''}${description}${e.kind !== 'open-source' && e.links?.length ? `<div class="folio-entry-links">${e.links.map(([href,label]) => `<a href="${href}">${escape(label)} <span aria-hidden="true">↗</span></a>`).join('')}</div>` : ''}</div></article>`;
-  };
-  const workOrder = ['Afinit', 'Raspy', 'JamCoding Academy, Bundang'];
-  const sections = [
-    ['work', 'Work Experience', 'Employment', ['work']],
-    ['projects', 'Selected Projects', 'Products', ['project']],
-    ['community', 'Awards & Activities', '', ['award', 'activity']],
-    ['background', 'Education', 'Education & Certifications', ['education', 'certificate']],
-    ['open-source', 'Open Source', '', ['open-source']],
-  ];
-  const sectionHeading = (id, title) => `<div class="folio-group-heading"><h2 id="${id}-title">${escape(title.toLowerCase())}</h2></div>`;
-  const renderGroup = (id, title, kinds) => {
-    const selected = entries.filter(e => kinds.includes(e.kind));
-    if (id === 'community') selected.sort((a, b) => b.date.localeCompare(a.date));
-    if (id === 'work') selected.sort((a, b) => {
-      const rank = e => workOrder.includes(e.name) ? workOrder.indexOf(e.name) : workOrder.length;
-      return rank(a) - rank(b);
-    });
-    const label = sections.find(s => s[0] === id)[2];
-    const contents = selected.map(renderEntry).join('');
-    return `<section class="folio-group${id === 'work' ? ' folio-group-primary' : ''}" id="${id}" aria-labelledby="${id}-title">${sectionHeading(id, title, label)}${contents}</section>`;
-  };
-  return shell('Software Engineer', '/', `${items.length ? `<section class="recent-writing" id="recent-writing" aria-labelledby="recent-writing-title"><div class="recent-writing-heading"><h2 id="recent-writing-title"><a href="/writing/">recent posts</a></h2></div><div class="recent-writing-list">${[...items].sort((a, b) => b.date.localeCompare(a.date)).slice(0, 5).map(item => `<a class="recent-article" href="${post(item.slug)}">${item.cover?.src ? `<img src="${escape(item.cover.src)}" alt="" width="104" height="64" loading="lazy">` : '<span class="recent-article-placeholder" aria-hidden="true">↗</span>'}<div class="recent-article-copy"><div class="recent-article-meta"><time datetime="${escape(item.date.slice(0, 10))}">${escape(item.date.slice(0, 10).replaceAll('-', '.'))}</time>${item.category ? `<span aria-hidden="true">·</span><span class="recent-article-category">${escape(item.category.toLowerCase())}</span>` : ''}</div><h3>${escape(item.title)}</h3></div></a>`).join('')}</div><a class="recent-writing-more" href="/writing/">view all <span aria-hidden="true">↗</span></a></section>` : ''}
-  <section class="folio-intro" id="about-me" aria-labelledby="about-me-title"><h2 id="about-me-title">about me</h2><div class="about-copy">${aboutCopy}</div>${hiringNote}</section>
-  <!--
-  ${sections.slice(0, -2).map(([id, title, label, kinds]) => renderGroup(id, title, kinds)).join('')}
-  <section class="folio-background" id="background" aria-labelledby="background-title">${sectionHeading('background', 'Education', 'Education & Certifications')}${entries.filter(e => ['education','certificate'].includes(e.kind)).reverse().map(e => `<div class="background-row"><div><h3>${escape(e.name)}</h3><p>${escape(e.role)}${e.kind === 'education' ? ' · expected graduation' : ''}</p></div><span>${escape(e.date)}</span></div>`).join('')}</section>
-  ${renderGroup('open-source', 'Open Source', ['open-source'])}
-  -->
-  `);
-}
 function about() {
   return shell('About', '/about/', `<section class="page-intro"><p class="eyebrow">ABOUT</p><h1>Woojin Kim</h1></section><div class="prose">${aboutCopy}
   <h2>Experience</h2><dl class="timeline"><div><dt>2026.01 — 2026.07</dt><dd><a href="/work/afinit/">Afinit ↗</a><small>AI-native Software Engineer (Intern)</small></dd></div><div><dt>2025.05 — 2025.12</dt><dd><a href="/work/raspy/">Raspy ↗</a><small>Co-founder & Development Lead</small></dd></div><div><dt>2025.06 — Present</dt><dd>JamCoding Academy, Bundang<small>Programming / Algorithm Instructor</small></dd></div></dl>
@@ -369,16 +127,20 @@ function about() {
   <h2>Education</h2><p>Kyung Hee University · Software Convergence<br><span class="meta">2022.03 — 2028.02 (expected)</span></p><h2>Contact</h2><p><a href="mailto:xhae000@gmail.com">xhae000@gmail.com</a><br><a href="https://github.com/xhae123">github.com/xhae123</a></p></div>`, 'about');
 }
 
+function writingRedirect() {
+  return `<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><meta name="robots" content="noindex"><meta name="post-redirect" content="/"><link rel="canonical" href="https://xhae123.github.io/"><meta http-equiv="refresh" content="0;url=/"><link rel="icon" href="/favicon.svg" type="image/svg+xml"><title>Post moved · Woojin Kim</title></head><body><p>The archive has moved. <a href="/">Continue to the posts</a>.</p><script>location.replace('/' + location.search + location.hash);</script></body></html>`;
+}
+
 function writing(items) {
   const cats = [...Object.keys(blogCategoryIcons), ...items.map(i => i.category)].filter((cat, index, all) => cat && all.indexOf(cat) === index && items.some(i => i.category === cat));
   const categories = cats.map(cat => `<button data-cat="${escape(cat)}" aria-pressed="false">${escape(cat.toLowerCase())}<span class="n">${items.filter(i => i.category === cat).length}</span></button>`).join('');
   const feed = items.map(i => `<a class="item" data-cat="${escape(i.category || '')}" href="${post(i.slug)}"><div class="i-main"><h2 class="i-title">${escape(i.title)}</h2>${i.excerpt ? `<p class="i-lead">${escape(i.excerpt)}</p>` : ''}<p class="i-meta"><time datetime="${escape(i.date.slice(0, 10))}">${escape(i.date.slice(0, 10).replaceAll('-', '.'))}</time>${i.category ? `<span class="sep">·</span><span class="i-category">${escape(i.category.toLowerCase())}</span>` : ''}</p></div>${i.cover?.src ? `<div class="i-thumb"><img src="${escape(i.cover.src)}" alt="" loading="lazy"></div>` : ''}</a>`).join('');
-  return `<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><title>Writing · Woojin Kim</title><meta name="description" content="Engineering notes by Woojin Kim"><link rel="canonical" href="https://xhae123.github.io/writing/"><link rel="icon" href="/favicon.svg" type="image/svg+xml"><link rel="stylesheet" href="/styles.css?v=gray-2"><link rel="stylesheet" href="/navigation.css?v=gray-2"><link rel="stylesheet" href="/blog.css?v=gray-2"></head><body class="writing-archive"><a class="blog-skip" href="#feed">Skip to content</a><div class="wrap"><aside class="rail"><div class="rail-identity"><a class="rail-name" href="/">woojin kim</a>${primaryNavigation()}</div><a class="rail-portfolio" href="/#about-me">← about me</a><nav class="rail-cats" id="rail-cats" aria-label="Post categories"><button class="is-on" data-cat="*" aria-pressed="true">ALL<span class="n">${items.length}</span></button>${categories}</nav></aside><main class="feed" id="feed"><h1 class="visually-hidden">Writing</h1><section id="feed-list" aria-label="Blog posts">${feed}</section><p class="feed-empty" id="feed-empty" hidden>No posts in this category yet.</p></main></div><script src="/app.js?v=archive-2"></script></body></html>`;
+  return `<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><title>Writing · Woojin Kim</title><meta name="description" content="Engineering notes by Woojin Kim"><link rel="canonical" href="https://xhae123.github.io/"><link rel="icon" href="/favicon.svg" type="image/svg+xml"><link rel="stylesheet" href="/styles.css?v=gray-2"><link rel="stylesheet" href="/navigation.css?v=gray-2"><link rel="stylesheet" href="/blog.css?v=gray-2"></head><body class="writing-archive"><a class="blog-skip" href="#feed">Skip to content</a><div class="wrap"><aside class="rail"><div class="rail-identity"><a class="rail-name" href="/">woojin kim</a>${primaryNavigation()}</div><nav class="rail-cats" id="rail-cats" aria-label="Post categories"><button class="is-on" data-cat="*" aria-pressed="true">ALL<span class="n">${items.length}</span></button>${categories}</nav></aside><main class="feed" id="feed"><h1 class="visually-hidden">Writing</h1><section id="feed-list" aria-label="Blog posts">${feed}</section><p class="feed-empty" id="feed-empty" hidden>No posts in this category yet.</p></main></div><script src="/app.js?v=archive-2"></script></body></html>`;
 }
 
 export async function writePortfolio(items) {
-  const pages = [['index.html', home(items)], ['about/index.html', about()], ['writing/index.html', writing(items)]];
-  for (const w of works) pages.push([`work/${w.slug}/index.html`, shell(w.name, `/work/${w.slug}/`, `<a class="back" href="/#about-me">← Portfolio</a><section class="page-intro"><p class="eyebrow">${escape(w.type)} / ${w.date}</p><h1>${w.name}</h1><p class="intro">${w.lead}</p><p class="meta">${w.role}</p></section><div class="prose">${w.body}</div>${w.related.length ? `<section class="related"><h2>Related posts</h2>${w.related.map(([s,t]) => `<a class="writing-row" href="${post(s)}">${t} ↗</a>`).join('')}</section>` : ''}<nav class="next-work" aria-label="Other experience">${works.filter(x => x !== w).map(x => `<a href="/work/${x.slug}/">${x.name} ↗</a>`).join('')}</nav>`, 'work')]);
+  const pages = [['index.html', writing(items)], ['about/index.html', about()], ['writing/index.html', writingRedirect()]];
+  for (const w of works) pages.push([`work/${w.slug}/index.html`, shell(w.name, `/work/${w.slug}/`, `<a class="back" href="/">← all posts</a><section class="page-intro"><p class="eyebrow">${escape(w.type)} / ${w.date}</p><h1>${w.name}</h1><p class="intro">${w.lead}</p><p class="meta">${w.role}</p></section><div class="prose">${w.body}</div>${w.related.length ? `<section class="related"><h2>Related posts</h2>${w.related.map(([s,t]) => `<a class="writing-row" href="${post(s)}">${t} ↗</a>`).join('')}</section>` : ''}<nav class="next-work" aria-label="Other experience">${works.filter(x => x !== w).map(x => `<a href="/work/${x.slug}/">${x.name} ↗</a>`).join('')}</nav>`, 'work')]);
   for (const [file, html] of pages) {
     const dir = file.slice(0, file.lastIndexOf('/'));
     if (dir) await mkdir(dir, { recursive: true });

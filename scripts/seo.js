@@ -12,9 +12,8 @@ const person = {
 };
 
 const pages = {
-  '/': { title: 'software engineer', description: 'Woojin Kim builds backend systems, infrastructure, and AI developer tools. Explore his engineering work, open-source contributions, and technical writing.' },
+  '/': { title: 'writing', description: 'Engineering notes by Woojin Kim on system design, Java, databases, cloud infrastructure, AI-assisted development, and building products for real users.' },
   '/about/': { title: 'about', description: 'Meet Woojin Kim, a software engineer and startup co-founder working across backend systems, AI development infrastructure, and product engineering.' },
-  '/writing/': { title: 'writing', description: 'Engineering notes by Woojin Kim on system design, Java, databases, cloud infrastructure, AI-assisted development, and building products for real users.' },
   '/work/adelante/': { title: 'Kyung Hee University Festival Platform', description: 'Leading the design and live operation of a university festival platform: AWS ECS, service boundaries, performance validation, and tools for student-run pubs.' },
   '/work/afinit/': { title: 'Afinit', description: 'Engineering work at Afinit on company-wide AI development infrastructure, agent workflows, shared development tools, and pre-deployment quality assurance.' },
   '/work/raspy/': { title: 'Raspy', description: 'Co-founding Raspy and leading Match: mobile apps, real-time tournament operations, backend infrastructure, and lessons from live sports events.' },
@@ -96,7 +95,7 @@ export function improveSearchMetadata($, canonical) {
       { '@type': 'WebSite', '@id': siteId, url: `${siteUrl}/`, name: 'Woojin Kim',
         alternateName: ['woojin kim', 'xhae123'], inLanguage: 'en', publisher: { '@id': personId } },
       person,
-      { '@type': route === '/about/' ? 'ProfilePage' : route === '/writing/' ? 'CollectionPage' : 'WebPage',
+      { '@type': route === '/about/' ? 'ProfilePage' : route === '/' ? 'CollectionPage' : 'WebPage',
         '@id': canonical, url: canonical, name: `Woojin Kim · ${title}`, description, inLanguage: 'en',
         isPartOf: { '@id': siteId },
         ...(route === '/about/' ? { mainEntity: { '@id': personId } } : { about: { '@id': personId } }) },

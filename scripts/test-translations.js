@@ -4,7 +4,7 @@ import * as cheerio from 'cheerio';
 
 const maps = await Promise.all((await readdir('translations/en/posts')).filter(f => f.endsWith('.json')).map(async f => JSON.parse(await readFile(`translations/en/posts/${f}`, 'utf8'))));
 assert.equal(maps.length, 16, 'All existing articles are translated');
-const pages = ['index.html', 'about/index.html', 'writing/index.html', 'work/afinit/index.html', 'work/raspy/index.html', 'work/adelante/index.html', ...maps.map(t => `posts/${t.slug}/index.html`)];
+const pages = ['index.html', 'about/index.html', 'work/afinit/index.html', 'work/raspy/index.html', 'work/adelante/index.html', ...maps.map(t => `posts/${t.slug}/index.html`)];
 const documents = new Map();
 const figureManifest = JSON.parse(await readFile('translations/en/figures.json', 'utf8'));
 const document = async file => {

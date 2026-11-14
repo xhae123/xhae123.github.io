@@ -636,7 +636,7 @@ ${head({
           : ''
       }
         <header class="post-header">
-          <a class="post-top-back" href="/writing/">← all posts</a>
+          <a class="post-top-back" href="/">← all posts</a>
           <p class="post-meta"><time datetime="${pubISO.slice(0, 10)}">${esc(date)}</time>${item.category ? `<span aria-hidden="true"> · </span><span class="post-category">${esc(item.category.toLowerCase())}</span>` : ''}</p>
           <h1 class="post-title">${esc(title)}</h1>
         </header>
@@ -645,7 +645,7 @@ ${body}
         </div>
       </article>${prevNextHtml}
       <nav class="post-back">
-        <a href="/writing/">← back to posts</a>
+        <a href="/">← back to posts</a>
       </nav>
     </div>
     <aside class="toc" id="toc" aria-label="Contents">${tocHtml}
@@ -659,7 +659,7 @@ ${body}
 
 function renderSitemap(items) {
   const entries = [
-    ...['writing/', 'about/', ...works.map(w => `work/${w.slug}/`)].map(route => ({ loc: `${SITE_URL}/${route}` })),
+    ...['about/', ...works.map(w => `work/${w.slug}/`)].map(route => ({ loc: `${SITE_URL}/${route}` })),
     {
       loc: `${SITE_URL}/`,
     },

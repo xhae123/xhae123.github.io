@@ -5,7 +5,7 @@ import { writePortfolio } from './portfolio.js';
 import { englishPostSlug, localizePostUrls } from './post-routes.js';
 
 const categories = new Map();
-for (const file of ['writing/index.html', 'index.html']) {
+for (const file of ['index.html']) {
   try {
     const $ = cheerio.load(await readFile(file, 'utf8'));
     $('a.item').each((_, el) => {
@@ -39,6 +39,6 @@ for (const dir of await readdir('posts', { withFileTypes: true })) {
 }
 items.sort((a,b) => b.date.localeCompare(a.date));
 await writePortfolio(items);
-const routes = [{ route: '/' }, ...['writing/', 'about/', 'work/afinit/', 'work/raspy/', 'work/adelante/'].map(route => ({ route: `/${route}` })), ...items.map(item => ({ route: `/posts/${item.slug}/`, date: item.modifiedDate.slice(0, 10) }))];
+const routes = [{ route: '/' }, ...['about/', 'work/afinit/', 'work/raspy/', 'work/adelante/'].map(route => ({ route: `/${route}` })), ...items.map(item => ({ route: `/posts/${item.slug}/`, date: item.modifiedDate.slice(0, 10) }))];
 await writeFile('sitemap.xml', `<?xml version="1.0" encoding="UTF-8"?>\n<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n${routes.map(({ route, date }) => `  <url><loc>https://xhae123.github.io${route}</loc>${date ? `<lastmod>${date}</lastmod>` : ''}</url>`).join('\n')}\n</urlset>\n`);
 console.log(`Portfolio built locally; ${items.length} existing posts preserved.`);

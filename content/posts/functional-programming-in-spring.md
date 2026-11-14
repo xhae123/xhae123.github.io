@@ -2,6 +2,7 @@
 title: 본질적 복잡성과 우연적 복잡성 — 스프링에서 FP는 어디까지 밀어넣을 수 있는가
 date: 2026-03-22T12:53:33.000Z
 category: Backend
+updated: 2026-11-14
 ---
 
 ## 0. 익숙한 코드에서 시작한다
@@ -72,15 +73,15 @@ mock 3개를 세팅하고 나서야 테스트를 시작할 수 있습니다. 검
  
 * * *
  
-이런 불편함이 쌓이면 결국 FP를 검토하게 됩니다. immutable data, pure function, typed error handling. 위의 문제들을 정확히 겨냥하는 도구처럼 보입니다.
+이런 불편함이 쌓이면 결국 FP를 검토하게 됩니다. immutable data, pure function, typed error handling은 위의 문제들을 정확히 겨냥하는 도구처럼 보입니다.
  
 직접 해봤습니다. 코틀린/스프링 주문 서비스에 FP를 극한까지 밀어넣었습니다. JPA 엔티티를 `data class`로 바꿨고, 예외를 `sealed class`로 대체했고, 할인 정책을 고차 함수로 전환했고, Arrow의 `Either`까지 도입했습니다. 이 글에서는 위에서 본 관례적인 코드를 **1회차**, FP를 밀어넣은 코드를 **2회차**라고 부르겠습니다.
  
-결론부터 말하면 되는 것과 안 되는 것이 있었습니다. 흥미로운 건, "안 되는 것"의 이유가 두 종류였다는 점입니다.
+되는 것과 안 되는 것이 있었습니다. 흥미로운 건, "안 되는 것"의 이유가 두 종류였다는 점입니다.
  
-하나는 도구의 한계입니다. JPA가 `val`을 거부하는 것, `@Transactional`이 `Either`를 모르는 것. 이건 다른 도구를 쓰면 사라집니다.
+하나는 도구의 한계입니다. JPA가 `val`을 거부하는 것, `@Transactional`이 `Either`를 모르는 것은 다른 도구를 쓰면 사라집니다.
  
-다른 하나는 문제 자체의 본성입니다. 변경을 추적하려면 상태가 필요하다는 것, encapsulation을 풀면 안전망이 약해진다는 것. 이건 어떤 도구를 써도 남습니다.
+다른 하나는 문제 자체의 본성입니다. 변경을 추적하려면 상태가 필요하다는 것, encapsulation을 풀면 안전망이 약해진다는 것은 어떤 도구를 써도 남습니다.
  
 Fred Brooks가 1986년에 쓴 "No Silver Bullet"에서는 전자를 우연적 복잡성(accidental complexity), 후자를 본질적 복잡성(essential complexity)이라고 부릅니다. 이 구분이 실무에서 중요한 이유는 대응이 완전히 다르기 때문입니다.
  
@@ -177,7 +178,7 @@ dirty checking: Hibernate는 트랜잭션이 끝날 때 엔티티 필드의 변�
  
 copy()와 영속성 컨텍스트: `copy()`는 새 JVM 인스턴스를 만듭니다. Hibernate가 관리하고 있던 원래 인스턴스와는 완전히 별개의 객체입니다. `save()`를 호출해도 Hibernate는 이걸 "기존 엔티티의 갱신"이 아니라 "새 엔티티의 삽입"으로 처리하려 합니다.
  
-PersistentBag: `@OneToMany`로 선언된 컬렉션은 Hibernate가 자체 구현체인 `PersistentBag`으로 교체합니다. 이 교체가 setter를 통해 일어나는데, `val`이면 setter가 없습니다. 결과적으로 Hibernate의 컬렉션이 주입되지 못하고, 생성자에서 설정한 `emptyList()`가 그대로 남습니다.
+PersistentBag: `@OneToMany`로 선언된 컬렉션은 Hibernate가 자체 구현체인 `PersistentBag`으로 교체합니다. 이 교체가 setter로 일어나는데, `val`이면 setter가 없습니다. 결과적으로 Hibernate의 컬렉션이 주입되지 못하고, 생성자에서 설정한 `emptyList()`가 그대로 남습니다.
  
 data class의 equals/hashCode: `data class`는 모든 프로퍼티를 기반으로 `equals()`와 `hashCode()`를 생성합니다. JPA는 엔티티의 동일성을 id 기반으로 관리하는데, status 하나만 바뀌어도 `equals()`가 false를 반환하면서 Hibernate의 1차 캐시 관리가 무너집니다.
  
@@ -199,7 +200,7 @@ immutable collection을 지원하는 ORM은 존재합니다. Exposed나 jOOQ에�
  
 JPA 엔티티를 immutable로 만들 수 없다면, 발상을 바꿔야 합니다. 엔티티 자체에 FP를 적용하는 대신, FP를 위한 별도의 모델을 만들고 비즈니스 로직을 그쪽으로 옮기는 것입니다.
  
-JPA 엔티티는 그대로 둡니다. `var`, `class`, `MutableList`. Hibernate가 원하는 대로 둡니다. 대신 비즈니스 계산에 필요한 데이터만 뽑아서 불변 모델을 만듭니다.
+JPA 엔티티는 그대로 둡니다. `var`, `class`, `MutableList` 모두 Hibernate가 원하는 대로 둡니다. 대신 비즈니스 계산에 필요한 데이터만 뽑아서 불변 모델을 만듭니다.
  
 ```kotlin
 /** 불변 도메인 모델 — JPA를 모른다 */
@@ -302,7 +303,7 @@ fun create(request: OrderRequest): OrderResponse {
  
 이 구조에는 이름이 있습니다. Gary Bernhardt가 2012년 "Boundaries" 강연에서 발표한 Functional Core / Imperative Shell 패턴입니다. pure function으로 계산하는 Core와, IO를 orchestrate하는 Shell을 분리합니다.
  
-![](/assets/38c72e5e-bacb-4ca4-8233-f738f16f31bc.png)
+![OrderService에 IO와 계산이 섞인 Before 구조와, OrderService(Shell)와 OrderCalculator(Core)로 나눈 After 구조를 나란히 비교한 그림](/assets/38c72e5e-bacb-4ca4-8233-f738f16f31bc.png)
  
 ### 이 구조에서 테스트는 어떻게 달라지는가
  
@@ -337,9 +338,9 @@ DB가 필요 없으니 테스트가 밀리초 단위로 돌아갑니다. 같은 
  
 1회차 `create()`는 15줄이었습니다. FC/IS를 적용한 후 35줄이 됐습니다. 매핑 코드(엔티티 → 스냅샷, Core 결과 → 엔티티)가 늘어난 것입니다.
  
-그런데 이 "늘어난 코드"를 자세히 보면, 상당 부분이 1회차에서 암묵적이었던 것의 명시화입니다.
+그런데 이 "늘어난 코드"를 자세히 보면, 상당 부분이 1회차에서 암묵적이었던 것을 명시한 것입니다.
  
-예를 들어, 같은 상품이 여러 번 들어올 때의 수량 합산. 1회차에서는 JPA 1차 캐시의 인스턴스 동일성에 의존해서 우연히 동작하고 있었습니다. 2회차에서는 Core가 `groupBy`로 명시적으로 합산합니다. 코드 한 줄이 늘었지만, JPA 구현의 내부 동작에 의존하지 않게 됐습니다.
+예를 들어, 같은 상품이 여러 번 들어올 때의 수량 합산이 그렇습니다. 1회차에서는 JPA 1차 캐시의 인스턴스 동일성에 의존해서 우연히 동작하고 있었습니다. 2회차에서는 Core가 `groupBy`로 명시적으로 합산합니다. 코드 한 줄이 늘었지만, JPA 구현의 내부 동작에 의존하지 않게 됐습니다.
  
 순수 매핑 코드(toSnapshot, 엔티티 조립)는 진짜 새로운 overhead입니다. 모델을 분리하면 반드시 따라오는 비용입니다. 이 비용이 Core의 테스트 용이성을 상쇄하는가는 프로젝트 규모에 따라 다릅니다. 비즈니스 로직이 복잡할수록 Core의 이득이 커지고, 매핑의 비용은 일정하니, 규모가 커질수록 이득이 압도합니다.
  
@@ -362,7 +363,7 @@ class Goods {
 }
 ```
  
-이 메서드는 두 가지 일을 합니다. validation(재고가 충분한가)과 execution(재고를 줄여라). OOP 관점에서는 자연스럽습니다. 객체가 자기 invariant(stock >= 0)를 스스로 지키는 것이니까요.
+이 메서드는 validation(재고가 충분한가)과 execution(재고를 줄여라), 두 가지 일을 합니다. OOP 관점에서는 자연스럽습니다. 객체가 자기 invariant(stock >= 0)를 스스로 지키는 것이니까요.
  
 그런데 2회차에서는 이미 Core(`OrderCalculator`)에서 재고 검증을 하고 있습니다. Shell에서 `decreaseStock()`을 호출하면 같은 검증이 두 번 실행됩니다. 게다가 Core는 `sealed class`로 에러를 반환하는데, `decreaseStock()`은 예외를 던집니다. 패턴이 충돌합니다.
  
@@ -384,13 +385,13 @@ class Goods {
  
 `validateStock(10, 3)`은 `StockValidation.Sufficient`를 반환합니다. mock이 필요 없습니다. DB도 필요 없습니다. 함수 하나를 호출하면 끝입니다.
  
-side effect도 해소됐습니다. `Goods` 엔티티에서 `OutOfStockException` import가 사라졌습니다. 도메인 엔티티가 Spring의 HTTP 예외(`HttpStatus`를 참조하는 `BusinessException`)에 의존하던 문제가 끊어진 것입니다.
+side effect도 해소됐습니다. `Goods` 엔티티에서 `OutOfStockException` import가 사라졌습니다. 도메인 엔티티가 Spring의 HTTP 예외(`HttpStatus`를 참조하는 `BusinessException`)에 의존하던 문제가 사라진 것입니다.
  
 그러나 여기에는 트레이드오프가 있습니다. `applyStockDeduction()`은 검증 없이 재고를 차감합니다. 누군가 Core를 거치지 않고 이 메서드를 직접 호출하면 음수 재고가 될 수 있습니다. 1회차의 `decreaseStock()`은 그 자체로 안전했습니다. 호출자가 누구든 재고 부족이면 예외가 터졌습니다.
  
 판정: 본질적 복잡성입니다.
  
-도구의 문제가 아닙니다. encapsulation(객체가 자기를 방어)과 composition(검증과 실행을 분리해서 조합)은 어떤 언어, 어떤 프레임워크에서든 존재하는 설계 trade-off입니다. encapsulation을 풀면 유연해지지만 방어막이 약해집니다. composition을 하면 테스트가 쉬워지지만 convention에 의존하게 됩니다. FC/IS에서는 "Shell이 항상 Core를 먼저 호출하고, Core의 결과에 따라서만 실행한다"는 플로우 자체를 방어막으로 삼습니다. 컴파일러가 강제하지는 않지만, 코드 리뷰에서 잡을 수 있는 수준입니다.
+도구의 문제가 아닙니다. encapsulation(객체가 자기를 방어)과 composition(검증과 실행을 분리해서 조합)은 어떤 언어, 어떤 프레임워크에서든 존재하는 설계 트레이드오프입니다. encapsulation을 풀면 유연해지지만 방어막이 약해집니다. composition을 하면 테스트가 쉬워지지만 convention에 의존하게 됩니다. FC/IS에서는 "Shell이 항상 Core를 먼저 호출하고, Core의 결과에 따라서만 실행한다"는 플로우 자체를 방어막으로 삼습니다. 컴파일러가 강제하지는 않지만, 코드 리뷰에서 잡을 수 있는 수준입니다.
  
 ### 3-2. 할인 정책 — 우연적 벽만 있는 곳
  
@@ -424,9 +425,9 @@ class DiscountService(private val policies: List<DiscountPolicy>) {
 }
 ```
  
-인터페이스 1개, 구현체 2개, 서비스 1개. 파일 2개. 클래스 4개입니다.
+인터페이스 1개, 구현체 2개, 서비스 1개로 파일 2개, 클래스 4개입니다.
  
-그런데 `DiscountPolicy` 인터페이스를 보면, 메서드가 하나입니다. `calculate()` 하나. 이건 본질적으로 함수 타입 `(Goods, Int, Int) -> Int`과 같습니다.
+그런데 `DiscountPolicy` 인터페이스를 보면, 메서드가 `calculate()` 하나입니다. 이건 본질적으로 함수 타입 `(Goods, Int, Int) -> Int`과 같습니다.
  
 ```kotlin
 typealias DiscountPolicy = (GoodsSnapshot, Int, Int) -> Int
@@ -456,7 +457,7 @@ Shell에 있던 어색한 브릿지 코드도 사라졌습니다. 1회차에서�
  
 판정: 우연적 복잡성입니다.
  
-SAM(Single Abstract Method) 인터페이스를 interface + class + DI로 구현한 건 Spring의 convention에서 비롯된 것입니다. Strategy Pattern의 본질은 "behavior를 교체 가능하게 만든다"이고, 이건 function type으로도 동일하게 달성할 수 있습니다. OOP에서는 interface로, FP에서는 function type으로. 둘 다 "behavior를 값으로 다루기"라는 같은 본질에 도달하는 서로 다른 경로입니다.
+SAM(Single Abstract Method) 인터페이스를 interface + class + DI로 구현한 건 Spring의 convention에서 비롯된 것입니다. Strategy Pattern의 본질은 "behavior를 교체 가능하게 만든다"이고, 이건 function type으로도 동일하게 달성할 수 있습니다. OOP에서는 interface로, FP에서는 function type으로 표현할 뿐, 둘 다 "behavior를 값으로 다루기"라는 같은 본질에 도달하는 서로 다른 경로입니다.
  
 단, 정책이 DB에서 할인율을 읽어야 한다면 이야기가 달라집니다. IO가 필요해지면 pure function이 깨지고, Shell에서 값을 미리 조회해서 Core에 주입하는 구조가 필요해집니다. 현재 구현에서는 할인율이 하드코딩이라 문제가 없지만, 이건 운이 좋은 케이스입니다.
  
@@ -544,7 +545,7 @@ class OrderController {
  
 `@ControllerAdvice`의 글로벌 핸들링이 깨졌습니다. 1회차에서는 서비스가 예외를 던지면 `@ControllerAdvice`가 한 곳에서 HTTP 매핑을 처리했습니다. 컨트롤러는 비즈니스 로직을 호출하기만 하면 됐습니다. sealed class로 바꾸자 모든 컨트롤러 메서드에 `fold` 분기가 반복됐습니다.
  
-`ResponseEntity<Any>`도 문제였습니다. 성공이면 `OrderResponse`, 실패면 `ErrorResponse`. 컴파일러는 `Any`만 보니 타입 안전성이 사라졌습니다. Swagger 문서 자동 생성도 깨집니다.
+`ResponseEntity<Any>`도 문제였습니다. 성공이면 `OrderResponse`, 실패면 `ErrorResponse`를 반환하는데, 컴파일러는 `Any`만 보니 타입 안전성이 사라졌습니다. Swagger 문서 자동 생성도 깨집니다.
  
 프로젝트 내 일관성도 파괴됐습니다. 주문 도메인만 sealed class 기반이고, 상품/카테고리는 여전히 예외 기반입니다. 한 프로젝트에 에러 처리 방식이 두 개 공존하는 셈입니다.
  
@@ -659,7 +660,7 @@ pure computation 영역(할인 정책, 재고 검증, 주문 가격 계산)에�
  
 ### 최적 멈춤 지점
  
-![](/assets/c033870d-5aff-4461-932e-35e5ea14f3db.png)
+![FP를 밀어넣을수록 이득이 FC/IS 도입에서 정점을 찍고, 예외 제거와 @Transactional + Either에서는 손익분기선 아래로 떨어지는 곡선을 그린 개념도](/assets/c033870d-5aff-4461-932e-35e5ea14f3db.png)
  
 손익분기선은 "pure computation"과 "framework infrastructure"의 경계에 있습니다. pure computation 영역까지는 밀어도 괜찮습니다. 그 너머는 프레임워크의 세계관과 싸우게 됩니다.
  
@@ -717,7 +718,7 @@ class OrderController(private val orderService: OrderService) {
  
 이 글을 관통하는 질문은 하나였습니다. "이 벽은 본질적인가, 우연적인가."
  
-본질적 벽은 타협의 대상입니다. encapsulation을 풀면 유연해지지만 방어막이 약해집니다. 생성은 FP에 유리하지만 변경은 OOP에 유리합니다. 이건 어떤 도구를 써도 남는 trade-off이고, 완벽한 해결이 아니라 의식적 설계가 필요합니다.
+본질적 벽은 타협의 대상입니다. encapsulation을 풀면 유연해지지만 방어막이 약해집니다. 생성은 FP에 유리하지만 변경은 OOP에 유리합니다. 이건 어떤 도구를 써도 남는 트레이드오프이고, 완벽한 해결이 아니라 의식적 설계가 필요합니다.
  
 우연적 벽은 선택의 대상입니다. JPA의 `PersistentBag`이 `val`을 거부하는 건 넘을 수 있습니다. 도메인 모델을 분리하면 됩니다. `@ControllerAdvice`가 예외 전용인 것도 넘을 수 있습니다. 그러나 비용이 이득을 초과하면 돌아가는 게 낫습니다.
  
@@ -729,7 +730,7 @@ class OrderController(private val orderService: OrderService) {
 -   IO가 있는 impure code는 paradigm에 관계없이 mock이 필요하고 복잡도가 올라갑니다.
 FC/IS가 하는 일의 본질은 "FP를 도입하는 것"이 아니라 "pure한 것과 impure한 것을 구조적으로 분리하는 것"입니다. 그리고 그 분리의 경계가, 스프링에서 FP가 살 수 있는 자리입니다.
  
-이 글이 다룬 범위는 단일 서비스 내부의 계층 설계입니다. 서비스 간 통신에서의 에러 전파(gRPC의 Status, 이벤트 기반 아키텍처에서의 실패 처리 등)나, 분산 환경에서의 트랜잭션 관리는 또 다른 차원의 문제이고, 본질/우연의 구분도 달라질 수 있습니다. 이 부분은 별도의 주제로 다뤄져야 합니다.
+이 글이 다룬 범위는 단일 서비스 내부의 계층 설계입니다. 서비스 간 통신에서의 에러 전파(gRPC의 Status, 이벤트 기반 아키텍처에서의 실패 처리 등)나, 분산 환경에서의 트랜잭션 관리는 또 다른 차원의 문제이고, 본질/우연의 구분도 달라질 수 있습니다. 이 부분은 별도의 주제로 다뤄야 합니다.
  
 > *"No single development... by itself promises even one order of magnitude improvement."* — Fred Brooks, "No Silver Bullet" (1986)
  

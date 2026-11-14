@@ -4,7 +4,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <meta name="google-site-verification" content="sNrpo16A0vUj7vHmVNEmAGZj85cGykaOeHO44krbqDU">
-  <title>woojin kim · 트랜잭션의 경계는 어떻게 정해야할까: Outbox pattern으로 경계 줄이기</title>
+  <title>woojin kim · 트랜잭션의 경계는 어떻게 정해야 할까: Outbox pattern으로 경계 줄이기</title>
 
   <link rel="canonical" href="https://xhae123.github.io/posts/transaction-boundaries-and-outbox/">
 
@@ -29,11 +29,11 @@
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/github.min.css">
   <link rel="stylesheet" href="/blog.css?v=shared-5b9743f9">
   <meta property="article:published_time" content="2026-02-19T09:39:12.000Z">
-  <meta property="article:modified_time" content="2026-02-19T09:39:12.000Z">
+  <meta property="article:modified_time" content="2026-11-14T00:00:00.000Z">
   <meta property="article:section" content="Backend">
   <meta property="article:author" content="Woojin Kim">
 
-<meta name="description" content="리워드 적립 API(POST /rewards/earn)는 주문 완료 시 우리 서비스 DB에 기록하고, 로그를 남긴 뒤 파트너사에 API로 동기화하는 흐름입니다."><meta name="author" content="Woojin Kim"><meta name="robots" content="index, follow, max-image-preview:large"><meta property="og:site_name" content="Woojin Kim"><meta property="og:title" content="트랜잭션의 경계는 어떻게 정해야할까: Outbox pattern으로 경계 줄이기"><meta property="og:description" content="리워드 적립 API(POST /rewards/earn)는 주문 완료 시 우리 서비스 DB에 기록하고, 로그를 남긴 뒤 파트너사에 API로 동기화하는 흐름입니다."><meta property="og:type" content="article"><meta property="og:locale" content="ko_KR"><meta property="og:url" content="https://xhae123.github.io/posts/transaction-boundaries-and-outbox/"><meta property="og:image" content="https://xhae123.github.io/assets/8312cbb5-87b5-445d-babc-0add71b28fd8.png"><meta property="og:image:alt" content="트랜잭션의 경계는 어떻게 정해야할까: Outbox pattern으로 경계 줄이기 본문 그림"><meta name="twitter:card" content="summary_large_image"><meta name="twitter:title" content="트랜잭션의 경계는 어떻게 정해야할까: Outbox pattern으로 경계 줄이기"><meta name="twitter:description" content="리워드 적립 API(POST /rewards/earn)는 주문 완료 시 우리 서비스 DB에 기록하고, 로그를 남긴 뒤 파트너사에 API로 동기화하는 흐름입니다."><meta name="twitter:image" content="https://xhae123.github.io/assets/8312cbb5-87b5-445d-babc-0add71b28fd8.png"><script type="application/ld+json">{"@context":"https://schema.org","@type":"BlogPosting","headline":"트랜잭션의 경계는 어떻게 정해야할까: Outbox pattern으로 경계 줄이기","description":"리워드 적립 API(POST /rewards/earn)는 주문 완료 시 우리 서비스 DB에 기록하고, 로그를 남긴 뒤 파트너사에 API로 동기화하는 흐름입니다.","datePublished":"2026-02-19T09:39:12.000Z","dateModified":"2026-02-19T09:39:12.000Z","author":{"@type":"Person","@id":"https://xhae123.github.io/#person","name":"Woojin Kim","alternateName":["김우진","xhae123"],"url":"https://xhae123.github.io/","sameAs":["https://github.com/xhae123"],"jobTitle":"Software Engineer"},"url":"https://xhae123.github.io/posts/transaction-boundaries-and-outbox/","mainEntityOfPage":{"@type":"WebPage","@id":"https://xhae123.github.io/posts/transaction-boundaries-and-outbox/"},"image":"https://xhae123.github.io/assets/8312cbb5-87b5-445d-babc-0add71b28fd8.png","inLanguage":"ko","isPartOf":{"@id":"https://xhae123.github.io/#website"}}</script><script defer="" src="https://cloud.umami.is/script.js" data-website-id="b50b4b5c-7887-4c32-9970-42ac27783784" data-domains="xhae123.github.io" data-exclude-hash="true"></script></head>
+<meta name="description" content="리워드 적립 API(POST /rewards/earn)는 주문 완료 시 우리 서비스 DB에 기록하고, 로그를 남긴 뒤 파트너사에 API로 동기화하는 흐름입니다."><meta name="author" content="Woojin Kim"><meta name="robots" content="index, follow, max-image-preview:large"><meta property="og:site_name" content="Woojin Kim"><meta property="og:title" content="트랜잭션의 경계는 어떻게 정해야 할까: Outbox pattern으로 경계 줄이기"><meta property="og:description" content="리워드 적립 API(POST /rewards/earn)는 주문 완료 시 우리 서비스 DB에 기록하고, 로그를 남긴 뒤 파트너사에 API로 동기화하는 흐름입니다."><meta property="og:type" content="article"><meta property="og:locale" content="ko_KR"><meta property="og:url" content="https://xhae123.github.io/posts/transaction-boundaries-and-outbox/"><meta property="og:image" content="https://xhae123.github.io/assets/8312cbb5-87b5-445d-babc-0add71b28fd8.png"><meta property="og:image:alt" content="트랜잭션의 경계는 어떻게 정해야 할까: Outbox pattern으로 경계 줄이기 본문 그림"><meta name="twitter:card" content="summary_large_image"><meta name="twitter:title" content="트랜잭션의 경계는 어떻게 정해야 할까: Outbox pattern으로 경계 줄이기"><meta name="twitter:description" content="리워드 적립 API(POST /rewards/earn)는 주문 완료 시 우리 서비스 DB에 기록하고, 로그를 남긴 뒤 파트너사에 API로 동기화하는 흐름입니다."><meta name="twitter:image" content="https://xhae123.github.io/assets/8312cbb5-87b5-445d-babc-0add71b28fd8.png"><script type="application/ld+json">{"@context":"https://schema.org","@type":"BlogPosting","headline":"트랜잭션의 경계는 어떻게 정해야 할까: Outbox pattern으로 경계 줄이기","description":"리워드 적립 API(POST /rewards/earn)는 주문 완료 시 우리 서비스 DB에 기록하고, 로그를 남긴 뒤 파트너사에 API로 동기화하는 흐름입니다.","datePublished":"2026-02-19T09:39:12.000Z","dateModified":"2026-11-14T00:00:00.000Z","author":{"@type":"Person","@id":"https://xhae123.github.io/#person","name":"Woojin Kim","alternateName":["김우진","xhae123"],"url":"https://xhae123.github.io/","sameAs":["https://github.com/xhae123"],"jobTitle":"Software Engineer"},"url":"https://xhae123.github.io/posts/transaction-boundaries-and-outbox/","mainEntityOfPage":{"@type":"WebPage","@id":"https://xhae123.github.io/posts/transaction-boundaries-and-outbox/"},"image":"https://xhae123.github.io/assets/8312cbb5-87b5-445d-babc-0add71b28fd8.png","inLanguage":"ko","isPartOf":{"@id":"https://xhae123.github.io/#website"}}</script><script defer="" src="https://cloud.umami.is/script.js" data-website-id="b50b4b5c-7887-4c32-9970-42ac27783784" data-domains="xhae123.github.io" data-exclude-hash="true"></script></head>
 <body>
   <main class="post-layout">
     <div class="post-main">
@@ -41,7 +41,7 @@
         <header class="post-header">
           <a class="post-top-back" href="/">← 글 목록</a>
           <p class="post-meta"><time datetime="2026-02-19">2026.02.19</time><span aria-hidden="true"> · </span><span class="post-category">backend</span></p>
-          <h1 class="post-title">트랜잭션의 경계는 어떻게 정해야할까: Outbox pattern으로 경계 줄이기</h1>
+          <h1 class="post-title">트랜잭션의 경계는 어떻게 정해야 할까: Outbox pattern으로 경계 줄이기</h1>
         </header>
         <div class="post-body" id="post-body">
 <html><head></head><body><h2 id="0-테스트-환경--관측-지표">0. 테스트 환경 / 관측 지표</h2>
@@ -58,12 +58,12 @@
 </ul>
 <hr>
 <h2 id="1-문제-상황">1. 문제 상황</h2>
-<p><img src="/assets/8312cbb5-87b5-445d-babc-0add71b28fd8.png" alt="" loading="lazy"></p>
+<p><img src="/assets/8312cbb5-87b5-445d-babc-0add71b28fd8.png" alt="주문 완료 후 Reward Service가 내부 DB 기록, 감사 로그 기록, 파트너 API 호출을 차례로 하는 리워드 적립 API 흐름도" loading="lazy"></p>
 <p>리워드 적립 API(<code>POST /rewards/earn</code>)는 주문 완료 시 우리 서비스 DB에 기록하고, 로그를 남긴 뒤 파트너사에 API로 동기화하는 흐름입니다.</p>
 <p>부하 테스트에서 VU를 50까지 올리자 응답 시간이 급격히 치솟았습니다.</p>
-<p><img src="/assets/7b74dd7b-394e-4ac9-bac5-d655ccc95d73.png" alt="" loading="lazy"> <img src="/assets/22a855d4-b734-48bf-bb9b-3b69c0beb5eb.png" alt="" loading="lazy"></p>
-<p>평균 약 6.2초, 처리한 요청 수 3,510개.</p>
-<p><img src="/assets/a51fb19e-600b-4cb5-a97c-39739b0a161e.png" alt="" loading="lazy"> <img src="/assets/b4af00f9-7adb-4a9b-b7bb-6851e0c7cc77.png" alt="" loading="lazy"></p>
+<p><img src="/assets/7b74dd7b-394e-4ac9-bac5-d655ccc95d73.png" alt="개선 전 응답 시간이 avg 624.1ms, p50 477.7ms, p95 1483.2ms, p99 1746.3ms, max 2734.7ms로 나온 측정 화면" loading="lazy"> <img src="/assets/22a855d4-b734-48bf-bb9b-3b69c0beb5eb.png" alt="개선 전 총 요청 수 3510을 보여 주는 측정 화면" loading="lazy"></p>
+<p>평균 약 624ms, 처리한 요청 수는 3,510개였습니다.</p>
+<p><img src="/assets/a51fb19e-600b-4cb5-a97c-39739b0a161e.png" alt="개선 전 HikariCP 활성 커넥션 수가 10까지 올라가 한동안 유지되는 그래프" loading="lazy"> <img src="/assets/b4af00f9-7adb-4a9b-b7bb-6851e0c7cc77.png" alt="개선 전 HikariCP pending 커넥션 수가 가파르게 올랐다가 내려오는 그래프" loading="lazy"></p>
 <p>활성 커넥션이 부하 시작 얼마 안 돼서 10개(최대치)에 도달했고, 그 직후부터 pending이 쌓이기 시작했습니다. pending은 35개까지 치솟았습니다.</p>
 <p>"DB가 느리다"가 아니라, 애플리케이션이 커넥션을 오래 물고 있다는 신호입니다.</p>
 <hr>
@@ -260,7 +260,7 @@
     )
 }
 </code></pre>
-<p>처리는 별도 스케줄러에서.</p>
+<p>처리는 별도 스케줄러에서 합니다.</p>
 <pre data-lang="kotlin"><code class="language-kotlin hljs"><span class="hljs-meta">@Scheduled(fixedDelay = 500)</span>
 <span class="hljs-function"><span class="hljs-keyword">fun</span> <span class="hljs-title">processOutbox</span><span class="hljs-params">()</span></span> {
     outboxEventRepository.findPending(MAX_RETRY).forEach { event -&gt;
@@ -308,8 +308,8 @@
 </ul>
 <hr>
 <h2 id="11-결과">11. 결과</h2>
-<p><img src="/assets/65db9b86-86f0-4993-83cb-8b0fd5748dc1.png" alt="" loading="lazy"></p>
-<p><img src="/assets/806e223c-feca-489a-bfdf-ab00361926e8.png" alt="" loading="lazy"></p>
+<p><img src="/assets/65db9b86-86f0-4993-83cb-8b0fd5748dc1.png" alt="개선 후 응답 시간이 avg 15.9ms, p50 4.7ms, p95 58.7ms, p99 239.2ms, max 1309.0ms로 나온 측정 화면" loading="lazy"></p>
+<p><img src="/assets/806e223c-feca-489a-bfdf-ab00361926e8.png" alt="개선 후 총 요청 수 21725를 보여 주는 측정 화면" loading="lazy"></p>
 <table>
 <thead>
 <tr>
@@ -356,8 +356,8 @@
 <td>+6.2배</td>
 </tr>
 </tbody></table>
-<p>평균 응답 속도가 대폭 줄었고, 시간당 처리량이 6배 늘었습니다.</p>
-<p><img src="/assets/ed3d57d9-a7f8-4aa1-9d9e-2bf101bdae6e.png" alt="" loading="lazy"> <img src="/assets/a57f0d82-abce-4aa6-8d2d-c0b89e0e23cd.png" alt="" loading="lazy"></p>
+<p>평균 응답 시간이 대폭 줄었고, 시간당 처리량이 6배 늘었습니다.</p>
+<p><img src="/assets/ed3d57d9-a7f8-4aa1-9d9e-2bf101bdae6e.png" alt="개선 후 HikariCP 활성 커넥션 수가 짧게 오르내리다 10에 한 번 닿고 바로 내려오는 그래프" loading="lazy"> <img src="/assets/a57f0d82-abce-4aa6-8d2d-c0b89e0e23cd.png" alt="개선 후 HikariCP pending 커넥션 수가 3까지 한 번 튀었다가 바로 0으로 돌아오는 그래프" loading="lazy"></p>
 <ul>
 <li>활성 커넥션이 최대치에 도달한 시점이 훨씬 늦어지고, 지속 시간도 짧아졌습니다.</li>
 <li>pending도 기존 대비 10배 이상 줄었습니다.</li>

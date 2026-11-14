@@ -2,6 +2,7 @@
 title: 배포 후에야 알게 되는 gRPC 스키마 불일치, Kubernetes에서 자동으로 잡기
 date: 2025-12-04T04:31:24.000Z
 category: Infra
+updated: 2026-11-14
 ---
 
 클라이언트가 갑자기 런타임 에러를 뱉습니다. 클라이언트 코드는 아무도 안 건드렸습니다. 수 시간을 뒤진 끝에 나오는 원인은 늘 비슷했습니다. 누군가 proto를 고쳐서 Kubernetes에 배포했는데, BSR(Buf Schema Registry)은 업데이트하지 않은 겁니다. 클라이언트는 BSR을 보고 개발했고, 서버는 다른 스키마로 떠 있었습니다.
@@ -16,7 +17,7 @@ BSR로 proto를 중앙 관리하면 이런 일이 없을 줄 알았습니다. �
 
 ## 설계: 양쪽의 진실을 뽑아서 맞대본다
 
-![](/assets/36a5f808-5f61-46bd-910b-c3198e7287b7.png)
+![서비스별 동기화 상태와 Live·BSR 스키마 비교 결과를 보여 주는 ProtoDiff 대시보드](/assets/36a5f808-5f61-46bd-910b-c3198e7287b7.png)
 
 구조는 문제 정의에서 그대로 나옵니다. 진실이 두 곳에 있으니, 양쪽에서 각각 뽑아 비교하면 됩니다.
 
@@ -102,7 +103,7 @@ fileDescs, err := parser.ParseFiles(relPaths...)
 
 ## 전부 비교하면, 전부 틀렸다고 나옵니다
 
-첫 버전은 양쪽의 모든 서비스를 비교했습니다. 결과는 새빨간 대시보드였습니다. Live에만 있는 테스트 서비스도 MISMATCH, BSR에만 남은 deprecated 서비스도 MISMATCH. 진짜 문제가 아닌 것들이 화면을 채웠습니다.
+첫 버전은 양쪽의 모든 서비스를 비교했습니다. 결과는 새빨간 대시보드였습니다. Live에만 있는 테스트 서비스도 MISMATCH, BSR에만 남은 deprecated 서비스도 MISMATCH였습니다. 진짜 문제가 아닌 것들이 화면을 채웠습니다.
 
 여기서 배운 게 하나 있습니다. 모니터링 도구는 놓쳐서 죽는 게 아니라 시끄러워서 죽습니다. 오탐이 쌓이면 사람이 빨간불을 무시하기 시작하고, 그 순간 도구는 없는 것과 같아집니다.
 
@@ -207,7 +208,7 @@ scanner := scanner.NewScanner(
 
 ## 배포: kubectl apply 한 번
 
-단일 Pod로 클러스터 안에 배포합니다. Kubernetes 리소스만 쓰기 때문에 별도 인프라가 필요 없습니다. 서비스 매핑은 ConfigMap으로, BSR 토큰은 Secret으로 넣고, 권한은 Pod과 ConfigMap 읽기만 허용하는 최소 RBAC입니다.
+단일 Pod으로 클러스터 안에 배포합니다. Kubernetes 리소스만 쓰기 때문에 별도 인프라가 필요 없습니다. 서비스 매핑은 ConfigMap으로, BSR 토큰은 Secret으로 넣고, 권한은 Pod과 ConfigMap 읽기만 허용하는 최소 RBAC입니다.
 
 ```yaml
 # ConfigMap으로 서비스 매핑
@@ -241,7 +242,7 @@ kubectl apply -f https://raw.githubusercontent.com/uzdada/protodiff/main/deploy/
 kubectl port-forward -n protodiff-system svc/protodiff 18080:80
 ```
 
-클러스터를 감시하는 도구는 그 자체가 공격면이 되기 쉬워서, 보안 기본기는 다 걸었습니다. Non-root 실행, read-only 파일시스템, Linux capability 전부 제거.
+클러스터를 감시하는 도구는 그 자체가 공격면이 되기 쉬워서, 보안 기본기는 다 걸었습니다. Non-root로 실행하고, 파일시스템은 read-only로 두고, Linux capability는 전부 제거했습니다.
 
 관측 도구가 관측 대상보다 무거우면 곤란하기 때문에 발자국도 재봤습니다. CPU 0.1코어 미만(I/O bound라 CPU를 거의 안 씁니다), 메모리 약 10MB에 Pod당 1KB 정도, 네트워크는 Pod당 수 KB입니다. 외부 DB 없이 in-memory로 버틴 것도 같은 이유입니다. 의존성 없는 단일 바이너리 하나가 MVP엔 맞습니다.
 

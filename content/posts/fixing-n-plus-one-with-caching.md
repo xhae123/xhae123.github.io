@@ -1,16 +1,17 @@
 ---
-title: 익숙한 N+1 문제, 캐싱이 가져온 26배의 속도 차이
+title: 익숙한 N+1 문제, 캐싱으로 응답 시간을 820ms에서 38ms로
 date: 2025-11-05T13:06:27.000Z
 category: Backend
+updated: 2026-11-14
 ---
 
 ## 개요
 
-스포츠 SNS 플랫폼을 운영하던 중, 앱을 쓰다가 피드 조회가 너무 느리다는 걸 발견했습니다. Caffeine 캐시를 도입해 평균 응답 시간을 800ms에서 38ms로 줄였습니다.
+스포츠 SNS 플랫폼을 운영하던 중, 앱을 쓰다가 피드 조회가 너무 느리다는 걸 발견했습니다. Caffeine 캐시를 도입해 평균 응답 시간을 820ms에서 38ms로 줄였습니다.
 
 **핵심 지표**
 
--   응답 시간: 800ms → 38ms (95% 개선)
+-   응답 시간: 820ms → 38ms (95% 개선)
 -   DB 쿼리: 81개 → 1개 (98% 감소)
 -   처리량: 3.8 req/s → 78.2 req/s (20배 증가)
 
@@ -28,7 +29,7 @@ category: Backend
 정렬은 다음과 같이 해야 했습니다:
 
 1.  친구 참가 경기가 위로
-2.  그 다음 일반 경기
+2.  그다음 일반 경기
 3.  같은 우선순위면 최신순
 
 각 피드 아이템에는 `isFriend`, `isMyGame` 같은 유저별 정보도 들어갑니다.
@@ -68,7 +69,7 @@ fun getFeed(myUserId: Long): FeedResponse {
 -   유저: 50명
 -   친구 관계: 평균 5명
 
-**응답 시간** ![](/assets/c6bb270b-7282-44ac-83dd-52898c7a8374.png)
+**응답 시간** ![개선 전 요청 한 건의 총 소요 시간 828ms를 보여 주는 측정 화면](/assets/c6bb270b-7282-44ac-83dd-52898c7a8374.png)
 
 ```
 평균: 820ms
@@ -132,7 +133,7 @@ OFFSET 방식이라 offset 값만큼 row를 스캔하고 버립니다. 페이지
 
 ### 2.2 왜 Caffeine인가
 
-`ConcurrentHashMap<Long, FeedItemResponse>`로도 충분하지 않을까 싶어, 처음엔 그렇게 생각했습니다.
+처음엔 `ConcurrentHashMap<Long, FeedItemResponse>`로도 충분하지 않을까 생각했습니다.
 
 ```kotlin
 // 단순 Map 방식
@@ -386,7 +387,7 @@ fun getFeed(myUserId: Long, page: Int = 0, size: Int = 20): FeedResponse {
 
 ### 4.1 응답 시간
 
-![](/assets/b2a3366b-4082-4f9a-9d8b-869bf8b07ae5.png)
+![개선 후 요청 한 건의 총 소요 시간 29ms를 보여 주는 측정 화면](/assets/b2a3366b-4082-4f9a-9d8b-869bf8b07ae5.png)
 
 | 지표 | Before | After | 개선율 |
 | --- | --- | --- | --- |
@@ -428,7 +429,7 @@ DB 부하가 98% 감소했습니다.
 
 ### 4.5 동시성 테스트
 
-Apache Bench로 부하 테스트를 진행했습니다:
+Apache Bench로 부하 테스트를 했습니다:
 
 ```bash
 ab -n 10000 -c 100 http://localhost:8080/api/feed

@@ -1,7 +1,8 @@
 ---
-title: 트랜잭션의 경계는 어떻게 정해야할까: Outbox pattern으로 경계 줄이기
+title: 트랜잭션의 경계는 어떻게 정해야 할까: Outbox pattern으로 경계 줄이기
 date: 2026-02-19T09:39:12.000Z
 category: Backend
+updated: 2026-11-14
 ---
 
 ## 0\. 테스트 환경 / 관측 지표
@@ -18,17 +19,17 @@ category: Backend
 
 ## 1\. 문제 상황
 
-![](/assets/8312cbb5-87b5-445d-babc-0add71b28fd8.png)
+![주문 완료 후 Reward Service가 내부 DB 기록, 감사 로그 기록, 파트너 API 호출을 차례로 하는 리워드 적립 API 흐름도](/assets/8312cbb5-87b5-445d-babc-0add71b28fd8.png)
 
 리워드 적립 API(`POST /rewards/earn`)는 주문 완료 시 우리 서비스 DB에 기록하고, 로그를 남긴 뒤 파트너사에 API로 동기화하는 흐름입니다.
 
 부하 테스트에서 VU를 50까지 올리자 응답 시간이 급격히 치솟았습니다.
 
-![](/assets/7b74dd7b-394e-4ac9-bac5-d655ccc95d73.png) ![](/assets/22a855d4-b734-48bf-bb9b-3b69c0beb5eb.png)
+![개선 전 응답 시간이 avg 624.1ms, p50 477.7ms, p95 1483.2ms, p99 1746.3ms, max 2734.7ms로 나온 측정 화면](/assets/7b74dd7b-394e-4ac9-bac5-d655ccc95d73.png) ![개선 전 총 요청 수 3510을 보여 주는 측정 화면](/assets/22a855d4-b734-48bf-bb9b-3b69c0beb5eb.png)
 
-평균 약 6.2초, 처리한 요청 수 3,510개.
+평균 약 624ms, 처리한 요청 수는 3,510개였습니다.
 
-![](/assets/a51fb19e-600b-4cb5-a97c-39739b0a161e.png) ![](/assets/b4af00f9-7adb-4a9b-b7bb-6851e0c7cc77.png)
+![개선 전 HikariCP 활성 커넥션 수가 10까지 올라가 한동안 유지되는 그래프](/assets/a51fb19e-600b-4cb5-a97c-39739b0a161e.png) ![개선 전 HikariCP pending 커넥션 수가 가파르게 올랐다가 내려오는 그래프](/assets/b4af00f9-7adb-4a9b-b7bb-6851e0c7cc77.png)
 
 활성 커넥션이 부하 시작 얼마 안 돼서 10개(최대치)에 도달했고, 그 직후부터 pending이 쌓이기 시작했습니다. pending은 35개까지 치솟았습니다.
 
@@ -244,7 +245,7 @@ fun earnReward(request: EarnRewardRequest): EarnRewardResponse {
 }
 ```
 
-처리는 별도 스케줄러에서.
+처리는 별도 스케줄러에서 합니다.
 
 ```kotlin
 @Scheduled(fixedDelay = 500)
@@ -303,9 +304,9 @@ Outbox는 대개 at-least-once 전송입니다. 중복 전송 가능성을 전�
 
 ## 11\. 결과
 
-![](/assets/65db9b86-86f0-4993-83cb-8b0fd5748dc1.png)
+![개선 후 응답 시간이 avg 15.9ms, p50 4.7ms, p95 58.7ms, p99 239.2ms, max 1309.0ms로 나온 측정 화면](/assets/65db9b86-86f0-4993-83cb-8b0fd5748dc1.png)
 
-![](/assets/806e223c-feca-489a-bfdf-ab00361926e8.png)
+![개선 후 총 요청 수 21725를 보여 주는 측정 화면](/assets/806e223c-feca-489a-bfdf-ab00361926e8.png)
 
 | 지표 | Before | After | 개선율 |
 | --- | --- | --- | --- |
@@ -316,9 +317,9 @@ Outbox는 대개 at-least-once 전송입니다. 중복 전송 가능성을 전�
 | max | 2,734.7ms | 1,309.0ms | \-52% |
 | 처리량 | 3,510건 | 21,725건 | +6.2배 |
 
-평균 응답 속도가 대폭 줄었고, 시간당 처리량이 6배 늘었습니다.
+평균 응답 시간이 대폭 줄었고, 시간당 처리량이 6배 늘었습니다.
 
-![](/assets/ed3d57d9-a7f8-4aa1-9d9e-2bf101bdae6e.png) ![](/assets/a57f0d82-abce-4aa6-8d2d-c0b89e0e23cd.png)
+![개선 후 HikariCP 활성 커넥션 수가 짧게 오르내리다 10에 한 번 닿고 바로 내려오는 그래프](/assets/ed3d57d9-a7f8-4aa1-9d9e-2bf101bdae6e.png) ![개선 후 HikariCP pending 커넥션 수가 3까지 한 번 튀었다가 바로 0으로 돌아오는 그래프](/assets/a57f0d82-abce-4aa6-8d2d-c0b89e0e23cd.png)
 
 -   활성 커넥션이 최대치에 도달한 시점이 훨씬 늦어지고, 지속 시간도 짧아졌습니다.
 -   pending도 기존 대비 10배 이상 줄었습니다.

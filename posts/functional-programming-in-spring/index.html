@@ -29,11 +29,11 @@
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/github.min.css">
   <link rel="stylesheet" href="/blog.css?v=shared-5b9743f9">
   <meta property="article:published_time" content="2026-03-22T12:53:33.000Z">
-  <meta property="article:modified_time" content="2026-03-22T12:53:33.000Z">
+  <meta property="article:modified_time" content="2026-11-14T00:00:00.000Z">
   <meta property="article:section" content="Backend">
   <meta property="article:author" content="Woojin Kim">
 
-<meta name="description" content="코틀린과 스프링으로 주문 서비스를 만들면 대체로 이런 모양이 나옵니다."><meta name="author" content="Woojin Kim"><meta name="robots" content="index, follow, max-image-preview:large"><meta property="og:site_name" content="Woojin Kim"><meta property="og:title" content="본질적 복잡성과 우연적 복잡성 — 스프링에서 FP는 어디까지 밀어넣을 수 있는가"><meta property="og:description" content="코틀린과 스프링으로 주문 서비스를 만들면 대체로 이런 모양이 나옵니다."><meta property="og:type" content="article"><meta property="og:locale" content="ko_KR"><meta property="og:url" content="https://xhae123.github.io/posts/functional-programming-in-spring/"><meta property="og:image" content="https://xhae123.github.io/assets/38c72e5e-bacb-4ca4-8233-f738f16f31bc.png"><meta property="og:image:alt" content="본질적 복잡성과 우연적 복잡성 — 스프링에서 FP는 어디까지 밀어넣을 수 있는가 본문 그림"><meta name="twitter:card" content="summary_large_image"><meta name="twitter:title" content="본질적 복잡성과 우연적 복잡성 — 스프링에서 FP는 어디까지 밀어넣을 수 있는가"><meta name="twitter:description" content="코틀린과 스프링으로 주문 서비스를 만들면 대체로 이런 모양이 나옵니다."><meta name="twitter:image" content="https://xhae123.github.io/assets/38c72e5e-bacb-4ca4-8233-f738f16f31bc.png"><script type="application/ld+json">{"@context":"https://schema.org","@type":"BlogPosting","headline":"본질적 복잡성과 우연적 복잡성 — 스프링에서 FP는 어디까지 밀어넣을 수 있는가","description":"코틀린과 스프링으로 주문 서비스를 만들면 대체로 이런 모양이 나옵니다.","datePublished":"2026-03-22T12:53:33.000Z","dateModified":"2026-03-22T12:53:33.000Z","author":{"@type":"Person","@id":"https://xhae123.github.io/#person","name":"Woojin Kim","alternateName":["김우진","xhae123"],"url":"https://xhae123.github.io/","sameAs":["https://github.com/xhae123"],"jobTitle":"Software Engineer"},"url":"https://xhae123.github.io/posts/functional-programming-in-spring/","mainEntityOfPage":{"@type":"WebPage","@id":"https://xhae123.github.io/posts/functional-programming-in-spring/"},"image":"https://xhae123.github.io/assets/38c72e5e-bacb-4ca4-8233-f738f16f31bc.png","inLanguage":"ko","isPartOf":{"@id":"https://xhae123.github.io/#website"}}</script><script defer="" src="https://cloud.umami.is/script.js" data-website-id="b50b4b5c-7887-4c32-9970-42ac27783784" data-domains="xhae123.github.io" data-exclude-hash="true"></script></head>
+<meta name="description" content="코틀린과 스프링으로 주문 서비스를 만들면 대체로 이런 모양이 나옵니다."><meta name="author" content="Woojin Kim"><meta name="robots" content="index, follow, max-image-preview:large"><meta property="og:site_name" content="Woojin Kim"><meta property="og:title" content="본질적 복잡성과 우연적 복잡성 — 스프링에서 FP는 어디까지 밀어넣을 수 있는가"><meta property="og:description" content="코틀린과 스프링으로 주문 서비스를 만들면 대체로 이런 모양이 나옵니다."><meta property="og:type" content="article"><meta property="og:locale" content="ko_KR"><meta property="og:url" content="https://xhae123.github.io/posts/functional-programming-in-spring/"><meta property="og:image" content="https://xhae123.github.io/assets/38c72e5e-bacb-4ca4-8233-f738f16f31bc.png"><meta property="og:image:alt" content="본질적 복잡성과 우연적 복잡성 — 스프링에서 FP는 어디까지 밀어넣을 수 있는가 본문 그림"><meta name="twitter:card" content="summary_large_image"><meta name="twitter:title" content="본질적 복잡성과 우연적 복잡성 — 스프링에서 FP는 어디까지 밀어넣을 수 있는가"><meta name="twitter:description" content="코틀린과 스프링으로 주문 서비스를 만들면 대체로 이런 모양이 나옵니다."><meta name="twitter:image" content="https://xhae123.github.io/assets/38c72e5e-bacb-4ca4-8233-f738f16f31bc.png"><script type="application/ld+json">{"@context":"https://schema.org","@type":"BlogPosting","headline":"본질적 복잡성과 우연적 복잡성 — 스프링에서 FP는 어디까지 밀어넣을 수 있는가","description":"코틀린과 스프링으로 주문 서비스를 만들면 대체로 이런 모양이 나옵니다.","datePublished":"2026-03-22T12:53:33.000Z","dateModified":"2026-11-14T00:00:00.000Z","author":{"@type":"Person","@id":"https://xhae123.github.io/#person","name":"Woojin Kim","alternateName":["김우진","xhae123"],"url":"https://xhae123.github.io/","sameAs":["https://github.com/xhae123"],"jobTitle":"Software Engineer"},"url":"https://xhae123.github.io/posts/functional-programming-in-spring/","mainEntityOfPage":{"@type":"WebPage","@id":"https://xhae123.github.io/posts/functional-programming-in-spring/"},"image":"https://xhae123.github.io/assets/38c72e5e-bacb-4ca4-8233-f738f16f31bc.png","inLanguage":"ko","isPartOf":{"@id":"https://xhae123.github.io/#website"}}</script><script defer="" src="https://cloud.umami.is/script.js" data-website-id="b50b4b5c-7887-4c32-9970-42ac27783784" data-domains="xhae123.github.io" data-exclude-hash="true"></script></head>
 <body>
   <main class="post-layout">
     <div class="post-main">
@@ -93,11 +93,11 @@ whenever(orderRepository.save(any())).thenAnswer { it.arguments[<span class="hlj
 <p>이 문제들이 실무에서 왜 중요한지 짚어 보겠습니다. 숨겨진 side effect는 코드 리뷰에서 잡기 어렵고, 새 팀원이 <code>cancel()</code>을 호출하면서 재고가 바뀌는 걸 모르면 버그로 이어집니다. IO와 계산의 혼합은 테스트 작성 비용을 높이고, mock 세팅에 쏟는 시간이 쌓이면 "테스트를 안 쓰는 게 빠르다"는 유혹으로 연결됩니다.</p>
 <p>예외 기반 에러 처리는 시그니처에 실패 가능성이 드러나지 않아서, 호출자가 예외를 핸들링하지 않은 채 프로덕션에 나가고 나서야 장애로 발견되는 경우가 생깁니다. 개별로 보면 사소하지만, 서비스가 커지면서 이런 것들이 누적되면 개발 속도와 안정성 모두에 영향을 줍니다.</p>
 <hr>
-<p>이런 불편함이 쌓이면 결국 FP를 검토하게 됩니다. immutable data, pure function, typed error handling. 위의 문제들을 정확히 겨냥하는 도구처럼 보입니다.</p>
+<p>이런 불편함이 쌓이면 결국 FP를 검토하게 됩니다. immutable data, pure function, typed error handling은 위의 문제들을 정확히 겨냥하는 도구처럼 보입니다.</p>
 <p>직접 해봤습니다. 코틀린/스프링 주문 서비스에 FP를 극한까지 밀어넣었습니다. JPA 엔티티를 <code>data class</code>로 바꿨고, 예외를 <code>sealed class</code>로 대체했고, 할인 정책을 고차 함수로 전환했고, Arrow의 <code>Either</code>까지 도입했습니다. 이 글에서는 위에서 본 관례적인 코드를 <strong>1회차</strong>, FP를 밀어넣은 코드를 <strong>2회차</strong>라고 부르겠습니다.</p>
-<p>결론부터 말하면 되는 것과 안 되는 것이 있었습니다. 흥미로운 건, "안 되는 것"의 이유가 두 종류였다는 점입니다.</p>
-<p>하나는 도구의 한계입니다. JPA가 <code>val</code>을 거부하는 것, <code>@Transactional</code>이 <code>Either</code>를 모르는 것. 이건 다른 도구를 쓰면 사라집니다.</p>
-<p>다른 하나는 문제 자체의 본성입니다. 변경을 추적하려면 상태가 필요하다는 것, encapsulation을 풀면 안전망이 약해진다는 것. 이건 어떤 도구를 써도 남습니다.</p>
+<p>되는 것과 안 되는 것이 있었습니다. 흥미로운 건, "안 되는 것"의 이유가 두 종류였다는 점입니다.</p>
+<p>하나는 도구의 한계입니다. JPA가 <code>val</code>을 거부하는 것, <code>@Transactional</code>이 <code>Either</code>를 모르는 것은 다른 도구를 쓰면 사라집니다.</p>
+<p>다른 하나는 문제 자체의 본성입니다. 변경을 추적하려면 상태가 필요하다는 것, encapsulation을 풀면 안전망이 약해진다는 것은 어떤 도구를 써도 남습니다.</p>
 <p>Fred Brooks가 1986년에 쓴 "No Silver Bullet"에서는 전자를 우연적 복잡성(accidental complexity), 후자를 본질적 복잡성(essential complexity)이라고 부릅니다. 이 구분이 실무에서 중요한 이유는 대응이 완전히 다르기 때문입니다.</p>
 <p>우연적 벽은 선택의 문제입니다. 도구를 바꾸든, 관례를 존중하고 돌아가든 할 수 있습니다. 본질적 벽은 타협의 문제입니다. 완벽한 해결이 없으므로, 트레이드오프를 의식적으로 설계해야 합니다.</p>
 <p>이 글은 코틀린/스프링 주문 서비스에 FP를 극한까지 밀어넣으면서 만난 벽들을, 하나하나 "이건 본질인가 우연인가"로 판별한 기록입니다.</p>
@@ -172,7 +172,7 @@ println(order.items.size)
 <p>Hibernate의 작동 원리 네 가지가 동시에 깨집니다.</p>
 <p>dirty checking: Hibernate는 트랜잭션이 끝날 때 엔티티 필드의 변경을 감지해서 UPDATE를 만듭니다. <code>val</code>이면 필드가 바뀔 수 없으니 Hibernate가 "변경 없음"으로 판단합니다. UPDATE 쿼리 자체가 나가지 않습니다.</p>
 <p>copy()와 영속성 컨텍스트: <code>copy()</code>는 새 JVM 인스턴스를 만듭니다. Hibernate가 관리하고 있던 원래 인스턴스와는 완전히 별개의 객체입니다. <code>save()</code>를 호출해도 Hibernate는 이걸 "기존 엔티티의 갱신"이 아니라 "새 엔티티의 삽입"으로 처리하려 합니다.</p>
-<p>PersistentBag: <code>@OneToMany</code>로 선언된 컬렉션은 Hibernate가 자체 구현체인 <code>PersistentBag</code>으로 교체합니다. 이 교체가 setter를 통해 일어나는데, <code>val</code>이면 setter가 없습니다. 결과적으로 Hibernate의 컬렉션이 주입되지 못하고, 생성자에서 설정한 <code>emptyList()</code>가 그대로 남습니다.</p>
+<p>PersistentBag: <code>@OneToMany</code>로 선언된 컬렉션은 Hibernate가 자체 구현체인 <code>PersistentBag</code>으로 교체합니다. 이 교체가 setter로 일어나는데, <code>val</code>이면 setter가 없습니다. 결과적으로 Hibernate의 컬렉션이 주입되지 못하고, 생성자에서 설정한 <code>emptyList()</code>가 그대로 남습니다.</p>
 <p>data class의 equals/hashCode: <code>data class</code>는 모든 프로퍼티를 기반으로 <code>equals()</code>와 <code>hashCode()</code>를 생성합니다. JPA는 엔티티의 동일성을 id 기반으로 관리하는데, status 하나만 바뀌어도 <code>equals()</code>가 false를 반환하면서 Hibernate의 1차 캐시 관리가 무너집니다.</p>
 <h3 id="그런데-왜-컴파일은-되는가">그런데 왜 컴파일은 되는가?</h3>
 <p>코틀린의 <code>kotlin("plugin.jpa")</code>가 no-arg constructor를 자동 생성하고, <code>kotlin("plugin.spring")</code>이 <code>open</code> 키워드를 자동으로 붙여줍니다. JPA가 요구하는 두 가지 조건이 컴파일 시점에 조용히 충족되기 때문에, <code>data class</code> + <code>val</code> 엔티티가 아무 경고 없이 빌드됩니다.</p>
@@ -183,7 +183,7 @@ println(order.items.size)
 <p>다만, 여기에는 본질적 성분이 하나 섞여 있습니다. "변경을 추적하려면 상태가 있어야 한다"는 원리 자체는 도구에 독립적입니다. dirty checking이라는 구체적 방식은 우연적이지만, 변경 추적이 가변성을 전제한다는 점은 본질적입니다. 이 구분은 섹션 4에서 다시 다룹니다.</p>
 <h2 id="2-벽을-돌아가다--도메인-모델-분리">2. 벽을 돌아가다 — 도메인 모델 분리</h2>
 <p>JPA 엔티티를 immutable로 만들 수 없다면, 발상을 바꿔야 합니다. 엔티티 자체에 FP를 적용하는 대신, FP를 위한 별도의 모델을 만들고 비즈니스 로직을 그쪽으로 옮기는 것입니다.</p>
-<p>JPA 엔티티는 그대로 둡니다. <code>var</code>, <code>class</code>, <code>MutableList</code>. Hibernate가 원하는 대로 둡니다. 대신 비즈니스 계산에 필요한 데이터만 뽑아서 불변 모델을 만듭니다.</p>
+<p>JPA 엔티티는 그대로 둡니다. <code>var</code>, <code>class</code>, <code>MutableList</code> 모두 Hibernate가 원하는 대로 둡니다. 대신 비즈니스 계산에 필요한 데이터만 뽑아서 불변 모델을 만듭니다.</p>
 <pre data-lang="kotlin"><code class="language-kotlin hljs"><span class="hljs-comment">/** 불변 도메인 모델 — JPA를 모른다 */</span>
 <span class="hljs-keyword">data</span> <span class="hljs-keyword">class</span> <span class="hljs-title class_">GoodsSnapshot</span>(
     <span class="hljs-keyword">val</span> id: <span class="hljs-built_in">Long</span>,
@@ -273,7 +273,7 @@ println(order.items.size)
 }
 </code></pre>
 <p>이 구조에는 이름이 있습니다. Gary Bernhardt가 2012년 "Boundaries" 강연에서 발표한 Functional Core / Imperative Shell 패턴입니다. pure function으로 계산하는 Core와, IO를 orchestrate하는 Shell을 분리합니다.</p>
-<p><img src="/assets/38c72e5e-bacb-4ca4-8233-f738f16f31bc.png" alt="" loading="lazy"></p>
+<p><img src="/assets/38c72e5e-bacb-4ca4-8233-f738f16f31bc.png" alt="OrderService에 IO와 계산이 섞인 Before 구조와, OrderService(Shell)와 OrderCalculator(Core)로 나눈 After 구조를 나란히 비교한 그림" loading="lazy"></p>
 <h3 id="이-구조에서-테스트는-어떻게-달라지는가">이 구조에서 테스트는 어떻게 달라지는가</h3>
 <p>이 전환에서 가장 체감이 큰 부분입니다.</p>
 <pre data-lang="kotlin"><code class="language-kotlin hljs"><span class="hljs-comment">// Before: mock 3개</span>
@@ -300,8 +300,8 @@ assertEquals(<span class="hljs-number">18000</span>, (result <span class="hljs-k
 <p>DB가 필요 없으니 테스트가 밀리초 단위로 돌아갑니다. 같은 입력이면 항상 같은 출력이 나오니 결과가 결정적입니다. "이 테스트가 왜 실패했지"라는 고민이 사라집니다. 입력만 보면 됩니다.</p>
 <h3 id="대가-shell이-뚱뚱해졌다">대가: Shell이 뚱뚱해졌다</h3>
 <p>1회차 <code>create()</code>는 15줄이었습니다. FC/IS를 적용한 후 35줄이 됐습니다. 매핑 코드(엔티티 → 스냅샷, Core 결과 → 엔티티)가 늘어난 것입니다.</p>
-<p>그런데 이 "늘어난 코드"를 자세히 보면, 상당 부분이 1회차에서 암묵적이었던 것의 명시화입니다.</p>
-<p>예를 들어, 같은 상품이 여러 번 들어올 때의 수량 합산. 1회차에서는 JPA 1차 캐시의 인스턴스 동일성에 의존해서 우연히 동작하고 있었습니다. 2회차에서는 Core가 <code>groupBy</code>로 명시적으로 합산합니다. 코드 한 줄이 늘었지만, JPA 구현의 내부 동작에 의존하지 않게 됐습니다.</p>
+<p>그런데 이 "늘어난 코드"를 자세히 보면, 상당 부분이 1회차에서 암묵적이었던 것을 명시한 것입니다.</p>
+<p>예를 들어, 같은 상품이 여러 번 들어올 때의 수량 합산이 그렇습니다. 1회차에서는 JPA 1차 캐시의 인스턴스 동일성에 의존해서 우연히 동작하고 있었습니다. 2회차에서는 Core가 <code>groupBy</code>로 명시적으로 합산합니다. 코드 한 줄이 늘었지만, JPA 구현의 내부 동작에 의존하지 않게 됐습니다.</p>
 <p>순수 매핑 코드(toSnapshot, 엔티티 조립)는 진짜 새로운 overhead입니다. 모델을 분리하면 반드시 따라오는 비용입니다. 이 비용이 Core의 테스트 용이성을 상쇄하는가는 프로젝트 규모에 따라 다릅니다. 비즈니스 로직이 복잡할수록 Core의 이득이 커지고, 매핑의 비용은 일정하니, 규모가 커질수록 이득이 압도합니다.</p>
 <p>FC/IS 구조가 잡혔으니, 이제 Core에 넣을 수 있는 비즈니스 로직을 더 찾아볼 차례입니다. 재고 검증과 할인 정책, 이 두 곳에서 FP 전환이 어떤 마찰을 일으키는지, 그리고 그 벽이 본질인지 우연인지를 확인합니다.</p>
 <h2 id="3-pure-function의-영역을-넓히다">3. Pure function의 영역을 넓히다</h2>
@@ -316,7 +316,7 @@ assertEquals(<span class="hljs-number">18000</span>, (result <span class="hljs-k
     }
 }
 </code></pre>
-<p>이 메서드는 두 가지 일을 합니다. validation(재고가 충분한가)과 execution(재고를 줄여라). OOP 관점에서는 자연스럽습니다. 객체가 자기 invariant(stock &gt;= 0)를 스스로 지키는 것이니까요.</p>
+<p>이 메서드는 validation(재고가 충분한가)과 execution(재고를 줄여라), 두 가지 일을 합니다. OOP 관점에서는 자연스럽습니다. 객체가 자기 invariant(stock &gt;= 0)를 스스로 지키는 것이니까요.</p>
 <p>그런데 2회차에서는 이미 Core(<code>OrderCalculator</code>)에서 재고 검증을 하고 있습니다. Shell에서 <code>decreaseStock()</code>을 호출하면 같은 검증이 두 번 실행됩니다. 게다가 Core는 <code>sealed class</code>로 에러를 반환하는데, <code>decreaseStock()</code>은 예외를 던집니다. 패턴이 충돌합니다.</p>
 <p>검증과 실행을 분리했습니다.</p>
 <pre data-lang="kotlin"><code class="language-kotlin hljs"><span class="hljs-comment">// Core: pure function. Int 두 개 넣으면 결과 나온다.</span>
@@ -332,10 +332,10 @@ assertEquals(<span class="hljs-number">18000</span>, (result <span class="hljs-k
 }
 </code></pre>
 <p><code>validateStock(10, 3)</code>은 <code>StockValidation.Sufficient</code>를 반환합니다. mock이 필요 없습니다. DB도 필요 없습니다. 함수 하나를 호출하면 끝입니다.</p>
-<p>side effect도 해소됐습니다. <code>Goods</code> 엔티티에서 <code>OutOfStockException</code> import가 사라졌습니다. 도메인 엔티티가 Spring의 HTTP 예외(<code>HttpStatus</code>를 참조하는 <code>BusinessException</code>)에 의존하던 문제가 끊어진 것입니다.</p>
+<p>side effect도 해소됐습니다. <code>Goods</code> 엔티티에서 <code>OutOfStockException</code> import가 사라졌습니다. 도메인 엔티티가 Spring의 HTTP 예외(<code>HttpStatus</code>를 참조하는 <code>BusinessException</code>)에 의존하던 문제가 사라진 것입니다.</p>
 <p>그러나 여기에는 트레이드오프가 있습니다. <code>applyStockDeduction()</code>은 검증 없이 재고를 차감합니다. 누군가 Core를 거치지 않고 이 메서드를 직접 호출하면 음수 재고가 될 수 있습니다. 1회차의 <code>decreaseStock()</code>은 그 자체로 안전했습니다. 호출자가 누구든 재고 부족이면 예외가 터졌습니다.</p>
 <p>판정: 본질적 복잡성입니다.</p>
-<p>도구의 문제가 아닙니다. encapsulation(객체가 자기를 방어)과 composition(검증과 실행을 분리해서 조합)은 어떤 언어, 어떤 프레임워크에서든 존재하는 설계 trade-off입니다. encapsulation을 풀면 유연해지지만 방어막이 약해집니다. composition을 하면 테스트가 쉬워지지만 convention에 의존하게 됩니다. FC/IS에서는 "Shell이 항상 Core를 먼저 호출하고, Core의 결과에 따라서만 실행한다"는 플로우 자체를 방어막으로 삼습니다. 컴파일러가 강제하지는 않지만, 코드 리뷰에서 잡을 수 있는 수준입니다.</p>
+<p>도구의 문제가 아닙니다. encapsulation(객체가 자기를 방어)과 composition(검증과 실행을 분리해서 조합)은 어떤 언어, 어떤 프레임워크에서든 존재하는 설계 트레이드오프입니다. encapsulation을 풀면 유연해지지만 방어막이 약해집니다. composition을 하면 테스트가 쉬워지지만 convention에 의존하게 됩니다. FC/IS에서는 "Shell이 항상 Core를 먼저 호출하고, Core의 결과에 따라서만 실행한다"는 플로우 자체를 방어막으로 삼습니다. 컴파일러가 강제하지는 않지만, 코드 리뷰에서 잡을 수 있는 수준입니다.</p>
 <h3 id="3-2-할인-정책--우연적-벽만-있는-곳">3-2. 할인 정책 — 우연적 벽만 있는 곳</h3>
 <p>재고 검증에서 본질적 긴장을 경험한 직후, 할인 정책을 전환했습니다. 대비가 극명했습니다.</p>
 <p>1회차의 할인 정책은 전략 패턴(Strategy Pattern)으로 구현되어 있었습니다.</p>
@@ -363,8 +363,8 @@ assertEquals(<span class="hljs-number">18000</span>, (result <span class="hljs-k
         policies.maxOfOrNull { it.calculate(goods, quantity, subtotal) } ?: <span class="hljs-number">0</span>
 }
 </code></pre>
-<p>인터페이스 1개, 구현체 2개, 서비스 1개. 파일 2개. 클래스 4개입니다.</p>
-<p>그런데 <code>DiscountPolicy</code> 인터페이스를 보면, 메서드가 하나입니다. <code>calculate()</code> 하나. 이건 본질적으로 함수 타입 <code>(Goods, Int, Int) -&gt; Int</code>과 같습니다.</p>
+<p>인터페이스 1개, 구현체 2개, 서비스 1개로 파일 2개, 클래스 4개입니다.</p>
+<p>그런데 <code>DiscountPolicy</code> 인터페이스를 보면, 메서드가 <code>calculate()</code> 하나입니다. 이건 본질적으로 함수 타입 <code>(Goods, Int, Int) -&gt; Int</code>과 같습니다.</p>
 <pre data-lang="kotlin"><code class="language-kotlin hljs"><span class="hljs-keyword">typealias</span> DiscountPolicy = (GoodsSnapshot, <span class="hljs-built_in">Int</span>, <span class="hljs-built_in">Int</span>) -&gt; <span class="hljs-built_in">Int</span>
 
 <span class="hljs-keyword">val</span> quantityDiscount: DiscountPolicy = { _, quantity, subtotal -&gt;
@@ -387,7 +387,7 @@ assertEquals(<span class="hljs-number">18000</span>, (result <span class="hljs-k
 <p>Shell에 있던 어색한 브릿지 코드도 사라졌습니다. 1회차에서는 <code>DiscountService</code>가 <code>Goods</code> 엔티티를 받는데 Core는 <code>GoodsSnapshot</code>을 쓰기 때문에, Shell에서 함수 타입으로 래핑하는 변환 코드가 필요했습니다. 할인 정책 자체가 <code>GoodsSnapshot</code> 기반이 되면서 브릿지가 불필요해졌습니다.</p>
 <p>이 전환에서 마찰이 거의 없었던 이유는 단순합니다. 할인 정책에는 IO가 없습니다. DB를 읽지 않습니다. state를 변경하지 않습니다. 입력(상품 정보, 수량, 소계)을 받아서 출력(할인 금액)을 반환할 뿐입니다. 본질적으로 pure computation이니, pure function으로 표현하는 데 아무 저항이 없습니다.</p>
 <p>판정: 우연적 복잡성입니다.</p>
-<p>SAM(Single Abstract Method) 인터페이스를 interface + class + DI로 구현한 건 Spring의 convention에서 비롯된 것입니다. Strategy Pattern의 본질은 "behavior를 교체 가능하게 만든다"이고, 이건 function type으로도 동일하게 달성할 수 있습니다. OOP에서는 interface로, FP에서는 function type으로. 둘 다 "behavior를 값으로 다루기"라는 같은 본질에 도달하는 서로 다른 경로입니다.</p>
+<p>SAM(Single Abstract Method) 인터페이스를 interface + class + DI로 구현한 건 Spring의 convention에서 비롯된 것입니다. Strategy Pattern의 본질은 "behavior를 교체 가능하게 만든다"이고, 이건 function type으로도 동일하게 달성할 수 있습니다. OOP에서는 interface로, FP에서는 function type으로 표현할 뿐, 둘 다 "behavior를 값으로 다루기"라는 같은 본질에 도달하는 서로 다른 경로입니다.</p>
 <p>단, 정책이 DB에서 할인율을 읽어야 한다면 이야기가 달라집니다. IO가 필요해지면 pure function이 깨지고, Shell에서 값을 미리 조회해서 Core에 주입하는 구조가 필요해집니다. 현재 구현에서는 할인율이 하드코딩이라 문제가 없지만, 이건 운이 좋은 케이스입니다.</p>
 <h3 id="두-전환의-대비에서-보이는-패턴">두 전환의 대비에서 보이는 패턴</h3>
 <p>재고 검증은 본질적 긴장이 있었습니다. 할인 정책은 벽이 없었습니다. 차이가 뭘까요.</p>
@@ -443,7 +443,7 @@ assertEquals(<span class="hljs-number">18000</span>, (result <span class="hljs-k
 </code></pre>
 <p>변경 후 잃은 것들이 쏟아졌습니다.</p>
 <p><code>@ControllerAdvice</code>의 글로벌 핸들링이 깨졌습니다. 1회차에서는 서비스가 예외를 던지면 <code>@ControllerAdvice</code>가 한 곳에서 HTTP 매핑을 처리했습니다. 컨트롤러는 비즈니스 로직을 호출하기만 하면 됐습니다. sealed class로 바꾸자 모든 컨트롤러 메서드에 <code>fold</code> 분기가 반복됐습니다.</p>
-<p><code>ResponseEntity&lt;Any&gt;</code>도 문제였습니다. 성공이면 <code>OrderResponse</code>, 실패면 <code>ErrorResponse</code>. 컴파일러는 <code>Any</code>만 보니 타입 안전성이 사라졌습니다. Swagger 문서 자동 생성도 깨집니다.</p>
+<p><code>ResponseEntity&lt;Any&gt;</code>도 문제였습니다. 성공이면 <code>OrderResponse</code>, 실패면 <code>ErrorResponse</code>를 반환하는데, 컴파일러는 <code>Any</code>만 보니 타입 안전성이 사라졌습니다. Swagger 문서 자동 생성도 깨집니다.</p>
 <p>프로젝트 내 일관성도 파괴됐습니다. 주문 도메인만 sealed class 기반이고, 상품/카테고리는 여전히 예외 기반입니다. 한 프로젝트에 에러 처리 방식이 두 개 공존하는 셈입니다.</p>
 <p>여기서 아이러니한 발견이 있었습니다.</p>
 <blockquote>
@@ -555,7 +555,7 @@ assertEquals(<span class="hljs-number">18000</span>, (result <span class="hljs-k
 <p>pure computation 영역(할인 정책, 재고 검증, 주문 가격 계산)에서는 FP 전환이 자연스럽고 이득이 컸습니다. 우연적 벽은 쉽게 넘거나 돌아갔고, 본질적 벽은 타협 가능한 수준이었습니다.</p>
 <p>프레임워크 infrastructure 영역(@Transactional, @ControllerAdvice, ResponseEntity)에서는 우연적 벽이 한꺼번에 터졌습니다. 개별로는 넘을 수 있었지만, 전부 "예외 기반"이라는 하나의 세계관에 묶여 있어서, 하나를 바꾸면 전체가 흔들렸습니다.</p>
 <h3 id="최적-멈춤-지점">최적 멈춤 지점</h3>
-<p><img src="/assets/c033870d-5aff-4461-932e-35e5ea14f3db.png" alt="" loading="lazy"></p>
+<p><img src="/assets/c033870d-5aff-4461-932e-35e5ea14f3db.png" alt="FP를 밀어넣을수록 이득이 FC/IS 도입에서 정점을 찍고, 예외 제거와 @Transactional + Either에서는 손익분기선 아래로 떨어지는 곡선을 그린 개념도" loading="lazy"></p>
 <p>손익분기선은 "pure computation"과 "framework infrastructure"의 경계에 있습니다. pure computation 영역까지는 밀어도 괜찮습니다. 그 너머는 프레임워크의 세계관과 싸우게 됩니다.</p>
 <h3 id="실무-구조-core에서-fp-shell에서-oop-경계에서-변환">실무 구조: "Core에서 FP, Shell에서 OOP, 경계에서 변환"</h3>
 <pre data-lang="kotlin"><code class="language-kotlin hljs"><span class="hljs-comment">// ✅ Core: pure function. Either로 에러 표현. mock 0개 테스트 가능.</span>
@@ -605,7 +605,7 @@ assertEquals(<span class="hljs-number">18000</span>, (result <span class="hljs-k
 </ul>
 <h2 id="7-결론">7. 결론</h2>
 <p>이 글을 관통하는 질문은 하나였습니다. "이 벽은 본질적인가, 우연적인가."</p>
-<p>본질적 벽은 타협의 대상입니다. encapsulation을 풀면 유연해지지만 방어막이 약해집니다. 생성은 FP에 유리하지만 변경은 OOP에 유리합니다. 이건 어떤 도구를 써도 남는 trade-off이고, 완벽한 해결이 아니라 의식적 설계가 필요합니다.</p>
+<p>본질적 벽은 타협의 대상입니다. encapsulation을 풀면 유연해지지만 방어막이 약해집니다. 생성은 FP에 유리하지만 변경은 OOP에 유리합니다. 이건 어떤 도구를 써도 남는 트레이드오프이고, 완벽한 해결이 아니라 의식적 설계가 필요합니다.</p>
 <p>우연적 벽은 선택의 대상입니다. JPA의 <code>PersistentBag</code>이 <code>val</code>을 거부하는 건 넘을 수 있습니다. 도메인 모델을 분리하면 됩니다. <code>@ControllerAdvice</code>가 예외 전용인 것도 넘을 수 있습니다. 그러나 비용이 이득을 초과하면 돌아가는 게 낫습니다.</p>
 <p>극한까지 밀어봐야 이 판별이 가능해집니다. 밀어보기 전에는 "이론적으로 FC/IS가 좋다"에서 멈추게 됩니다. 밀어봤기 때문에 <code>@Transactional</code>이 <code>raise()</code>를 어떻게 처리하는지, <code>@ControllerAdvice</code>가 이미 관심사 분리를 제공하고 있었다는 것을 발견할 수 있었습니다.</p>
 <p>마지막으로 하나 덧붙이면, FP vs OOP라는 프레이밍 자체가 정확하지 않다는 생각이 들었습니다. 더 정확한 변수는 pure vs impure입니다.</p>
@@ -613,7 +613,7 @@ assertEquals(<span class="hljs-number">18000</span>, (result <span class="hljs-k
 <li>IO가 없는 pure computation은 paradigm에 관계없이 테스트가 쉽고 추론이 쉽습니다.</li>
 <li>IO가 있는 impure code는 paradigm에 관계없이 mock이 필요하고 복잡도가 올라갑니다.<br>FC/IS가 하는 일의 본질은 "FP를 도입하는 것"이 아니라 "pure한 것과 impure한 것을 구조적으로 분리하는 것"입니다. 그리고 그 분리의 경계가, 스프링에서 FP가 살 수 있는 자리입니다.</li>
 </ul>
-<p>이 글이 다룬 범위는 단일 서비스 내부의 계층 설계입니다. 서비스 간 통신에서의 에러 전파(gRPC의 Status, 이벤트 기반 아키텍처에서의 실패 처리 등)나, 분산 환경에서의 트랜잭션 관리는 또 다른 차원의 문제이고, 본질/우연의 구분도 달라질 수 있습니다. 이 부분은 별도의 주제로 다뤄져야 합니다.</p>
+<p>이 글이 다룬 범위는 단일 서비스 내부의 계층 설계입니다. 서비스 간 통신에서의 에러 전파(gRPC의 Status, 이벤트 기반 아키텍처에서의 실패 처리 등)나, 분산 환경에서의 트랜잭션 관리는 또 다른 차원의 문제이고, 본질/우연의 구분도 달라질 수 있습니다. 이 부분은 별도의 주제로 다뤄야 합니다.</p>
 <blockquote>
 <p><em>"No single development... by itself promises even one order of magnitude improvement."</em> — Fred Brooks, "No Silver Bullet" (1986)</p>
 </blockquote>
@@ -624,7 +624,7 @@ assertEquals(<span class="hljs-number">18000</span>, (result <span class="hljs-k
     <nav class="post-nav" aria-label="이전/다음 글">
       <a class="post-nav-item post-nav-item--prev" href="/posts/transaction-boundaries-and-outbox/">
         <span class="post-nav-label">이전 글</span>
-        <span class="post-nav-title">트랜잭션의 경계는 어떻게 정해야할까: Outbox pattern으로 경계 줄이기</span>
+        <span class="post-nav-title">트랜잭션의 경계는 어떻게 정해야 할까: Outbox pattern으로 경계 줄이기</span>
       </a>
       <a class="post-nav-item post-nav-item--next" href="/posts/specifications-as-code/">
         <span class="post-nav-label">다음 글</span>

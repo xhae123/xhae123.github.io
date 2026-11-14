@@ -7,7 +7,8 @@ const stylesheetVersions = Object.fromEntries(['styles', 'blog'].map(name => [
   name, `shared-${createHash('sha1').update(readFileSync(new URL(`../${name}.css`, import.meta.url))).digest('hex').slice(0, 8)}`,
 ]));
 
-export const postRoutes = JSON.parse(readFileSync(new URL('../translations/en/routes.json', import.meta.url), 'utf8'));
+export const postRoutes = JSON.parse(readFileSync(new URL('../content/legacy-routes.json', import.meta.url), 'utf8'));
+// Posts first lived at URLs derived from their Korean titles; those paths now redirect.
 export const englishPostSlug = slug => postRoutes[slug] || slug;
 
 // Covers both human-readable URLs and percent-encoded links, including absolute URLs.
@@ -23,12 +24,12 @@ export function localizePostUrls(html) {
     .replace(/href="\/favicon\.svg(?:\?[^"<>]*)?"/g, 'href="/favicon.svg?v=woojin-w-2"')
     .replace(/<title>([^<]*)<\/title>/g, (_, current) => {
       let title = current.replace(/ · Woojin Kim$/, '').replace(/^woojin kim · /, '');
-      if (['Software Engineer', 'Writing', 'About', 'Post moved'].includes(title)) title = title.toLowerCase();
+      if (title === 'Writing') title = title.toLowerCase();
       return `<title>woojin kim · ${title}</title>`;
     }));
 }
 
 export function legacyRedirect(slug) {
   const target = `/posts/${slug}/`;
-  return localizePostUrls(`<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><meta name="robots" content="noindex"><meta name="post-redirect" content="${target}"><link rel="canonical" href="https://xhae123.github.io${target}"><meta http-equiv="refresh" content="0;url=${target}"><link rel="icon" href="/favicon.svg" type="image/svg+xml"><title>Post moved · Woojin Kim</title></head><body><p>This post has moved. <a href="${target}">Continue to the article</a>.</p><script>location.replace(${JSON.stringify(target)} + location.search + location.hash);</script></body></html>`);
+  return localizePostUrls(`<!doctype html><html lang="ko"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><meta name="robots" content="noindex"><meta name="post-redirect" content="${target}"><link rel="canonical" href="https://xhae123.github.io${target}"><meta http-equiv="refresh" content="0;url=${target}"><link rel="icon" href="/favicon.svg" type="image/svg+xml"><title>글 주소가 바뀌었어요 · Woojin Kim</title></head><body><p>글 주소가 바뀌었어요. <a href="${target}">바뀐 주소로 이동하기</a></p><script>location.replace(${JSON.stringify(target)} + location.search + location.hash);</script></body></html>`);
 }

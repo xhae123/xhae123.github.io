@@ -36,9 +36,6 @@ body { letter-spacing: -.02em; line-height: 1.8; }
 .blog-skip { position: absolute; top: -100px; left: 22px; padding: 8px 12px; background: white; z-index: 30; }
 .blog-skip:focus { top: 8px; }
 .rail-identity { display: flex; align-items: center; justify-content: space-between; gap: 16px; margin-bottom: 14px; }
-.rail-portfolio { display: inline-block; margin-bottom: 28px; padding: 4px 0; color: var(--accent); font-size: 13px; font-weight: 300; text-decoration: none; }
-.rail-portfolio:hover { text-decoration: underline; text-underline-offset: 4px; }
-.rail-portfolio:focus-visible { outline: 2px solid var(--accent); outline-offset: 4px; }
 .writing-archive .rail-name { font-family: var(--sans); font-size: 24px; font-weight: 300; letter-spacing: -.035em; color: var(--accent); margin: 0; padding: 0; }
 .rail-identity .primary-nav a { width: 32px; height: 32px; }
 .rail-identity .primary-nav svg { width: 24px; height: 24px; }
@@ -49,7 +46,6 @@ body { letter-spacing: -.02em; line-height: 1.8; }
 .writing-archive .i-meta { margin: 0; }
 @media (max-width: 860px) {
   .rail-identity { padding-top: 28px; margin-bottom: 16px; }
-  .rail-portfolio { margin-bottom: 16px; }
   .writing-archive .rail-cats { background: #fcfcfbf2; }
   .writing-archive .feed { padding-top: 16px; }
 }

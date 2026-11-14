@@ -10,7 +10,7 @@
     gallery.setAttribute('aria-roledescription', 'carousel');
     const controls = document.createElement('nav');
     controls.dataset.galleryOverlay = '';
-    controls.setAttribute('aria-label', 'Product tour navigation');
+    controls.setAttribute('aria-label', '이미지 넘기기');
     const status = document.createElement('div');
     status.dataset.galleryStatus = '';
     const count = document.createElement('span');
@@ -29,11 +29,11 @@
       element.textContent = text;
       return element;
     };
-    const previous = button('Previous screen');
-    const next = button('Next screen');
+    const previous = button('이전 화면');
+    const next = button('다음 화면');
     previous.innerHTML = '<span aria-hidden="true"><svg viewBox="0 0 24 24"><path d="m14 6-6 6 6 6"/></svg></span>';
     next.innerHTML = '<span aria-hidden="true"><svg viewBox="0 0 24 24"><path d="m10 6 6 6-6 6"/></svg></span>';
-    const playback = button('Pause automatic slideshow');
+    const playback = button('자동 넘김 멈추기');
     playback.dataset.galleryPlayback = '';
     const progress = document.createElement('div');
     progress.dataset.galleryProgress = '';
@@ -58,8 +58,8 @@
     let settling = false;
     let settleTimer;
     const selectors = slides.map((slide, index) => {
-      const title = slide.querySelector('figcaption p')?.textContent.trim() || `Screen ${index + 1}`;
-      const selector = button(`Show screen ${index + 1}: ${title}`);
+      const title = slide.querySelector('figcaption p')?.textContent.trim() || `${index + 1}번째 화면`;
+      const selector = button(`${index + 1}번째 화면 보기: ${title}`);
       selector.addEventListener('click', () => goTo(index));
       dots.append(selector);
       slide.querySelector('img')?.addEventListener('load', syncPlayback);
@@ -99,7 +99,7 @@
       }
     }
     function renderPlaybackButton() {
-      playback.setAttribute('aria-label', userPaused ? 'Resume automatic slideshow' : 'Pause automatic slideshow');
+      playback.setAttribute('aria-label', userPaused ? '자동 넘김 다시 시작' : '자동 넘김 멈추기');
       playback.innerHTML = userPaused
         ? '<svg viewBox="0 0 20 20" aria-hidden="true"><path d="m7 4 9 6-9 6Z"/></svg>'
         : '<svg viewBox="0 0 20 20" aria-hidden="true"><path d="M6 4v12M14 4v12"/></svg>';
@@ -111,7 +111,7 @@
       lastTick = null;
       renderProgress();
       count.textContent = `${String(index + 1).padStart(2, '0')} / ${String(slides.length).padStart(2, '0')}`;
-      count.setAttribute('aria-label', `Screen ${index + 1} of ${slides.length}`);
+      count.setAttribute('aria-label', `${slides.length}개 중 ${index + 1}번째 화면`);
       previous.disabled = index === 0;
       next.disabled = index === slides.length - 1;
       selectors.forEach((selector, i) => selector.setAttribute('aria-pressed', String(i === index)));

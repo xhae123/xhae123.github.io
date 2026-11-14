@@ -4,20 +4,20 @@ import { createHash } from 'node:crypto';
 import * as cheerio from 'cheerio';
 import hljs from 'highlight.js';
 import { marked } from 'marked';
-import { writePortfolio, works, primaryNavigation } from './portfolio.js';
-import { englishPostSlug, legacyRedirect, localizePostUrls, postRoutes } from './post-routes.js';
+import { writeArchive, primaryNavigation } from './archive.js';
+import { legacyRedirect, localizePostUrls, postRoutes } from './post-routes.js';
 import { requireSemanticArticle, requireSharedEmphasis, requireSharedArticleFrame } from './article-presentation.js';
 import { applyArticleSections } from './article-sections.js';
 
-// Source of truth: closed GitHub Issues authored by the repo owner (minus `excluded` label).
-// Issue body = markdown. Publish = close the issue. Unpublish = reopen or add `excluded`.
-const OWNER = 'xhae123';
-const REPO = 'xhae123.github.io';
-const TOKEN = process.env.GITHUB_TOKEN || '';
+// Source of truth: Markdown files in content/posts/. The file name is the URL slug;
+// front matter carries title, date, category, and an optional updated date.
+// Files in content/drafts/ are never published.
+const POSTS_DIR = 'content/posts';
+const DRAFTS_DIR = 'content/drafts';
 
 const SITE_URL = 'https://xhae123.github.io';
 const SITE_NAME = "xhae123's notes";
-const SITE_DESC = 'Notes on software, products, and what I learn along the way.';
+const SITE_DESC = '개발하면서 배운 것과 생각한 것을 기록합니다.';
 const AUTHOR = 'Woojin Kim';
 const GOOGLE_SITE_VERIFICATION = 'sNrpo16A0vUj7vHmVNEmAGZj85cGykaOeHO44krbqDU';
 
@@ -57,44 +57,24 @@ const CAT_ICONS = {
   </svg>`,
 };
 
-// First issue label that names a known category, else null (uncategorized).
-function categoryOf(labels) {
-  const names = (labels || []).map((l) => l.name || l);
-  return CATS.find((c) => names.includes(c)) || null;
-}
-
 marked.setOptions({ gfm: true, breaks: true });
 
-// Metadata is smuggled in an HTML comment so it stays invisible in GitHub's issue
-// view and in Velog if cross-posted. Only `date` is used (to preserve original
-// publish dates on migration); new posts fall back to the issue's creation time.
-function parseDate(body) {
-  const m = body.match(/<!--\s*date:\s*([^>]+?)\s*-->/i);
-  if (!m) return null;
-  const v = m[1].trim();
-  // Unparseable (e.g. the template's untouched YYYY-MM-DD placeholder) → fall
-  // back to the issue's creation date instead of rendering an Invalid Date.
-  return isNaN(new Date(v).getTime()) ? null : v;
-}
-function stripMeta(body) {
-  return body.replace(/<!--\s*(?:date|slug):[^>]*-->/gi, '').trim();
-}
-
-// Title → URL slug. Keep letters/numbers (incl. Korean), drop punctuation,
-// spaces → hyphens. Preserves the existing URL style (no lowercasing).
-function slugify(title) {
-  return (
-    String(title)
-      .trim()
-      .replace(/[^\p{L}\p{N}\s-]/gu, '')
-      .replace(/\s+/g, '-')
-      .replace(/-+/g, '-')
-      .replace(/^-+|-+$/g, '')
-      .slice(0, 80) || 'post'
-  );
+// Minimal front matter: `key: value` lines between two `---` fences. Values are
+// taken verbatim after the first colon, so titles may contain colons and quotes.
+function parseFrontMatter(source, file) {
+  const m = source.match(/^---\n([\s\S]*?)\n---\n?/);
+  if (!m) throw new Error(`${file}: missing front matter`);
+  const meta = {};
+  for (const line of m[1].split('\n')) {
+    if (!line.trim()) continue;
+    const i = line.indexOf(':');
+    if (i === -1) throw new Error(`${file}: invalid front matter line: ${line}`);
+    meta[line.slice(0, i).trim()] = line.slice(i + 1).trim();
+  }
+  return { meta, body: source.slice(m[0].length).trim() };
 }
 
-// Images dragged into a GitHub issue land on GitHub's attachment CDN, not our repo.
+// Images pasted as GitHub attachment URLs live on GitHub's CDN, not in this repo.
 // Localize only those hosts into /assets/ (author-linked external images are left alone).
 // Filename = sha1(url) so it's stable across builds → download once, reuse forever.
 const ATTACHMENT_RE =
@@ -172,8 +152,8 @@ function assetKey(name) {
   return d === -1 ? b : b.slice(0, d);
 }
 
-// Which assets does this issue body reference? Used for GC. Covers both
-// migrated /assets/<uuid> links and attachment URLs (keyed by their sha1 name).
+// Which assets does this source reference? Used for GC. Covers both
+// /assets/<name> links and attachment URLs (keyed by their sha1 name).
 function collectAssetRefs(body, set) {
   const re = new RegExp(`(?:${SITE_URL})?/assets/([^\\s"')]+)`, 'g');
   let m;
@@ -183,70 +163,43 @@ function collectAssetRefs(body, set) {
   }
 }
 
-async function fetchIssues() {
+async function loadPosts() {
   const items = [];
-  const referenced = new Set(); // asset keys referenced by ANY owner issue (any state)
-  const seenSlugs = new Set();
-  let page = 1;
-  while (true) {
-    // state=all so drafts/reopened issues still protect their images from GC.
-    const url = `https://api.github.com/repos/${OWNER}/${REPO}/issues?state=all&per_page=100&page=${page}`;
-    const res = await fetch(url, {
-      headers: {
-        Accept: 'application/vnd.github+json',
-        'User-Agent': 'blog-builder',
-        ...(TOKEN ? { Authorization: `Bearer ${TOKEN}` } : {}),
-      },
+  const referenced = new Set(); // asset keys referenced by any post or draft
+  for (const file of (await readdir(DRAFTS_DIR).catch(() => [])).filter((f) => f.endsWith('.md'))) {
+    // Drafts are not published, but their images are protected from GC.
+    collectAssetRefs(await readFile(path.join(DRAFTS_DIR, file), 'utf8'), referenced);
+  }
+  for (const file of (await readdir(POSTS_DIR)).filter((f) => f.endsWith('.md')).sort()) {
+    const slug = file.slice(0, -3);
+    if (!/^[a-z0-9-]+$/.test(slug)) throw new Error(`${file}: the file name must be a lowercase URL slug`);
+    const { meta, body } = parseFrontMatter(await readFile(path.join(POSTS_DIR, file), 'utf8'), file);
+    if (!meta.title) throw new Error(`${file}: missing title`);
+    if (!meta.date || isNaN(Date.parse(meta.date))) throw new Error(`${file}: missing or invalid date`);
+    if (meta.updated && isNaN(Date.parse(meta.updated))) throw new Error(`${file}: invalid updated date`);
+    if (meta.category && !CATS.includes(meta.category)) throw new Error(`${file}: unknown category ${meta.category}`);
+    collectAssetRefs(body, referenced);
+    const html = await applyArticleSections(await localizeImages(marked.parse(body)), slug);
+    collectAssetRefs(html, referenced);
+    requireSemanticArticle(html, file);
+    items.push({
+      title: meta.title,
+      slug,
+      date: meta.date,
+      modifiedDate: meta.updated || meta.date,
+      html,
+      cover: coverFor(slug, html),
+      category: meta.category || null,
     });
-    if (!res.ok) throw new Error(`GitHub API ${res.status}: ${await res.text()}`);
-    const batch = await res.json();
-    if (batch.length === 0) break;
-    for (const iss of batch) {
-      if (iss.pull_request) continue; // list endpoint returns PRs too
-      if (iss.user?.login !== OWNER) continue; // only the owner's issues count
-
-      const body = iss.body || '';
-      collectAssetRefs(body, referenced); // keep images of every owner issue, incl. drafts
-
-      // Publish only closed, non-excluded issues.
-      if (iss.state !== 'closed') continue;
-      if ((iss.labels || []).some((l) => (l.name || l) === 'excluded')) continue;
-
-      const declaredSlug = body.match(/<!--\s*slug:\s*([a-z0-9-]+)\s*-->/i)?.[1];
-      let slug = declaredSlug || englishPostSlug(slugify(iss.title));
-      while (seenSlugs.has(slug)) slug = `${slug}-${iss.number}`;
-      seenSlugs.add(slug);
-      const html = await applyArticleSections(await localizeImages(marked.parse(stripMeta(body))), slug);
-      collectAssetRefs(html, referenced);
-      requireSemanticArticle(html, `Issue #${iss.number}`);
-      items.push({
-        number: iss.number,
-        title: iss.title.trim(),
-        slug,
-        date: parseDate(body) || iss.created_at,
-        modifiedDate: iss.updated_at,
-        html,
-        cover: coverFor(slug, html),
-        category: categoryOf(iss.labels),
-      });
-    }
-    if (batch.length < 100) break;
-    page++;
   }
   items.sort((a, b) => new Date(b.date) - new Date(a.date));
   return { items, referenced };
 }
 
-// Delete asset files no owner issue references anymore (image removed from a body,
-// or its issue deleted). Skips pruning if the referenced set is empty — a safety
-// net against wiping /assets/ on a bad build.
+// Delete asset files no post or draft references anymore. Skips pruning if the
+// referenced set is empty — a safety net against wiping /assets/ on a bad build.
 async function pruneAssets(referenced) {
   if (referenced.size === 0) return;
-  // Keep original figures alongside their English siblings for future edits.
-  const manifest = JSON.parse(await readFile('translations/en/figures.json', 'utf8'));
-  for (const figure of manifest.figures) {
-    for (const source of figure.sources) referenced.add(assetKey(source));
-  }
   let entries;
   try {
     entries = await readdir('assets', { withFileTypes: true });
@@ -271,11 +224,10 @@ async function main() {
   STYLES_VER = await ver('styles.css');
   APP_VER = await ver('app.js');
 
-  console.log(`Fetching issues from ${OWNER}/${REPO}...`);
-  const { items, referenced } = await fetchIssues();
-  console.log(`Found ${items.length} published posts`);
+  const { items, referenced } = await loadPosts();
+  console.log(`Found ${items.length} posts in ${POSTS_DIR}`);
   if (items.length === 0) {
-    throw new Error('0 published issues — aborting to prevent wiping content');
+    throw new Error('0 posts — aborting to prevent wiping content');
   }
 
   await rm('posts', { recursive: true, force: true });
@@ -297,7 +249,7 @@ async function main() {
     await writeFile(path.join(dir, 'index.html'), legacyRedirect(slug));
   }
 
-  await writePortfolio(items.map(item => ({ ...item, excerpt: firstParagraph(item.html) })));
+  await writeArchive(items.map(item => ({ ...item, excerpt: firstParagraph(item.html) })));
   await writeFile('sitemap.xml', renderSitemap(items));
   await writeFile('robots.txt', renderRobots());
   await pruneAssets(referenced);
@@ -324,13 +276,16 @@ function firstImage(html) {
 function firstParagraph(html) {
   if (!html) return '';
   const $ = cheerio.load(html);
+  // A line break separates sentences; keep that boundary as a space.
+  $('br').replaceWith(' ');
+  const clean = (value) => value.replace(/\s+/g, ' ').trim();
   let text = '';
   $('p').each((_, el) => {
     if (text) return;
-    const t = $(el).text().trim();
+    const t = clean($(el).text());
     if (t.length >= 20) text = t;
   });
-  if (!text) text = $.root().text().trim().slice(0, 200);
+  if (!text) text = clean($.root().text()).slice(0, 200);
   return text;
 }
 
@@ -386,8 +341,9 @@ function processContent(html) {
           : hljs.highlightAuto(code);
       $el.html(result.value);
       $el.addClass('hljs');
+      // Label a block only with the language its author declared. A guessed
+      // language still colors the code but is never shown as its name.
       if (lang) $el.parent('pre').attr('data-lang', lang);
-      else if (result.language) $el.parent('pre').attr('data-lang', result.language);
     } catch {
       // leave as-is
     }
@@ -429,7 +385,7 @@ function head({ title, description, canonical, ogImage, ogType, extraHead = '' }
   <meta property="og:title" content="${esc(title)}" />
   <meta property="og:description" content="${esc(description)}" />
   <meta property="og:url" content="${esc(canonical)}" />
-  <meta property="og:locale" content="en_US" />${
+  <meta property="og:locale" content="ko_KR" />${
     ogImage ? `\n  <meta property="og:image" content="${esc(ogImage)}" />` : ''
   }
   <meta name="twitter:card" content="${ogImage ? 'summary_large_image' : 'summary'}" />
@@ -561,7 +517,7 @@ function renderPost(item, items) {
   const tocHtml =
     tocItems.length >= 2
       ? `
-      <p class="toc-title">contents</p>
+      <p class="toc-title">목차</p>
       <ul class="toc-list">
 ${tocItems
   .map(
@@ -575,11 +531,11 @@ ${tocItems
   const prevNextHtml =
     newer || older
       ? `
-    <nav class="post-nav" aria-label="Previous and next posts">
+    <nav class="post-nav" aria-label="이전/다음 글">
       ${
         older
           ? `<a class="post-nav-item post-nav-item--prev" href="/posts/${encodeURIComponent(older.slug)}/">
-        <span class="post-nav-label">previous post</span>
+        <span class="post-nav-label">이전 글</span>
         <span class="post-nav-title">${esc(older.title)}</span>
       </a>`
           : '<span></span>'
@@ -587,7 +543,7 @@ ${tocItems
       ${
         newer
           ? `<a class="post-nav-item post-nav-item--next" href="/posts/${encodeURIComponent(newer.slug)}/">
-        <span class="post-nav-label">next post</span>
+        <span class="post-nav-label">다음 글</span>
         <span class="post-nav-title">${esc(newer.title)}</span>
       </a>`
           : '<span></span>'
@@ -609,7 +565,7 @@ ${tocItems
   };
 
   return `<!DOCTYPE html>
-<html lang="en">
+<html lang="ko">
 <head>
 ${head({
   title: `${title} · ${SITE_NAME}`,
@@ -636,7 +592,7 @@ ${head({
           : ''
       }
         <header class="post-header">
-          <a class="post-top-back" href="/">← all posts</a>
+          <a class="post-top-back" href="/">← 글 목록</a>
           <p class="post-meta"><time datetime="${pubISO.slice(0, 10)}">${esc(date)}</time>${item.category ? `<span aria-hidden="true"> · </span><span class="post-category">${esc(item.category.toLowerCase())}</span>` : ''}</p>
           <h1 class="post-title">${esc(title)}</h1>
         </header>
@@ -645,10 +601,10 @@ ${body}
         </div>
       </article>${prevNextHtml}
       <nav class="post-back">
-        <a href="/">← back to posts</a>
+        <a href="/">← 글 목록으로</a>
       </nav>
     </div>
-    <aside class="toc" id="toc" aria-label="Contents">${tocHtml}
+    <aside class="toc" id="toc" aria-label="목차">${tocHtml}
     </aside>
   </main>
   <script src="/app.js?v=${APP_VER}"></script>
@@ -659,7 +615,6 @@ ${body}
 
 function renderSitemap(items) {
   const entries = [
-    ...['about/', ...works.map(w => `work/${w.slug}/`)].map(route => ({ loc: `${SITE_URL}/${route}` })),
     {
       loc: `${SITE_URL}/`,
     },

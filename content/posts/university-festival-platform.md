@@ -1,0 +1,272 @@
+---
+title: 대학 축제 플랫폼의 시스템 설계와 운영
+date: 2026-10-11
+category: Backend
+updated: 2026-11-14
+---
+
+한국의 대학 축제는 캠퍼스 곳곳에서 공연과 학생들이 준비한 부스가 함께 열리는 행사입니다. 학과·동아리 학생들은 음식과 술을 내는 임시 주점도 직접 운영합니다. 같은 학생이 축제를 즐기는 방문자가 되기도 하고, 자기 학과 주점에서 손님을 받는 운영자가 되기도 합니다.
+
+방문자는 공연 시간과 부스 위치를 찾고, 주점을 운영하는 학생들은 빈 테이블을 확인하고 손님을 안내합니다. 공연장에 자리가 부족하면 입장 대기도 관리해야 합니다. 축제의 즐거움 뒤에는 이렇게 서로 다른 현장 업무가 동시에 돌아갑니다.
+
+저희는 2026년 9월 28–30일 열린 경희대학교 국제캠퍼스 대동제 **Adelante**를 위해, 축제 정보와 현장 운영을 연결하는 플랫폼을 만들었습니다. 멋쟁이사자처럼 경희대학교 팀이 약 한 달 동안 개발했고, 저는 **엔지니어링 리드**로 시스템 설계부터 배포·운영까지 맡았습니다.
+
+<h2 id="connecting-festival-information-with-on-site-operations">축제 정보와 현장 운영을 연결했습니다</h2>
+
+### 공연과 부스 정보를 한곳에 모았습니다
+
+방문자에게는 설치 없이 열리는 웹사이트 하나를 제공했습니다. 메인에서 축제의 주요 안내를 확인하고, 공연 화면에서는 날짜별 출연진과 현재 공연 순서를 볼 수 있습니다.
+
+<figure>
+<a href="/assets/festival-platform/instagram-home-and-performances-en.webp" aria-label="그림 크게 보기"><img src="/assets/festival-platform/instagram-home-and-performances-en-display.webp" alt="축제 메인과 공연 일정의 출시 안내의 영문 편집본" width="2880" height="1800"></a>
+<figcaption>그림 1. 축제 메인과 공연 일정</figcaption>
+</figure>
+
+공지와 지도도 같은 웹사이트에 있습니다. 지도에서 부스를 선택하면 위치와 운영 정보를 확인할 수 있도록, 축제 정보를 찾는 동선을 한곳에 모았습니다.
+
+<figure>
+<a href="/assets/festival-platform/instagram-notices-and-map-en.webp" aria-label="그림 크게 보기"><img src="/assets/festival-platform/instagram-notices-and-map-en-display.webp" alt="공지 목록·상세와 지도·부스 상세의 출시 안내의 영문 편집본" width="2880" height="1800"></a>
+<figcaption>그림 2. 공지 목록·상세와 지도·부스 상세. 방문자가 현장에서 필요한 정보를 찾는 화면입니다.</figcaption>
+</figure>
+
+### 주점 테이블과 공연장 대기를 관리했습니다
+
+현장 운영에는 **SPOT**이란 별도 서비스를 제공했습니다. 주점을 운영하는 학생들이 휴대폰으로 테이블 이용을 시작·연장·종료하고, 자리가 나면 대기 손님을 호출하는 기능입니다. 노천극장(초청가수 공연장) 담당자는 공연장의 접수와 입장을 관리합니다. 공개 웹에서는 이 운영 상태를 바탕으로 주점과 공연장의 대기 현황을 보여줍니다.
+
+<figure>
+<a href="/assets/festival-platform/instagram-pub-and-stage-status-en.webp" aria-label="그림 크게 보기"><img src="/assets/festival-platform/instagram-pub-and-stage-status-en-display.webp" alt="주점과 노천극장 현황의 출시 안내의 영문 편집본" width="2880" height="1800"></a>
+<figcaption>그림 3. 주점과 노천극장의 공개 대기 현황. 방문자에게 보여주는 정보는 각 현장 서비스가 관리합니다.</figcaption>
+</figure>
+
+대기 등록은 현장에 비치한 iPad에서 받도록 했습니다. 손님을 받는 등록 화면과 학생들이 쓰는 운영 화면을 나누고, 각 주점은 자기 테이블과 대기만 관리하도록 했습니다.
+
+<figure>
+<a href="/assets/festival-platform/instagram-stage-and-pub-ipad-en.webp" aria-label="그림 크게 보기"><img src="/assets/festival-platform/instagram-stage-and-pub-ipad-en-display.webp" alt="노천극장과 주점의 손님 등록 iPad 출시 안내의 영문 편집본" width="2880" height="1800"></a>
+<figcaption>그림 4. 노천극장과 주점의 대기 등록 iPad. 등록과 운영은 서로 다른 계정·권한으로 제공합니다.</figcaption>
+</figure>
+
+### 등록부터 호출까지 자신의 대기를 확인합니다
+
+대기를 등록한 손님에게는 개인 조회 링크를 보냅니다. 앞에 몇 팀이 있는지 확인하며 축제를 둘러볼 수 있고, 자리가 나면 알림톡을 받고 돌아옵니다. 대기를 등록한 뒤의 안내까지 제품의 범위에 넣었습니다.
+
+<figure>
+<a href="/assets/festival-platform/instagram-stage-and-pub-personal-queue-en.webp" aria-label="그림 크게 보기"><img src="/assets/festival-platform/instagram-stage-and-pub-personal-queue-en-display.webp" alt="노천극장 등록과 주점 개인 대기 확인의 출시 안내의 영문 편집본" width="2880" height="1800"></a>
+<figcaption>그림 5. 노천극장과 주점의 개인 대기 화면. 등록 후 자신의 순서와 호출 상태를 확인합니다.</figcaption>
+</figure>
+
+공연장은 호출 이후 입장 안내로 이어집니다. 호출 전 취소와 호출 후 입장을 구분해, 손님이 보는 상태와 현장 담당자가 처리하는 상태를 맞췄습니다.
+
+<figure>
+<a href="/assets/festival-platform/instagram-stage-called-and-queue-cancel-en.webp" aria-label="그림 크게 보기"><img src="/assets/festival-platform/instagram-stage-called-and-queue-cancel-en-display.webp" alt="노천극장 호출 이후 입장과 개인 대기 취소의 출시 안내의 영문 편집본" width="2880" height="1800"></a>
+<figcaption>그림 6. 노천극장 호출 이후 입장과 개인 대기 취소 안내.</figcaption>
+</figure>
+
+주점에서도 호출된 손님이 돌아올 위치와 남은 시간을 안내합니다. 순서를 미루거나 호출 시간을 놓친 경우도 별도의 상태로 처리했습니다. 이 흐름 때문에 테이블 상태 변경과 알림 발송을 함께 설계해야 했습니다.
+
+<figure>
+<a href="/assets/festival-platform/instagram-pub-called-and-queue-defer-en.webp" aria-label="그림 크게 보기"><img src="/assets/festival-platform/instagram-pub-called-and-queue-defer-en-display.webp" alt="주점 호출 알림과 순서 미루기의 출시 안내의 영문 편집본" width="2880" height="1800"></a>
+<figcaption>그림 7. 주점 호출과 순서 미루기 안내</figcaption>
+</figure>
+
+### 사진 인증을 현장 이벤트에 연결했습니다
+
+**쿠옹이를 찾아봐옹**이란, 축제 공간 곳곳에 배치된 스티커를 찾아 사진으로 인증하는 이벤트입니다. AI 모델이 사진을 판정하면 축제 API가 인증 기록과 쿠폰을 확정하고, 방문자는 총학생회 부스에서 쿠폰으로 랜덤 뽑기에 참여합니다. 사진 판정과 실제 보상을 주는 업무도 하나의 이용 흐름으로 연결했습니다.
+
+<figure>
+<a href="/assets/festival-platform/instagram-sticker-event-and-reward-en.webp" aria-label="그림 크게 보기"><img src="/assets/festival-platform/instagram-sticker-event-and-reward-en-display.webp" alt="쿠옹이를 찾아봐옹 사진 인증과 보상의 출시 안내의 영문 편집본" width="2880" height="1800"></a>
+<figcaption>그림 8. AI 사진 인증과 쿠폰 보상. AI 모델의 판정 결과를 인증·보상 기록에 연결하는 이벤트입니다.</figcaption>
+</figure>
+
+## 한 달 안에 만들고, 사흘 동안 운영했습니다
+
+저는 아키텍처와 공통 인증, 주점 운영, AWS 인프라·배포, 성능 검증을 주도했습니다. 기능은 팀원들이 전체 흐름을 이해하고 구현 방법을 직접 판단할 수 있도록 이슈 단위로 나눴습니다. 공통 설계와 서비스 간 계약을 정리하고 전체 변경을 리뷰하면서, 각 기능을 실제 운영까지 연결했습니다.
+
+한 달 안에 출시해야 했고, 축제 중에도 콘텐츠와 현장 상태는 계속 바뀝니다. 공연 기능을 수정하는 동안 주점 운영은 이어져야 하고, 손님을 호출했다면 상태 변경과 안내 발송도 맞아야 합니다. **변경을 어디까지 분리할지, 어떤 상태를 함께 확정할지, 실패하면 어떻게 복구할지**가 설계의 출발점이었습니다.
+
+> **문제를 해결하는 데 필요한 만큼만 설계하고 싶었습니다.** 그 범위를 정하려면 현장에서 지켜야 할 업무와 감당할 수 있는 운영 비용을 함께 알아야 했습니다.
+
+이 기준은 실제 선택에도 적용했습니다. 독립적으로 교체해야 하는 API는 나누되 RDS·Redis의 물리 자원은 공유했고, 직접 운영할 클러스터 대신 ECS를 택했습니다. DB 풀도 크게 잡기보다 처리량을 확인해 결정했습니다. 어떤 기술을 썼는지에 앞서, 그 기술로 줄이려는 문제가 분명해야 한다고 생각했습니다.
+
+그리고 저희는 꽤 성공적인 성과를 거둘 수 있었습니다.
+
+사흘간 추정 순방문자 **17,308명**, CloudFront 요청 **1,634,031건**을 기록했습니다. 13개 주점이 SPOT을 사용했고, 테이블별 누적 이용 시간은 **1,386시간 45분**이었습니다. 아래부터는 이 서비스를 운영하기 위해 정한 경계와 실패 처리 기준을 설명합니다.
+
+<figure>
+<a href="/assets/festival-platform/figure-01-operation-results-en.png" aria-label="그림 크게 보기"><img src="/assets/festival-platform/figure-01-operation-results-en.png" alt="사흘간 추정 순방문자 17,308명과 최고 1분 평균 38.2 RPS, CloudFront 요청과 누적 테이블 이용 시간" width="1920" height="1040"></a>
+<figcaption>그림 9. 사흘간 운영 실측. 최고 RPS는 1분 요청 수를 60으로 나눈 최댓값입니다.</figcaption>
+</figure>
+
+## 서비스와 데이터의 경계를 함께 나눴습니다
+
+방문자 화면은 정보를 한곳에 모으고, 운영 권한은 총학생회·주점·노천 담당자의 범위에 맞췄습니다. 손님 앞의 iPad에는 등록 권한만 줬습니다. **누가 어떤 상태를 변경하는가가 서비스 경계의 기준**이었습니다.
+
+### 독립 배포가 필요한 단위까지 분리했습니다
+
+모듈형 모놀리스라면 빌드·배포와 로컬 통합 환경을 더 단순하게 만들 수 있었습니다. 여기서 우선한 것은 처리량보다 **현장별 변경·장애의 범위**였습니다. 공연 수정 때문에 주점 서버도 교체된다면, 콘텐츠 변경이 현장 운영의 배포 위험까지 동반합니다. 배포·프로세스·용량을 현장별로 결정할 수 있도록 경계를 나눴습니다.
+
+축제 정보·주점·노천을 세 Spring Boot API 서버로 나눴습니다. 각각 계약·도메인 모델·마이그레이션·인증을 소유하고, 방문자 화면이 API 응답을 조합합니다. 다른 서비스의 DB를 직접 읽지 않는 **독립 배포와 데이터 소유권을 갖춘 MSA**입니다.
+
+<figure>
+<a href="/assets/festival-platform/diagram-service-data-ownership-en.png" aria-label="그림 크게 보기"><img src="/assets/festival-platform/diagram-service-data-ownership-en.png" alt="축제 정보·주점·노천 API가 각각 자기 논리 DB와 마이그레이션을 소유하고 물리 RDS만 공유하는 구조" width="1920" height="944"></a>
+<figcaption>그림 10. 서비스별 논리 DB와 전용 계정. 물리 RDS 인스턴스는 공유하고 다른 서비스의 직접 SQL 접근은 금지했습니다.</figcaption>
+</figure>
+
+그만큼 별도 이미지·배포 파이프라인·관측과 API 계약 관리가 필요했습니다. 한 달 안에 기능을 만드는 동안 이 기반도 마련해야 했습니다. 모노레포의 공용 빌드·배포 규칙, 생성 클라이언트와 공용 로컬 실행기로 반복 작업을 줄였습니다. **운영 전에 통합 비용을 감수하고, 운영 중에는 필요한 서비스만 교체할 수 있게 하는 선택**이었습니다.
+
+분리의 단위도 제한했습니다. 함께 확정해야 하는 업무는 같은 서비스에 두고, 초기 규모에 맞춰 RDS·Redis는 물리 자원을 공유했습니다. **변경의 독립성을 확보하면서 저장소 운영 비용은 제한한 절충**입니다. 공유 DB의 자원 경합과 장애 범위는 연결 풀 상한·관측·이중화로 관리했습니다.
+
+첫날 전체 주점의 테이블 조회·제어를 운영 콘솔에 추가할 때도 이 경계를 썼습니다. 배포 대상 선택 검증은 `pub-waiting-api`와 `god-console`만 골랐습니다. 나머지 API와 여섯 웹의 교체를 요구하지 않았습니다.
+
+**착석과 테이블 이용 시작은 같은 주점 API 트랜잭션에 묶었습니다.** 하나만 확정되는 상태를 막기 위해 함께 성공해야 하는 업무를 한 서비스 안에 남겼습니다.
+
+### 실행 환경은 팀이 감당할 범위로 정했습니다
+
+팀의 Kubernetes 경험을 바탕으로 컨테이너 오케스트레이션을 택했습니다. 태스크 유지·교체와 서비스별 자원 조정이 필요했고, 한 달 안에 운영할 범위를 고려해 AWS 관리형인 **ECS**로 정했습니다.
+
+세 API·운영 콘솔은 Fargate, 모델의 메모리·기동 특성이 다른 AI는 ECS on EC2에 뒀습니다. AI는 Service Connect로 연결한 비공개 서비스로 두고, 여섯 React 앱은 S3·CloudFront에 배포했습니다. **다섯 ECS 서비스의 자원과 배포를 각각 조정**하고, Terraform으로 인프라와 평소·축제 용량을 관리했습니다.
+
+<figure>
+<a href="/assets/festival-platform/diagram-ecs-service-topology-en.png" aria-label="그림 크게 보기"><img src="/assets/festival-platform/diagram-ecs-service-topology-en.png" alt="CloudFront와 S3, ALB 뒤의 세 API와 운영 콘솔, Service Connect로 연결된 비공개 AI 서버를 보여주는 ECS 배포 구조" width="1920" height="1320"></a>
+<figcaption>그림 11. 정적 웹과 다섯 ECS 서비스의 실행 경로. 운영 콘솔은 ALB 호스트 규칙으로, AI는 비공개 Service Connect로 연결합니다.</figcaption>
+</figure>
+
+로그인 상태를 Redis에 두어 태스크 교체 중에도 유지하고 sticky session 의존을 없앴습니다. 소유 API가 permission·담당 주점을 검사합니다. 캐시 장애는 DB로 복구하고, 세션 검증 장애는 **fail-closed**로 거부합니다. 조회의 복구와 권한의 확인에 서로 다른 실패 정책을 적용했습니다.
+
+운영 콘솔의 위임 JWT는 메서드·경로·본문 해시·행위자를 묶고, 소유 API가 Redis에 `jti`를 원자적으로 등록해 재사용을 차단합니다. 운영 권한을 모아도 각 서비스의 업무 검증을 거칩니다.
+
+## 동시성과 알림의 실패 조건을 명시했습니다
+
+주점의 테이블은 하루에도 여러 팀이 사용합니다. 응답이 끊기면 운영 요청은 다시 도착합니다. 먼저 **요청이 무엇을 가리키며, 다시 실행해도 어떤 결과를 유지해야 하는가**를 정했습니다.
+
+### 잠금에 요청의 대상을 더했습니다
+
+사전 동시성 검증에서 앞선 팀을 종료하려던 요청이 다음 팀까지 종료하는 문제를 발견한 적이 있습니다. 잠금은 정상 작동했습니다. 요청들이 순서대로 처리됐고, 뒤늦은 종료 요청은 당시의 최신 행을 변경했습니다. **잠금은 변경 순서를 정하지만, 요청이 어느 이용을 가리키는지까지 보장하지는 않습니다.**
+
+직원 화면이 본 `rowVersion`을 종료·연장 요청의 `expectedVersion`으로 보냈습니다. 서버는 잠금 안에서 현재 버전과 비교하고, 다르면 `409 STALE_TABLE_STATE`로 거부합니다. 이제 테이블 번호와 함께 **그 화면이 확인한 상태**까지 요청의 전제에 들어갑니다.
+
+<figure>
+<a href="/assets/festival-platform/diagram-stale-table-command-en.png" aria-label="그림 크게 보기"><img src="/assets/festival-platform/diagram-stale-table-command-en.png" alt="A팀을 보며 생성한 요청의 버전 7과 B팀 착석 후 현재 버전 9가 달라 종료 요청을 거부하는 시간 순서" width="1920" height="1024"></a>
+<figcaption>그림 12. 검증에서 재현한 문제를 단순화한 예시. 버전 숫자는 가상이며 오래된 상태를 보고 생성한 명령을 거부합니다.</figcaption>
+</figure>
+
+직원 화면은 버전을 보내고, 운영 콘솔은 별도 `lockTarget`에서 필수로 검증한 뒤 같은 업무 메서드를 호출합니다. 이미 검증한 내부 호출을 위해 메서드는 버전 생략을 허용했습니다. 다만 HTTP 계약도 선택 값으로 남아 있어, 버전 없는 인증 요청에는 오래된 상태 검사가 적용되지 않습니다. **직원 화면과 콘솔의 보호를 API 전체의 보장으로 확대할 수는 없습니다.** HTTP 입력에서는 버전을 필수로 받고, 검증을 마친 내부 호출과 구분해야 이 경계를 닫을 수 있습니다.
+
+반복 호출·착석은 확정한 상태를 유지하고 새 알림을 만들지 않습니다. 운영 콘솔은 작업 ID와 결과 원장으로 재시도를 확인합니다. **상태 버전은 오래된 의도를 막고, 작업 ID는 같은 작업의 반복을 식별**합니다.
+
+### 발송 의도와 불확실한 결과를 끝까지 추적했습니다
+
+호출은 손님에게 안내까지 반드시 전달해야 하는 업무입니다. DB와 발송사를 하나의 트랜잭션으로 묶을 수 없어, 저장 직후 종료·발송 지연·접수 응답 유실을 각각 처리했습니다.
+
+<figure>
+<a href="/assets/festival-platform/diagram-notification-failure-windows-en.png" aria-label="그림 크게 보기"><img src="/assets/festival-platform/diagram-notification-failure-windows-en.png" alt="직접 알림 발송에서 가능한 저장 후 종료, 발송 지연, 접수 응답 유실의 세 가지 시나리오" width="1920" height="1384"></a>
+<figcaption>그림 13. 설계에서 다룬 실패 시나리오.</figcaption>
+</figure>
+
+호출 상태와 **최종 발송 내용·의도를 같은 DB 트랜잭션에 저장**했습니다. Transactional outbox의 relay가 SQS로 전달하고 Lambda 작업자가 발송합니다. 프로세스가 종료돼도 발송 의도는 DB에 남고, 직원의 요청은 발송사를 기다리지 않습니다. 작업자는 소유 API를 통해 원장을 선점하고 결과를 기록합니다.
+
+<figure>
+<a href="/assets/festival-platform/diagram-transactional-outbox-en.png" aria-label="그림 크게 보기"><img src="/assets/festival-platform/diagram-transactional-outbox-en.png" alt="호출 상태와 알림 원장을 같은 트랜잭션에 저장하고 relay·SQS·Lambda로 전달하며 작업자는 소유 API로 선점과 결과를 기록하는 구조" width="1920" height="1104"></a>
+<figcaption>그림 14. 업무 상태와 발송 의도는 원자적으로 확정합니다. SQS·Lambda는 실행을 맡고 발송 원장은 소유 서비스에 남습니다.</figcaption>
+</figure>
+
+SQS Standard의 중복 전달은 조건부 선점으로 처리했습니다. 더 어려운 것은 **외부 발송 결과를 모르는 상태**였습니다. 이때의 자동 재시도는 중복 안내가 될 수 있어 처리 기준을 나눴습니다.
+
+- 제출 전 실패가 확인되면 제한적으로 재시도하고, 한도를 넘으면 DLQ에 남깁니다.
+- 발송사 접수가 확인되면 접수 ID를 기록하고 재제출하지 않습니다.
+- 제출 후 접수 여부를 모르면 `UNKNOWN`으로 남겨 자동 재제출을 중단하고, 발송사 이력과 원장을 대조합니다.
+
+> **발송 의도가 사라지지 않는 것과 외부 발송이 중복되지 않는 것은 서로 다른 보장입니다.** 불확실한 결과를 별도 상태로 남겨, 복구 판단에 필요한 증거를 보존했습니다.
+
+이 정책은 **중복 안내를 피하는 대신, 접수 여부를 확인하는 동안 안내가 늦어질 가능성을 수용**합니다. 그래서 `UNKNOWN`을 저장하는 것으로 처리를 끝내지 않았습니다. 작업 직후 사고를 운영 채널에 통지하고, 5분 예약 작업이 미통지 사고와 원장을 다시 확인합니다.
+
+운영 콘솔에서는 현재 업무 상태와 발송사 이력을 대조합니다. 재발송은 사유와 중복 위험 확인을 받고, 소유 API가 링크·업무 기한을 검증한 뒤 **원본을 보존한 새 발송 ID**로 만듭니다. 재발송 요청만으로 원본의 조사 상태를 닫지 않고, 접수 ID나 미접수 판단의 근거를 따로 남깁니다. 재시도 여부를 결정할 증거와 운영 경로까지 구현했습니다.
+
+사흘간 **582건 모두 한 번의 발송 시도로 고유한 발송사 접수 ID를 확보**했고 최종 단말 수신은 별도 추적했습니다. 번역에도 원문 버전 검사를 적용해 늦은 결과가 새 콘텐츠를 덮지 않게 했습니다.
+
+AI 인증도 같은 기준입니다. 팀원의 YOLO·DINOv2 모델은 사진을 판정하고, 축제 API는 참가자 잠금·DB 제약으로 적립·쿠폰을 확정합니다. 신규 참가자의 첫 적립까지 검증하고 **추론과 보상 확정의 책임을 분리**했습니다.
+
+## 배포와 복구를 하나의 운영 경로로 만들었습니다
+
+검증된 `main`을 `prod`로 승격하고, 변경 경로·공용 패키지의 소비 관계로 배포 대상을 골랐습니다. GitHub OIDC는 저장소·운영 환경으로 제한하고 앱 배포 권한과 Terraform·업무 데이터 권한도 분리했습니다.
+
+### 새 버전이 실패해도 돌아갈 경로를 남겼습니다
+
+ECS가 기존 정상 태스크를 유지하며 새 버전을 준비합니다. PostgreSQL·Redis의 로그인·업무 상태는 유지됩니다. readiness와 ALB 정상 대상을 확인해 교체하고, 실패하면 circuit breaker와 이전 task definition으로 복귀합니다.
+
+<figure>
+<a href="/assets/festival-platform/diagram-rolling-deployment-en.png" aria-label="그림 크게 보기"><img src="/assets/festival-platform/diagram-rolling-deployment-en.png" alt="변경 영향 분석 뒤 ECS가 새 버전을 준비하고 기존 태스크를 교체하며 상태는 외부 저장소에 유지하는 배포 흐름" width="1920" height="1208"></a>
+<figcaption>그림 15. 선택 배포와 롤링 교체. 노드 수는 개념 설명용이며 로그인과 업무 상태는 태스크 밖에 유지합니다.</figcaption>
+</figure>
+
+준비 기간에 이 복구 경로를 실제로 썼습니다. CI를 통과한 부스 이미지 변환이 새 API 태스크 두 개를 메모리 부족으로 종료시켰습니다. 이전 task definition으로 복구하고, 브라우저 압축과 중복되는 서버 디코딩·재인코딩을 제거해 제한된 파일 검증만 남겼습니다. **기능 검사와 자원 제약을 별도로 검증하고, 실패한 릴리스를 수습하는 경로까지 배포에 포함**했습니다.
+
+9월 30일 축제 API 롤링 구간에서는 태스크가 **2→4→2**로 교체되는 동안 1분 관측의 ALB 정상 대상이 최소 두 대를 유지했습니다. 배포 완료와 요청을 받을 대상의 유지를 함께 확인했습니다.
+
+### 태스크 수와 장애 범위를 함께 설계했습니다
+
+**단일 장애점(SPOF)은 태스크 수만으로 없어지지 않습니다.** 두 태스크가 같은 호스트에 있으면 호스트 장애에 함께 사라질 수 있습니다. VPC·ALB는 두 가용영역, API·운영 콘솔은 최소 두 태스크로 구성했습니다. AI는 `distinctInstance`·AZ spread로 두 EC2 호스트에 분산하고, RDS Multi-AZ standby와 Redis replica·자동 장애조치를 뒀습니다.
+
+<figure>
+<a href="/assets/festival-platform/diagram-multi-az-failure-domains-en.png" aria-label="그림 크게 보기"><img src="/assets/festival-platform/diagram-multi-az-failure-domains-en.png" alt="두 가용영역의 실행 태스크와 별도 AI 호스트, RDS 대기 인스턴스와 Redis 복제본을 보여주는 장애 대비 구성" width="1920" height="1288"></a>
+<figcaption>그림 16. 두 가용영역의 장애 대비 구성 예시. RDS standby는 장애 전환용이며 실제 시점별 태스크 배치 실측은 아닙니다.</figcaption>
+</figure>
+
+공유 저장소의 장애 영향은 남습니다. 세션 확인 실패를 거부하는 기준을 유지하면서, 저장소의 복구 경로를 확보했습니다.
+
+### 경보를 AI가 바로 조사할 수 있는 사건으로 만들었습니다
+
+GitHub·AWS를 다루는 Codex·Claude Code를 운영에도 썼습니다. 경보에 조사 대상을 붙여 코드 확인·수정·검증을 이어갈 맥락을 준비했습니다.
+
+CloudWatch→SNS→Lambda가 해당 시간·대상의 로그와 호스트·오류 코드·route·요청 ID를 Discord 사건에 붙입니다. 운영자가 이를 에이전트에 전달해 **증거 수집부터 조사·변경·복구 확인까지 연결**했습니다.
+
+<figure>
+<a href="/assets/festival-platform/diagram-ai-assisted-incident-response-en.png" aria-label="그림 크게 보기"><img src="/assets/festival-platform/diagram-ai-assisted-incident-response-en.png" alt="CloudWatch 경보에 로그 증거를 자동 보강하고 Discord에서 운영자가 Claude Code·Codex로 전달해 GitHub·AWS 조사와 변경을 이어가는 구조" width="1920" height="1096"></a>
+<figcaption>그림 17. AI-native alerting. 경보 보강은 자동이며 에이전트 전달과 필요한 변경 검토·복구 확인은 운영자가 맡습니다.</figcaption>
+</figure>
+
+<figure>
+<a href="/assets/festival-platform/diagram-incident-evidence-en.png" aria-label="그림 크게 보기"><img src="/assets/festival-platform/diagram-incident-evidence-en.png" alt="실제 경보의 시각·리전·호스트와 CloudFront 503 POST, pub API 동작 패턴, OriginError를 영문으로 재구성한 진단 패널" width="1920" height="1168"></a>
+<figcaption>그림 18. 10월 1일 실제 경보의 영문 재구성. 집계 기간 밖의 예시이며 대표 오류는 조사 범위를 좁히는 단서입니다.</figcaption>
+</figure>
+
+제가 사건을 전달하고 허용된 작업을 진행시킨 뒤 복구를 확인했습니다. 코드 변경은 리뷰·릴리스 흐름, 인프라는 Terraform plan 검토·apply 승인을 거칩니다. 자동 증거 수집과 에이전트 실행을 구분하고, 경보 relay 실패도 감시해 암호화된 큐에 남겼습니다.
+
+## 자원을 늘리기 전에 처리량으로 검증했습니다
+
+사전 부하테스트에서 DB 연결 대기가 쌓이는 걸 목격한 적이 있었습니다. 풀 확대가 자연스러운 후보였지만, DB CPU는 낮았습니다. JVM·컨테이너·DB를 함께 관측하며 **완료한 요청 수가 늘어나는 설정**을 비교했습니다.
+
+0.5 vCPU·1GB·풀 4개, 동시 사용자 40명 조건에서 가상 스레드 적용 후 공연 조회는 **16.6→45.5 RPS**, 주점은 **68.3→134.8**, 노천은 **39.4→79.5**로 늘었습니다. 공연 경로의 플랫폼 스레드는 68→33으로 줄었지만 연결 대기는 36→34로 거의 같았습니다. 처리량 증가를 DB 풀 대기의 해소로 설명할 수는 없었습니다.
+
+<figure>
+<a href="/assets/festival-platform/performance-experiments.png" aria-label="그림 크게 보기"><img src="/assets/festival-platform/performance-experiments.png" alt="40명 부하의 가상 스레드 비교와 64명 부하의 커넥션 풀 비교를 분리해 표시한 실험 결과" width="1920" height="1504"></a>
+<figcaption>그림 19. 서로 다른 조건의 사전 비교 실험. 위는 40명·풀 4개의 스레드 방식, 아래는 64명·가상 스레드 ON의 풀 크기 비교입니다.</figcaption>
+</figure>
+
+별도 64명 실험에서 풀을 4→32로 늘리자 대기는 줄었지만 처리량은 **43.7→23.6 RPS**로 떨어졌습니다. DB CPU 6–8%, 실행 쿼리는 대체로 한 개인 상황에서 요청당 강제 컨텍스트 스위치는 1.13→2.66으로 늘었습니다. 더 큰 풀이 앱의 실행 경쟁을 키웠다는 근거였고, 원인별 기여율까지 단정하지 않고 처리량·지연으로 설정을 결정했습니다.
+
+**가상 스레드는 적용하고 풀은 4개로 유지했습니다.** 동시 요청을 더 허용할 때 처리 능력도 늘어나는지 검증했습니다. AI에는 처리·대기 상한, readiness와 코드·모델 해시 고정으로 수용 한도와 재현성을 관리했습니다.
+
+## 실제 운영은 다음 설계의 기준이 됐습니다
+
+최고 1분 평균 **38.2 RPS**의 실제 유입을 운영했습니다. API 세 개·운영 콘솔은 각 4,320개의 1분 표본에서 ALB 정상 대상이 최소 두 대를 유지했습니다. **관측된 전체 서비스 중단은 없었고**, 개별 ALB·target 5xx 46건은 별도 추적했습니다.
+
+운영 중 주요 조회 여섯 경로의 서버 처리 p95는 모두 500ms 목표를 충족했습니다. 지도는 111.2ms, 나머지는 11.8–25.4ms였습니다.
+
+<figure>
+<a href="/assets/festival-platform/18-server-p95-versus-goal.png" aria-label="그림 크게 보기"><img src="/assets/festival-platform/18-server-p95-versus-goal.png" alt="지도·공연·부스·굿즈·주점·노천 조회의 서버 처리 p95와 동일한 500ms 목표를 비교한 실측 차트" width="1920" height="1136"></a>
+<figcaption>그림 20. 구조화 로그에서 측정한 서버 처리 p95와 500ms 목표.</figcaption>
+</figure>
+
+브라우저 LCP 14,617건은 p50 648ms, p95 **3,060ms**였습니다. 표본·측정 대상이 달라 서버 p95와의 차감으로 원인을 구할 수는 없습니다. 서버 목표를 충족한 뒤에도 **화면 표시의 긴 지연은 남았습니다.** 다음 최적화는 기기·연결 환경과 페이지·이미지별 LCP를 연결하는 것부터 시작해야 합니다.
+
+CloudFront 가중 적중률은 35.35%였습니다. 공통 공개 응답만 허용하고, 즉시 갱신해야 할 지도·부스 상세는 `no-store`로 뒀습니다. **적중률을 높이는 결정에는 어떤 정보의 갱신을 늦출지까지 포함**됩니다. Redis의 세션 조회와 캐시 적중도 구분해 평가했습니다.
+
+첫 운영에는 실측 자료가 없었습니다. 이제 업무 DB·로그·메트릭으로 **기능별·시간대별 용량과 실제 사용된 상태 전이**부터 다음 축제를 설계할 수 있습니다.
+
+제가 리드한 것은 **팀의 구현을 같은 업무 규칙·실패 처리 기준·릴리스 경로로 묶는 일**이었습니다. 기능별 구현을 연결하며 변경의 범위, 명령의 유효성, 불확실한 발송의 처리 기준을 시스템 전체에서 맞췄습니다. 그 설계를 팀과 한 달 안에 구현해 실제 축제에서 운영했습니다. 필요한 경계는 만들고, 함께 감당할 수 있는 만큼으로 운영 범위를 정했습니다. 다음 축제는 이 구조와 실측 자료에서 출발할 수 있습니다.
+
+### 실제 축제에서 쓰이는 플랫폼으로 완성했습니다
+
+한 달 안에 만든 플랫폼을 사흘간 실제 현장에서 운영했고, **추정 순방문자 17,308명과 13개 주점의 운영을 지원했습니다.** 방문자는 공연과 부스 정보를 찾았고, 주점을 운영하는 학생들은 SPOT으로 테이블을 관리했습니다. 누적 1,386시간 45분의 테이블 이용은 이 시스템이 실제 주점 업무에 쓰였다는 결과입니다.
+
+그 이용을 감당하면서 **주요 조회 여섯 경로 모두 응답 시간 목표를 충족했고, 관측된 전체 서비스 중단 없이 운영을 마쳤습니다.** 알림 582건도 모두 한 번의 시도로 발송사 접수를 확인했습니다. 서비스 경계와 업무 정합성, 배포와 복구를 함께 설계한 결과를 실제 운영에서 확인할 수 있었습니다. 팀과 함께 출시했고, 현장에서 쓰였고, 다음 축제를 준비할 수 있는 시스템과 실측 자료를 남겼습니다.

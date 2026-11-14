@@ -1,10 +1,10 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="ko">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <meta name="google-site-verification" content="sNrpo16A0vUj7vHmVNEmAGZj85cGykaOeHO44krbqDU">
-  <title>woojin kim · Contributing to Netty: Why Check the Direct Memory Limit?</title>
+  <title>woojin kim · Netty 오픈소스 기여 — 왜 Direct Memory 한도를 확인할까?</title>
 
   <link rel="canonical" href="https://xhae123.github.io/posts/netty-direct-memory-limit/">
 
@@ -27,117 +27,123 @@
   <link rel="stylesheet" href="/navigation.css?v=rose-1">
   <link rel="icon" type="image/svg+xml" href="/favicon.svg?v=woojin-w-2">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/github.min.css">
-  <link rel="stylesheet" href="/blog.css?v=shared-9e2597e0">
+  <link rel="stylesheet" href="/blog.css?v=shared-5b9743f9">
   <meta property="article:published_time" content="2026-09-22T00:00:00.000Z">
-  <meta property="article:modified_time" content="2026-10-04T10:45:22.000Z">
+  <meta property="article:modified_time" content="2026-09-22T00:00:00.000Z">
   <meta property="article:section" content="Backend">
   <meta property="article:author" content="Woojin Kim">
 
-<meta name="description" content="A Netty contribution tracing direct memory limits from JVM options to buffer allocation, with the reasoning behind the fix and its compatibility boundaries."><meta name="author" content="Woojin Kim"><meta name="robots" content="index, follow, max-image-preview:large"><meta property="og:site_name" content="Woojin Kim"><meta property="og:title" content="Contributing to Netty: Why Check the Direct Memory Limit?"><meta property="og:description" content="A Netty contribution tracing direct memory limits from JVM options to buffer allocation, with the reasoning behind the fix and its compatibility boundaries."><meta property="og:type" content="article"><meta property="og:locale" content="en_US"><meta property="og:url" content="https://xhae123.github.io/posts/netty-direct-memory-limit/"><meta property="og:image" content="https://xhae123.github.io/assets/en/netty-layout.png"><meta property="og:image:alt" content="Figure from Contributing to Netty: Why Check the Direct Memory Limit?"><meta name="twitter:card" content="summary_large_image"><meta name="twitter:title" content="Contributing to Netty: Why Check the Direct Memory Limit?"><meta name="twitter:description" content="A Netty contribution tracing direct memory limits from JVM options to buffer allocation, with the reasoning behind the fix and its compatibility boundaries."><meta name="twitter:image" content="https://xhae123.github.io/assets/en/netty-layout.png"><script type="application/ld+json">{"@context":"https://schema.org","@type":"BlogPosting","headline":"Contributing to Netty: Why Check the Direct Memory Limit?","description":"A Netty contribution tracing direct memory limits from JVM options to buffer allocation, with the reasoning behind the fix and its compatibility boundaries.","datePublished":"2026-09-22T00:00:00.000Z","dateModified":"2026-10-04T10:45:22.000Z","author":{"@type":"Person","@id":"https://xhae123.github.io/#person","name":"Woojin Kim","alternateName":["김우진","xhae123"],"url":"https://xhae123.github.io/about/","sameAs":["https://github.com/xhae123"],"jobTitle":"Software Engineer"},"url":"https://xhae123.github.io/posts/netty-direct-memory-limit/","mainEntityOfPage":{"@type":"WebPage","@id":"https://xhae123.github.io/posts/netty-direct-memory-limit/"},"image":"https://xhae123.github.io/assets/en/netty-layout.png","inLanguage":"en","isPartOf":{"@id":"https://xhae123.github.io/#website"}}</script><script defer="" src="https://cloud.umami.is/script.js" data-website-id="b50b4b5c-7887-4c32-9970-42ac27783784" data-domains="xhae123.github.io" data-exclude-hash="true"></script></head>
+<meta name="description" content="Netty는 자바에서 네트워크 서버와 클라이언트를 만들 때 사용하는 프레임워크입니다. 연결을 받아들이고, 데이터를 읽고, 응답을 보내는 공통 처리를 추상화 해줘서 개발자는 그 위에서 “들어온 데이터로 무엇을 할 것인가”에 집중할 수 있습니다."><meta name="author" content="Woojin Kim"><meta name="robots" content="index, follow, max-image-preview:large"><meta property="og:site_name" content="Woojin Kim"><meta property="og:title" content="Netty 오픈소스 기여 — 왜 Direct Memory 한도를 확인할까?"><meta property="og:description" content="Netty는 자바에서 네트워크 서버와 클라이언트를 만들 때 사용하는 프레임워크입니다. 연결을 받아들이고, 데이터를 읽고, 응답을 보내는 공통 처리를 추상화 해줘서 개발자는 그 위에서 “들어온 데이터로 무엇을 할 것인가”에 집중할 수 있습니다."><meta property="og:type" content="article"><meta property="og:locale" content="ko_KR"><meta property="og:url" content="https://xhae123.github.io/posts/netty-direct-memory-limit/"><meta property="og:image" content="https://xhae123.github.io/assets/netty-direct-memory-layout.webp"><meta property="og:image:alt" content="Netty 오픈소스 기여 — 왜 Direct Memory 한도를 확인할까? 본문 그림"><meta name="twitter:card" content="summary_large_image"><meta name="twitter:title" content="Netty 오픈소스 기여 — 왜 Direct Memory 한도를 확인할까?"><meta name="twitter:description" content="Netty는 자바에서 네트워크 서버와 클라이언트를 만들 때 사용하는 프레임워크입니다. 연결을 받아들이고, 데이터를 읽고, 응답을 보내는 공통 처리를 추상화 해줘서 개발자는 그 위에서 “들어온 데이터로 무엇을 할 것인가”에 집중할 수 있습니다."><meta name="twitter:image" content="https://xhae123.github.io/assets/netty-direct-memory-layout.webp"><script type="application/ld+json">{"@context":"https://schema.org","@type":"BlogPosting","headline":"Netty 오픈소스 기여 — 왜 Direct Memory 한도를 확인할까?","description":"Netty는 자바에서 네트워크 서버와 클라이언트를 만들 때 사용하는 프레임워크입니다. 연결을 받아들이고, 데이터를 읽고, 응답을 보내는 공통 처리를 추상화 해줘서 개발자는 그 위에서 “들어온 데이터로 무엇을 할 것인가”에 집중할 수 있습니다.","datePublished":"2026-09-22T00:00:00.000Z","dateModified":"2026-09-22T00:00:00.000Z","author":{"@type":"Person","@id":"https://xhae123.github.io/#person","name":"Woojin Kim","alternateName":["김우진","xhae123"],"url":"https://xhae123.github.io/","sameAs":["https://github.com/xhae123"],"jobTitle":"Software Engineer"},"url":"https://xhae123.github.io/posts/netty-direct-memory-limit/","mainEntityOfPage":{"@type":"WebPage","@id":"https://xhae123.github.io/posts/netty-direct-memory-limit/"},"image":"https://xhae123.github.io/assets/netty-direct-memory-layout.webp","inLanguage":"ko","isPartOf":{"@id":"https://xhae123.github.io/#website"}}</script><script defer="" src="https://cloud.umami.is/script.js" data-website-id="b50b4b5c-7887-4c32-9970-42ac27783784" data-domains="xhae123.github.io" data-exclude-hash="true"></script></head>
 <body>
   <main class="post-layout">
     <div class="post-main">
       <article class="post" id="post">
         <header class="post-header">
-          <a class="post-top-back" href="/">← all posts</a>
+          <a class="post-top-back" href="/">← 글 목록</a>
           <p class="post-meta"><time datetime="2026-09-22">2026.09.22</time><span aria-hidden="true"> · </span><span class="post-category">backend</span></p>
-          <h1 class="post-title">Contributing to Netty: Why Check the Direct Memory Limit?</h1>
+          <h1 class="post-title">Netty 오픈소스 기여 — 왜 Direct Memory 한도를 확인할까?</h1>
         </header>
         <div class="post-body" id="post-body">
-<html><head></head><body><p>Netty is a Java framework for building network servers and clients. It abstracts common work such as accepting connections, reading data, and sending responses, so application developers can focus on what to do with incoming data.</p>
-<p><img src="/assets/en/netty-layout.png" alt="Java heap contains the DirectByteBuffer object, pointing to off-heap byte data" loading="lazy"></p>
-<p>Direct memory is allocated outside the heap, where ordinary Java objects live. It can help reduce intermediate copying when reading and writing network data.</p>
-<p>A networking framework and memory that holds data: the connection seems natural. But reading Netty's code takes you a little deeper.</p>
-<p>Netty doesn't just use memory. It wants to determine the direct memory limit available in the current runtime, even reading JVM launch options when necessary.</p>
-<p>Why should a networking framework inspect memory settings?</p>
-<p>That question led me to a PR changing the lookup logic. While reviewing it, I found an edge case where a string inside a system property could be mistaken for a memory option. The bug was in a string-checking condition. To understand why that condition mattered, I first needed to understand where network data lives.</p>
-<h2 id="연결을-처리한다는-것은-버퍼를-관리한다는-것">Handling connections means managing buffers</h2><p>A server receives a request, reads data, processes it, and sends a response. Application code may express this in a few lines, but data doesn't move in one indivisible operation.</p>
-<p>For a TCP connection, one client request isn't guaranteed to arrive in one server read. If only part arrives, it must be retained until the rest comes in. Responses are similar: creating data doesn't mean it can all be written to a socket immediately. Unwritten data has to stay somewhere. Netty uses <code>ByteBuf</code> to manage it.</p>
-<p>A buffer temporarily holds data. In a server, though, it's more than scratch space. Receiving, application processing, and sending happen at different rates. Buffers hold data while the system bridges those differences.</p>
-<p>From this perspective, networking and memory management are hard to separate. More connections and more data awaiting processing or transmission make buffer management increasingly important.</p>
-<p>Netty's <code>ByteBuf</code> supports both heap and direct memory as backing storage. Behind the same byte-reading and byte-writing interface, implementations can put the actual data in different places.</p>
-<p>Why use direct memory instead of the familiar, simple heap?</p>
-<h2 id="더-빠른-메모리가-아니라-덜-복사하는-경로">Not faster memory, but a path with less copying</h2><p>The familiar way to store bytes in Java is a <code>byte[]</code>: allocate an array on the heap and fill it. But passing those bytes to operating-system I/O can require extra work.</p>
-<p><img src="/assets/en/netty-copy.png" alt="A heap buffer is copied into a temporary direct buffer before an OS write" loading="lazy"><br>For example, JDK NIO has a path that copies a heap buffer into a temporary direct buffer before invoking the OS write function. If the data is already in a direct buffer, that intermediate copy may be avoided.</p>
-<p>Direct buffers can <strong>reduce an extra copy into a temporary buffer before transmission.</strong> But allocation and deallocation can cost more than with heap buffers. Creating and discarding a new buffer for each request can spend the savings right back on memory management.</p>
-<p>That's why Netty provides <strong>buffer pools that reuse memory after a task finishes.</strong> Rather than acquiring fresh space every time, it reuses allocated space. Reference counts track when that space can be returned, because memory still used by another task must not be overwritten.</p>
-<p>But reuse <strong>reduces allocation frequency; it doesn't eliminate the memory required.</strong> More concurrent data needs more space, and pooled space retained for later work still occupies memory.</p>
-<p>Even with buffer reuse, the total permitted memory usage needs a separate limit. That's why Netty checks direct memory limits rather than simply allocating memory.</p>
-<h2 id="메모리의-위치를-정했다면-사용-한도도-필요하다">Choosing where memory lives also requires a budget</h2><p>Off-heap memory is still a resource consumed by the process. Leaving the heap doesn't remove capacity constraints.</p>
-<p>HotSpot offers an option to set the allocation limit for NIO direct buffers.</p>
+<html><head></head><body><p>Netty는 자바에서 네트워크 서버와 클라이언트를 만들 때 사용하는 프레임워크입니다. 연결을 받아들이고, 데이터를 읽고, 응답을 보내는 공통 처리를 추상화 해줘서 개발자는 그 위에서 “들어온 데이터로 무엇을 할 것인가”에 집중할 수 있습니다.</p>
+<p><img src="/assets/netty-direct-memory-layout.webp" alt="Java heap과 direct memory의 메모리 배치" loading="lazy"></p>
+<p>direct memory는 Java의 일반적인 객체 저장 공간인 heap 바깥에 할당하는 메모리입니다. 네트워크로 데이터를 읽고 쓸 때, 데이터를 중간 공간으로 옮기는 작업을 줄이는 데 도움이 될 수 있습니다.</p>
+<p>네트워크를 다루는 프레임워크와 데이터를 담는 메모리. 둘의 관계는 자연스러워 보입니다. 그런데 Netty의 코드를 읽다 보면 조금 더 깊은 부분을 만나게 됩니다. </p>
+<p>netty는 단지 메모리를 사용하는 데서 그치지 않고, 현재 실행 환경에서 사용할 direct memory의 한도를 알아내고 싶어합니다. 필요하면 JVM 실행 옵션까지 읽어서요.</p>
+<p>네트워크 프레임워크가 왜 메모리 설정까지 확인해야 할까요?</p>
+<p>이 궁금증에서 출발하여, 이 조회 로직을 건드는 PR을 읽다가, 시스템 프로퍼티에 들어 있는 문자열을 메모리 옵션으로 오인할 수 있는 엣지 케이스를 발견하기도 했습니다. 문제는 문자열을 검사하는 조건문에 있었지만, 그 조건문이 왜 중요한지 이해하려면 먼저 네트워크 데이터가 어디에 머무는지 살펴볼 필요가 있었습니다.</p>
+<h2 id="연결을-처리한다는-것은-버퍼를-관리한다는-것">연결을 처리한다는 것은 버퍼를 관리한다는 것</h2>
+<p>서버가 요청을 받으면 데이터를 읽고, 처리하고, 응답을 보냅니다. 애플리케이션 코드에서는 몇 줄로 표현되기도 하지만, 실제 데이터가 이동하는 과정은 그렇게 한 번에 끝나지 않습니다.</p>
+<p>TCP 연결을 예로 들면, 클라이언트가 보낸 요청 하나가 서버에서도 한 번의 읽기로 들어온다는 보장은 없습니다. 요청의 일부만 먼저 읽혔다면 나머지가 들어올 때까지 보관해야 합니다. 응답도 마찬가지입니다. 데이터를 만들었다고 해서 소켓에 즉시 전부 쓸 수 있는 것은 아니므로, 아직 쓰지 못한 데이터는 남겨 두어야 합니다. Netty는 이런 데이터를 다루는 데&nbsp;<code>ByteBuf</code>라는 버퍼를 사용합니다.</p>
+<p>버퍼는 데이터를 임시로 담아 두는 공간입니다. 다만 서버라는 시스템 속에서는 단순한 임시 공간 이상의 의미를 가집니다. 데이터를 받아들이는 속도, 애플리케이션이 처리하는 속도, 상대방에게 보내는 속도가 서로 다르기 때문입니다. 그 차이를 메우는 동안 데이터가 머무르는 곳이 버퍼입니다.</p>
+<p>이 관점에서 보면 네트워크 처리와 메모리 관리는 분리하기 어렵습니다. 연결이 많아질수록, 처리하거나 전송하지 못한 데이터가 쌓일수록, 버퍼를 어떻게 관리하는지가 중요해집니다.</p>
+<p>Netty의&nbsp;<code>ByteBuf</code>는 내부 저장 공간으로 heap 메모리와 direct 메모리를 모두 지원합니다. 바이트를 읽고 쓰는 인터페이스 뒤에서, 실제 데이터를 어디에 둘지는 구현에 따라 달라질 수 있는 것입니다.</p>
+<p>그렇다면 익숙하고 아주 단순한 heap을 두고 direct memory를 사용하는 이유는 무엇일까요?</p>
+<h2 id="더-빠른-메모리가-아니라-덜-복사하는-경로">더 빠른 메모리가 아니라, 덜 복사하는 경로</h2>
+<p>Java에서 바이트 데이터를 보관하는 가장 익숙한 방법은&nbsp;<code>byte[]</code>입니다. Heap에 배열을 만들고 데이터를 넣으면 됩니다. 하지만 그 데이터를 운영체제의 입출력 기능에 넘기는 과정에서는 추가 작업이 생길 수 있습니다.</p>
+<p><img src="/assets/netty-heap-to-direct-buffer.webp" alt="Heap buffer를 임시 direct buffer로 복사한 뒤 운영체제 쓰기 함수를 호출하는 경로" loading="lazy"><br>예를 들어 jdk의 NIO 구현에는 heap buffer의 내용을 임시 direct buffer에 복사한 뒤, 그 버퍼로 운영체제의 쓰기 함수를 호출하는 경로가 있습니다. 처음부터 direct buffer에 데이터가 있다면 이 중간 복사를 거치지 않을 수 있습니다. </p>
+<p>direct buffer를 사용하면&nbsp;<strong>전송 전에 데이터를 임시 버퍼로 한 번 더 복사하는 작업을 줄일 수 있습니다.</strong>&nbsp;대신 메모리를 새로 할당하고 해제하는 비용은 heap buffer보다 클 수 있습니다. 요청마다 새 버퍼를 만들고 버린다면, 복사에서 아낀 비용을 할당과 해제에 다시 쓰게 될 수 있습니다.</p>
+<p>그래서 Netty는&nbsp;<strong>사용이 끝난 메모리 공간을 다음 작업에서 재사용하는 버퍼 풀</strong>을 제공합니다. 매번 공간을 새로 확보하는 대신, 이미 확보한 공간을 다시 쓰는 것입니다. 아직 다른 작업이 사용하는 공간을 덮어쓰면 안 되므로, 참조 수를 관리해 언제 반환할 수 있는지도 구분합니다.</p>
+<p>하지만 재사용은&nbsp;<strong>할당 횟수를 줄이는 방법이지, 필요한 메모리 자체를 없애는 방법은 아닙니다.</strong>&nbsp;동시에 처리할 데이터가 많아지면 더 많은 공간이 필요하고, 다음 작업을 위해 풀에 보관한 공간도 계속 메모리를 차지합니다.</p>
+<p>따라서 버퍼를 재사용하더라도, 전체적으로 얼마의 메모리까지 사용하도록 허용할지는 별도로 정해야 합니다. 이것이 Netty가 direct memory를 단지 가져다 쓰는 것에 그치지 않고, 한도를 확인하는 이유입니다.</p>
+<h2 id="메모리의-위치를-정했다면-사용-한도도-필요하다">메모리의 위치를 정했다면, 사용 한도도 필요하다</h2>
+<p>힙 바깥의 메모리도 결국 프로세스가 사용하는 자원입니다. 힙을 벗어났다고 해서 용량의 제약까지 사라지지는 않습니다.</p>
+<p>HotSpot에는 NIO direct buffer의 할당 한도를 지정하는 옵션이 있습니다.</p>
 <pre data-lang="text"><code class="language-text hljs">-XX:MaxDirectMemorySize=64m
 </code></pre>
-<p>Here, <code>64m</code> means 64 × 1024 × 1024 bytes. This is not a limit on all off-heap memory in a Java process. It applies to NIO direct-buffer allocations, not every other form of native-memory allocation.</p>
-<p>Netty also has paths that track direct-memory usage and enforce their own limits. Depending on configuration, they use the limit discovered from the JVM. Inspecting JVM memory settings isn't just gathering information for logs; it's <strong>establishing the budget for memory Netty manages.</strong></p>
-<p>This is where <code>PlatformDependent.estimateMaxDirectMemory()</code> comes in.</p>
-<p>The word <code>estimate</code> matters. This isn't a real-time measurement of free OS memory. It tries internal lookup paths, then parses JVM arguments under the relevant conditions if those fail. If no valid value is found, it falls back to maximum heap size. It accounts for environments where the exact limit can't be determined.</p>
-<p>The PR I was reading reorganized that lookup process.</p>
-<p>The author explained that some allocation modes paid a startup cost to discover a JVM direct-buffer limit that wasn't relevant to them. The change introduced a setting to skip argument lookup and a <code>RuntimeJvmArgs</code> class separating argument parsing.</p>
-<p>The issue I found was how that new class identified memory options.</p>
-<h2 id="옵션처럼-보이는-문자열은-정말-옵션일까">Is a string that looks like an option actually an option?</h2><p>The proposal scanned JVM arguments from the end and used <code>indexOf</code> to find the following substring in each argument.</p>
+<p>여기서&nbsp;<code>64m</code>은 64 × 1024 × 1024바이트를 뜻합니다. 다만 이 옵션을 “Java 프로세스의 모든 off-heap 메모리를 제한하는 설정”으로 이해해서는 안 됩니다. 대상은 NIO direct buffer만의 할당이며, 다른 방식으로 확보하는 native 메모리까지 한번에 제한하는 것은 아닙니다. </p>
+<p>Netty에도 자체적으로 direct memory 사용량을 집계하고 한도를 적용하는 경로가 있습니다. 설정에 따라서는 JVM이 알아낸 한도를 그 기준으로 사용합니다. 따라서 Netty가 JVM의 메모리 설정을 확인하는 것은 단순히 환경 정보를 로그에 남기기 위한 일이 아니라 <strong>자신이 관리할 메모리의 사용 기준을 정하는 일</strong>입니다.</p>
+<p>이때 등장하는 메서드가&nbsp;<code>PlatformDependent.estimateMaxDirectMemory()</code>입니다.</p>
+<p>이름에&nbsp;<code>estimate</code>가 붙어 있는 것도 눈여겨볼 만합니다. 이 기능은 os에 남은 메모리를 실시간으로 측정하는 것이 아닙니다. 내부 경로에서 한도 정보를 얻어 보고, 얻지 못하면 조건에 따라 JVM 실행 인자를 해석합니다. 그래도 유효한 값을 얻지 못하면 최대 heap 크기를 대체값으로 사용합니다. 정확한 값을 알아낼 수 없는 환경까지 고려하여 fall-back하는 것입니다.</p>
+<p>제가 읽던 코드(풀리퀘스트)는 이 조회 과정을 정리하는 작업이었습니다. </p>
+<p>일부 메모리 할당 방식은 JVM의 direct buffer 한도에 아무런 연관이 없는데도, 그 값을 조회하기 위해 시작 비용을 지불하고 있다는 것이 PR 작성자의 설명이었습니다. 변경안에는 실행 인자 조회를 생략할 수 있는 설정과, 인자 해석 로직을 분리한&nbsp;<code>RuntimeJvmArgs</code>&nbsp;클래스가 포함돼 있었습니다.</p>
+<p>제가 식별한 문제는 이 새 클래스에서 메모리 옵션을 찾는 방식에 있었습니다.</p>
+<h2 id="옵션처럼-보이는-문자열은-정말-옵션일까">옵션처럼 보이는 문자열은 정말 옵션일까?</h2>
+<p>변경안은 JVM 실행 인자 목록을 뒤에서부터 확인하면서, 각 인자에 다음 문자열이 포함돼 있는지&nbsp;<code>indexOf</code>로 찾고 있었습니다.</p>
 <pre data-lang="text"><code class="language-text hljs">"-XX:MaxDirectMemorySize="
 </code></pre>
-<p>If found, it parsed the trailing number and unit and returned the value.<br>For an actual argument like <code>-XX:MaxDirectMemorySize=64m</code>, that works naturally: extract <code>64m</code> and convert it to a size.</p>
-<p>But the list being read isn't a list containing only memory options.</p>
-<p>It contains all JVM arguments returned by <code>ManagementFactory.getRuntimeMXBean().getInputArguments()</code>, including system properties supplied with <code>-D</code>.</p>
-<p>System properties pass configuration values to a program. For example, the following argument stores a string under the name <code>note</code>.</p>
+<p>찾았다면 그 뒤에 붙은 숫자와 단위를 해석해 반환하는 구조였습니다.<br>실제 인자가&nbsp;<code>-XX:MaxDirectMemorySize=64m</code>이라면 자연스럽게 동작합니다.&nbsp;<code>64m</code>을 추출해서 메모리 크기로 바꾸면 됩니다.</p>
+<p>하지만 이 코드가 읽는 것은 옵션 목록들은 메모리 옵션만 모아 놓은 목록이 아닙니다.</p>
+<p><code>ManagementFactory.getRuntimeMXBean().getInputArguments()</code>로 가져온 모든 JVM 실행 인자 목록입니다. 여기에는&nbsp;<code>-D</code>로 전달한 시스템 프로퍼티도 들어올 수 있습니다.</p>
+<p>시스템 프로퍼티는 프로그램에서 사용할 설정값을 전달하는 방법입니다. 예를 들어 다음 인자는&nbsp;<code>note</code>라는 이름에 문자열 하나를 저장합니다.</p>
 <pre data-lang="text"><code class="language-text hljs">-Dnote=-XX:MaxDirectMemorySize=64m
 </code></pre>
-<p>That argument doesn't set a memory limit. Its property value happens to resemble a memory option, but <code>indexOf</code> can't distinguish the two.</p>
-<p>It can find <code>-XX:MaxDirectMemorySize=</code> in the middle of the argument and interpret the following <code>64m</code> as the actual limit. This was the counterexample I provided in the review.</p>
-<p>Numeric conversion doesn't catch it either: <code>64m</code> is a valid size notation. Reading the value from the wrong place still produces a perfectly valid number.</p>
-<p>We need to distinguish <strong>whether a value has a valid format</strong> from <strong>whether that value may be interpreted as this setting.</strong> The proposal handled the first well but didn't sufficiently check the second.</p>
-<p>With only genuine memory options, both implementations return the same result. The difference appears with another valid but unusual input that isn't a memory option.</p>
-<p>I don't see this as merely defending against a strange string. The input is valid as a property. The memory-settings parser is what gives it the wrong meaning.</p>
-<h2 id="잘못-읽은-것은-jvm-설정이-아니라-netty의-판단이다">The JVM setting stays unchanged; Netty's interpretation does not</h2><p>The false match can also matter when a real memory option is present. Consider launching the JVM as follows.</p>
+<p>이 인자는 메모리 한도를 설정하지 않습니다. 프로퍼티의 값이 우연히 메모리 옵션과 같은 모양일 뿐입니다. 그러나&nbsp;<code>indexOf</code>는 그 차이를 구분하지 못합니다. </p>
+<p>인자 중간에서&nbsp;<code>-XX:MaxDirectMemorySize=</code>를 찾아내고, 뒤의&nbsp;<code>64m</code>을 실제 한도처럼 해석할 수 있습니다. 제가 리뷰에 제시한 반례가 이 입력이었습니다.</p>
+<p>이 문제는 숫자 변환 단계에서도 걸러지지 않습니다.&nbsp;<code>64m</code>&nbsp;자체는 올바른 크기 표기이기 때문입니다. 잘못된 곳에서 값을 읽었는데도 결과는 정상적인 숫자로 나옵니다.</p>
+<p>여기서 구분해야 하는 것은&nbsp;<strong>값의 형식이 올바른가</strong>와&nbsp;<strong>그 값을 이 설정으로 해석해도 되는가</strong>입니다. 변경안은 전자를 잘 처리하고 있었지만, 후자를 충분히 확인하지 못했습니다.</p>
+<p>정상적인 메모리 옵션만 넣으면 두 구현은 같은 결과를 냅니다. 차이는 메모리 옵션이 아닌 다른 유효한, 특수한 입력을 넣었을 때 드러납니다.</p>
+<p>이것을 단순히 특이한 문자열에 대한 방어라고 보기는 어렵다고 생각합니다. 프로퍼티로서는 정상적인 입력인데, 메모리 설정을 읽는 코드가 그 입력에 다른 의미를 부여했기 때문입니다.</p>
+<h2 id="잘못-읽은-것은-jvm-설정이-아니라-netty의-판단이다">잘못 읽은 것은 JVM 설정이 아니라 Netty의 판단이다</h2>
+<p>이 오인식은 실제 메모리 옵션과 함께 전달되는 경우에도 영향을 줄 수 있습니다. 예를 들어 다음과 같이 실행한다고 가정해 보겠습니다.</p>
 <pre data-lang="bash"><code class="language-bash hljs">java -XX:MaxDirectMemorySize=256m \
      -Dnote=-XX:MaxDirectMemorySize=64m \
      -jar app.jar
 </code></pre>
-<p>The real memory option is <code>256m</code>. But in this order, the proposed reverse scan can encounter the <code>note</code> property first and return <code>64m</code>, stopping before it reaches the actual option.</p>
-<p>The JVM's actual setting doesn't change to <code>64m</code>. What changes is <strong>the limit Netty believes it may use.</strong></p>
-<p>This doesn't happen in every runtime. A valid value from an earlier internal lookup avoids argument parsing altogether. The problem is specific to entering this parsing path with an option-shaped string inside another argument.</p>
-<p><img src="/assets/netty-pr-review.webp" alt="Netty PR review identifying a false MaxDirectMemorySize match and suggesting startsWith" loading="lazy"></p>
-<p>I suggested checking whether an argument <strong>starts with the option</strong>, rather than searching for the string anywhere inside it.</p>
+<p>실제 메모리 옵션은&nbsp;<code>256m</code>입니다. 하지만 인자가 이 순서로 전달된다면, 뒤에서부터 탐색하는 변경안은&nbsp;<code>note</code>&nbsp;프로퍼티를 먼저 만나&nbsp;<code>64m</code>을 반환할 수 있습니다. 실제 옵션까지 도달하기 전에 탐색이 끝나는 것입니다.</p>
+<p>여기서 JVM의 실제 설정이&nbsp;<code>64m</code>으로 바뀌는 것은 아닙니다. 설정은 그대로인데, 달라지는 것은&nbsp;<strong>Netty가 써도 된다고 생각하는 한도</strong>입니다.</p>
+<p>물론 모든 실행 환경에서 이 문제가 발생하는 것은 아닙니다. 앞선 내부 조회에서 유효한 값을 얻으면 실행 인자 파싱까지 내려오지 않습니다. 문제가 있는 것은 이 파싱 경로에 진입했고, 다른 인자 안에 메모리 옵션 형태의 문자열이 들어 있을 때입니다.</p>
+<p><img src="/assets/netty-pr-review.webp" alt="MaxDirectMemorySize 오인식 가능성을 지적하고 startsWith 수정을 제안한 Netty PR 리뷰" loading="lazy"></p>
+<p>제가 제안하였던 수정 방향은 인자 안에서 문자열을 검색하는 대신, 인자가 해당 옵션으로 <strong>시작하는가?를</strong> 확인하는 것이었습니다.</p>
 <pre data-lang="java"><code class="language-java hljs"><span class="hljs-keyword">if</span> (!arg.startsWith(MAX_DIRECT_MEMORY_SIZE_ARG)) {
     <span class="hljs-keyword">continue</span>;
 }
 </code></pre>
-<p>The PR author adopted the suggestion and changed the check to <code>startsWith</code>. The PR containing the fix was subsequently merged for a Netty release.</p>
-<p>The behavior to preserve was clear: <strong>adding a property unrelated to memory must not change how the memory limit is interpreted.</strong></p>
-<h2 id="버퍼에서-실행-옵션까지">From buffers to launch options</h2><p>Netty checks direct memory because beneath networking APIs it must establish how real resources are used. Where data lives, the cost of allocation and reuse, and the budget within which memory is managed are all connected to networking.</p>
-<p>This issue sat in a small part of that chain. Determining a memory limit required reading launch arguments, which required interpreting strings. The condition was small, but its result wasn't just a string-processing result: it could become a memory-management value.</p>
-<p>Correctness here isn't only about computing a valid value. It's also about accepting the right inputs as configuration and leaving unrelated inputs alone. Changing an implementation must preserve not only return values, but also the meaning of the inputs that produce them.</p>
-<p>Before converting <code>64m</code> to a number, we had to ask whether that <code>64m</code> was actually a memory setting. That's why one line of string checking mattered to Netty's memory management.</p>
+<p>그래서 PR 작성자는 제안을 반영해&nbsp;<code>startsWith</code>를 사용하도록 수정했고, 수정이 포함된 PR은 이후 Netty 릴리즈에 병합됐습니다.</p>
+<p>이 리뷰에서 지켜야 했던 동작은 명확했습니다.&nbsp;<strong>메모리와 관계없는 프로퍼티를 추가했다고 해서, 메모리 한도에 대한 해석이 바뀌어서는 안 됩니다.</strong></p>
+<h2 id="버퍼에서-실행-옵션까지">버퍼에서 실행 옵션까지</h2>
+<p>Netty가 direct memory를 확인하는 이유는 데이터를 주고받는 API 아래에서 실제 자원의 사용 기준을 정해야 하기 때문입니다. 데이터를 어디에 둘지, 어떤 비용으로 할당하고 재사용할지, 어느 한도 안에서 관리할지는 모두 네트워크 처리와 연결돼 있습니다.</p>
+<p>이번 문제는 그 흐름 속 사소한 부분에 있었습니다. 메모리 한도를 판단하기 위해 실행 인자를 읽었고, 실행 인자를 읽기 위해 문자열을 해석했습니다. 작은 조건문이었지만, 그 결과는 단순한 문자열 처리 결과가 아니라 메모리 관리에 쓰일 수 있는 값이었습니다.</p>
+<p>저는 이런 코드의 정확성이 정상적인 값을 잘 계산하는 것만으로 결정되지는 않는다고 생각합니다. 어떤 입력을 설정으로 받아들이고, 어떤 입력은 관계없는 값으로 남겨 둘지도 정확해야 합니다. 구현을 바꿀 때 보존해야 하는 것은 반환값뿐 아니라, 그 값을 만들어 내는 입력의 의미이기도 합니다.</p>
+<p><code>64m</code>을 숫자로 바꾸는 일보다 먼저 확인해야 했던 것은, 그&nbsp;<code>64m</code>이 정말 메모리 설정인지였습니다. Netty의 메모리 관리에서 문자열을 검사하는 한 줄이 중요했던 이유입니다.</p>
 </body></html>
         </div>
       </article>
-    <nav class="post-nav" aria-label="Previous and next posts">
+    <nav class="post-nav" aria-label="이전/다음 글">
       <a class="post-nav-item post-nav-item--prev" href="/posts/java-virtual-threads/">
-        <span class="post-nav-label">previous post</span>
-        <span class="post-nav-title">2.7× Request Throughput: Introducing Java Virtual Threads</span>
+        <span class="post-nav-label">이전 글</span>
+        <span class="post-nav-title">요청 처리량 2.7배, Java Virtual Thread 도입기</span>
       </a>
       <a class="post-nav-item post-nav-item--next" href="/posts/university-festival-platform/">
-        <span class="post-nav-label">next post</span>
-        <span class="post-nav-title">Designing and Operating a University Festival Platform</span>
+        <span class="post-nav-label">다음 글</span>
+        <span class="post-nav-title">대학 축제 플랫폼의 시스템 설계와 운영</span>
       </a>
     </nav>
       <nav class="post-back">
-        <a href="/">← back to posts</a>
+        <a href="/">← 글 목록으로</a>
       </nav>
     </div>
-    <aside class="toc" id="toc" aria-label="Contents">
-      <p class="toc-title">contents</p>
+    <aside class="toc" id="toc" aria-label="목차">
+      <p class="toc-title">목차</p>
       <ul class="toc-list">
-        <li class="toc-item toc-item--h2"><a href="#연결을-처리한다는-것은-버퍼를-관리한다는-것" data-target="연결을-처리한다는-것은-버퍼를-관리한다는-것">Handling connections means managing buffers</a></li>
-        <li class="toc-item toc-item--h2"><a href="#더-빠른-메모리가-아니라-덜-복사하는-경로" data-target="더-빠른-메모리가-아니라-덜-복사하는-경로">Not faster memory, but a path with less copying</a></li>
-        <li class="toc-item toc-item--h2"><a href="#메모리의-위치를-정했다면-사용-한도도-필요하다" data-target="메모리의-위치를-정했다면-사용-한도도-필요하다">Choosing where memory lives also requires a budget</a></li>
-        <li class="toc-item toc-item--h2"><a href="#옵션처럼-보이는-문자열은-정말-옵션일까" data-target="옵션처럼-보이는-문자열은-정말-옵션일까">Is a string that looks like an option actually an option?</a></li>
-        <li class="toc-item toc-item--h2"><a href="#잘못-읽은-것은-jvm-설정이-아니라-netty의-판단이다" data-target="잘못-읽은-것은-jvm-설정이-아니라-netty의-판단이다">The JVM setting stays unchanged; Netty&#39;s interpretation does not</a></li>
-        <li class="toc-item toc-item--h2"><a href="#버퍼에서-실행-옵션까지" data-target="버퍼에서-실행-옵션까지">From buffers to launch options</a></li>
+        <li class="toc-item toc-item--h2"><a href="#연결을-처리한다는-것은-버퍼를-관리한다는-것" data-target="연결을-처리한다는-것은-버퍼를-관리한다는-것">연결을 처리한다는 것은 버퍼를 관리한다는 것</a></li>
+        <li class="toc-item toc-item--h2"><a href="#더-빠른-메모리가-아니라-덜-복사하는-경로" data-target="더-빠른-메모리가-아니라-덜-복사하는-경로">더 빠른 메모리가 아니라, 덜 복사하는 경로</a></li>
+        <li class="toc-item toc-item--h2"><a href="#메모리의-위치를-정했다면-사용-한도도-필요하다" data-target="메모리의-위치를-정했다면-사용-한도도-필요하다">메모리의 위치를 정했다면, 사용 한도도 필요하다</a></li>
+        <li class="toc-item toc-item--h2"><a href="#옵션처럼-보이는-문자열은-정말-옵션일까" data-target="옵션처럼-보이는-문자열은-정말-옵션일까">옵션처럼 보이는 문자열은 정말 옵션일까?</a></li>
+        <li class="toc-item toc-item--h2"><a href="#잘못-읽은-것은-jvm-설정이-아니라-netty의-판단이다" data-target="잘못-읽은-것은-jvm-설정이-아니라-netty의-판단이다">잘못 읽은 것은 JVM 설정이 아니라 Netty의 판단이다</a></li>
+        <li class="toc-item toc-item--h2"><a href="#버퍼에서-실행-옵션까지" data-target="버퍼에서-실행-옵션까지">버퍼에서 실행 옵션까지</a></li>
       </ul>
     </aside>
   </main>
-  <script src="/app.js?v=3eb51ad7"></script>
+  <script src="/app.js?v=fc2a680d"></script>
 </body>
 </html>

@@ -1,10 +1,10 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="ko">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <meta name="google-site-verification" content="sNrpo16A0vUj7vHmVNEmAGZj85cGykaOeHO44krbqDU">
-  <title>woojin kim · An ML Project Where We Decided Not to Build the ML Yet</title>
+  <title>woojin kim · ML 프로젝트인데, ML을 안 넣기로 했습니다</title>
 
   <link rel="canonical" href="https://xhae123.github.io/posts/building-the-data-before-the-model/">
 
@@ -27,124 +27,135 @@
   <link rel="stylesheet" href="/navigation.css?v=rose-1">
   <link rel="icon" type="image/svg+xml" href="/favicon.svg?v=woojin-w-2">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/github.min.css">
-  <link rel="stylesheet" href="/blog.css?v=shared-9e2597e0">
+  <link rel="stylesheet" href="/blog.css?v=shared-5b9743f9">
   <meta property="article:published_time" content="2026-06-20T00:00:00.000Z">
-  <meta property="article:modified_time" content="2026-10-04T10:45:29.000Z">
+  <meta property="article:modified_time" content="2026-06-20T00:00:00.000Z">
   <meta property="article:section" content="Product">
   <meta property="article:author" content="Woojin Kim">
 
-<meta name="description" content="Building Zansol, an Android focus app, with on-device nudges and behavioral data before machine learning. Why evidence came before personalization."><meta name="author" content="Woojin Kim"><meta name="robots" content="index, follow, max-image-preview:large"><meta property="og:site_name" content="Woojin Kim"><meta property="og:title" content="An ML Project Where We Decided Not to Build the ML Yet"><meta property="og:description" content="Building Zansol, an Android focus app, with on-device nudges and behavioral data before machine learning. Why evidence came before personalization."><meta property="og:type" content="article"><meta property="og:locale" content="en_US"><meta property="og:url" content="https://xhae123.github.io/posts/building-the-data-before-the-model/"><meta property="og:image" content="https://xhae123.github.io/assets/c276cbc19d848bab.png"><meta property="og:image:alt" content="Figure from An ML Project Where We Decided Not to Build the ML Yet"><meta name="twitter:card" content="summary_large_image"><meta name="twitter:title" content="An ML Project Where We Decided Not to Build the ML Yet"><meta name="twitter:description" content="Building Zansol, an Android focus app, with on-device nudges and behavioral data before machine learning. Why evidence came before personalization."><meta name="twitter:image" content="https://xhae123.github.io/assets/c276cbc19d848bab.png"><script type="application/ld+json">{"@context":"https://schema.org","@type":"BlogPosting","headline":"An ML Project Where We Decided Not to Build the ML Yet","description":"Building Zansol, an Android focus app, with on-device nudges and behavioral data before machine learning. Why evidence came before personalization.","datePublished":"2026-06-20T00:00:00.000Z","dateModified":"2026-10-04T10:45:29.000Z","author":{"@type":"Person","@id":"https://xhae123.github.io/#person","name":"Woojin Kim","alternateName":["김우진","xhae123"],"url":"https://xhae123.github.io/about/","sameAs":["https://github.com/xhae123"],"jobTitle":"Software Engineer"},"url":"https://xhae123.github.io/posts/building-the-data-before-the-model/","mainEntityOfPage":{"@type":"WebPage","@id":"https://xhae123.github.io/posts/building-the-data-before-the-model/"},"image":"https://xhae123.github.io/assets/c276cbc19d848bab.png","inLanguage":"en","isPartOf":{"@id":"https://xhae123.github.io/#website"}}</script><script defer="" src="https://cloud.umami.is/script.js" data-website-id="b50b4b5c-7887-4c32-9970-42ac27783784" data-domains="xhae123.github.io" data-exclude-hash="true"></script></head>
+<meta name="description" content="한 학기 팀 프로젝트로 &quot;잔솔&quot;이라는 Android 앱을 만들었습니다. 공부 세션 중에 유튜브나 인스타를 열면 0.2초 안에 잔소리 팝업이 뜨고, 닫고 공부로 돌아가면 캐릭터가 코인을 받고, 무시하면 체력이 깎입니다."><meta name="author" content="Woojin Kim"><meta name="robots" content="index, follow, max-image-preview:large"><meta property="og:site_name" content="Woojin Kim"><meta property="og:title" content="ML 프로젝트인데, ML을 안 넣기로 했습니다"><meta property="og:description" content="한 학기 팀 프로젝트로 &quot;잔솔&quot;이라는 Android 앱을 만들었습니다. 공부 세션 중에 유튜브나 인스타를 열면 0.2초 안에 잔소리 팝업이 뜨고, 닫고 공부로 돌아가면 캐릭터가 코인을 받고, 무시하면 체력이 깎입니다."><meta property="og:type" content="article"><meta property="og:locale" content="ko_KR"><meta property="og:url" content="https://xhae123.github.io/posts/building-the-data-before-the-model/"><meta property="og:image" content="https://xhae123.github.io/assets/c276cbc19d848bab.png"><meta property="og:image:alt" content="ML 프로젝트인데, ML을 안 넣기로 했습니다 본문 그림"><meta name="twitter:card" content="summary_large_image"><meta name="twitter:title" content="ML 프로젝트인데, ML을 안 넣기로 했습니다"><meta name="twitter:description" content="한 학기 팀 프로젝트로 &quot;잔솔&quot;이라는 Android 앱을 만들었습니다. 공부 세션 중에 유튜브나 인스타를 열면 0.2초 안에 잔소리 팝업이 뜨고, 닫고 공부로 돌아가면 캐릭터가 코인을 받고, 무시하면 체력이 깎입니다."><meta name="twitter:image" content="https://xhae123.github.io/assets/c276cbc19d848bab.png"><script type="application/ld+json">{"@context":"https://schema.org","@type":"BlogPosting","headline":"ML 프로젝트인데, ML을 안 넣기로 했습니다","description":"한 학기 팀 프로젝트로 \"잔솔\"이라는 Android 앱을 만들었습니다. 공부 세션 중에 유튜브나 인스타를 열면 0.2초 안에 잔소리 팝업이 뜨고, 닫고 공부로 돌아가면 캐릭터가 코인을 받고, 무시하면 체력이 깎입니다.","datePublished":"2026-06-20T00:00:00.000Z","dateModified":"2026-06-20T00:00:00.000Z","author":{"@type":"Person","@id":"https://xhae123.github.io/#person","name":"Woojin Kim","alternateName":["김우진","xhae123"],"url":"https://xhae123.github.io/","sameAs":["https://github.com/xhae123"],"jobTitle":"Software Engineer"},"url":"https://xhae123.github.io/posts/building-the-data-before-the-model/","mainEntityOfPage":{"@type":"WebPage","@id":"https://xhae123.github.io/posts/building-the-data-before-the-model/"},"image":"https://xhae123.github.io/assets/c276cbc19d848bab.png","inLanguage":"ko","isPartOf":{"@id":"https://xhae123.github.io/#website"}}</script><script defer="" src="https://cloud.umami.is/script.js" data-website-id="b50b4b5c-7887-4c32-9970-42ac27783784" data-domains="xhae123.github.io" data-exclude-hash="true"></script></head>
 <body>
   <main class="post-layout">
     <div class="post-main">
       <article class="post" id="post">
         <header class="post-header">
-          <a class="post-top-back" href="/">← all posts</a>
+          <a class="post-top-back" href="/">← 글 목록</a>
           <p class="post-meta"><time datetime="2026-06-20">2026.06.20</time><span aria-hidden="true"> · </span><span class="post-category">product</span></p>
-          <h1 class="post-title">An ML Project Where We Decided Not to Build the ML Yet</h1>
+          <h1 class="post-title">ML 프로젝트인데, ML을 안 넣기로 했습니다</h1>
         </header>
         <div class="post-body" id="post-body">
-<html><head></head><body><p>For a semester-long team project, we built an Android app called Zansol. Open YouTube or Instagram during a study session, and a nudging popup appears within 0.2 seconds. Return to studying, and your character earns coins. Ignore it, and the character loses health.</p>
-<p><img src="/assets/c276cbc19d848bab.png" alt="Image" loading="lazy"><img src="/assets/9c1a64e1546cd7ce.png" alt="Image" loading="lazy"></p>
-<p><em>Left: a nudge overlay four seconds after distraction detection. Right: the home screen.</em></p>
-<p>It was a course project that originally had a place for ML. We decided to remove that part at the start of the semester. Looking back, that was the best decision we made.</p>
-<p>I usually build servers. What appeared on a screen was mostly someone else's job. This semester, I started by putting popups on top of a phone screen.</p>
-<h2 id="왜-하필-잔소리인가">Why nudging?</h2><p>There are already plenty of focus apps, and I've tried them. Forest is good, but it requires me to start a session. On days I have that resolve, I can usually study without it. Screen-time reports tell me tomorrow morning about today's escape: an autopsy, not an intervention. Blocking apps are powerful, but when they feel suffocating, I find a workaround or uninstall them. Uninstalling takes three seconds.</p>
-<p>Different apps, same failure point: <strong>they give people struggling with self-regulation a tool that assumes self-regulation.</strong></p>
-<p>Zansol drops that assumption. Willpower isn't a prerequisite for intervention. The system notices first and speaks first. Software takes the observer's role that a neighboring seat in a library provides, even when you're alone at home. Before building it, we surveyed 34 university students; 85.3% said they escaped into their phones while studying. The problem was real, and the moment of escape was underserved.</p>
-<h2 id="만들고-싶었던-것-사람을-가려-긁는-잔소리">What we wanted: nudges that work for each person</h2><p>Different nudges get through to different people. Some return when reassured: ‘Feeling stuck? Write just one line.’ Others respond to a sharper question: ‘Will tomorrow's you regret this?’ The same sentence is a reminder for one person and notification noise for another.</p>
-<p>What I really wanted wasn't a nagging app, but <strong>a model that learns which nudges work for each user and chooses accordingly.</strong> Contextual bandits seemed to fit precisely: learning choices from user responses as reward signals. The problem and technique lined up.</p>
-<p>We estimated that meaningful nudge personalization would require at least 30 observations per user: show a message, then record whether they returned or ignored it.</p>
-<p>There was nowhere to get that data. We had zero observations.</p>
-<h2 id="그래서-ml을-뺐습니다">So we took the ML out</h2><p>This wall has a name: cold start. Recommendation systems have wrestled with it for decades. We added another constraint: submit a working product within 16 weeks.</p>
-<p>University projects often take one of two routes here: borrow a public dataset and approximate a similar problem, or squeeze in a model and write that performance is expected to improve once data accumulates. I've tried both. Neither left much behind.</p>
-<p>This time, we reversed the problem. <strong>Instead of finding the optimal nudge now, we'd first build a system that would let us determine it later.</strong></p>
-<p>V1 has no model. It's all rules. But from day one, its logs were designed as training data for the future model. V1 isn't an unfinished version; it's V2's data-collection pipeline. We didn't abandon ML. We changed the order.</p>
-<h2 id="규칙은-회의실에서-정하면-안-된다">Rules shouldn't come from a meeting room</h2><p>Without a model, rules fill the gap. Where should those rules come from? If four teammates decide in a room that ‘30 seconds sounds right,’ that's our intuition, not a grounded rule.</p>
-<p>We spoke to experts already solving this manually: learning counselors and teachers supervising high-school self-study. In what order do they intervene? What brings a student back, and what makes them resist?</p>
-<p>The answers were surprisingly consistent. Nobody started by scolding. We translated that into three-stage escalation.</p>
+<html><head></head><body><p>한 학기 팀 프로젝트로 "잔솔"이라는 Android 앱을 만들었습니다. 공부 세션 중에 유튜브나 인스타를 열면 0.2초 안에 잔소리 팝업이 뜨고, 닫고 공부로 돌아가면 캐릭터가 코인을 받고, 무시하면 체력이 깎입니다.</p>
+<p><img width="290" alt="Image" src="/assets/c276cbc19d848bab.png" loading="lazy"><img width="290" alt="Image" src="/assets/9c1a64e1546cd7ce.png" loading="lazy"></p><p><em>왼쪽: 딴짓 감지 4초째에 뜬 잔소리 오버레이. 오른쪽: 홈 화면.</em></p>
+<p>학교 수업 프로젝트였으니 원래는 ML이 들어갈 자리가 있었습니다. 저희는 학기 초에 그걸 빼기로 했고, 지금 돌아보면 그게 이 프로젝트에서 제일 잘한 판단이었습니다.</p>
+<p>저는 원래 서버 만들던 사람입니다. 화면에 뭐가 뜨는지는 대체로 남의 일이었는데, 이번 학기엔 폰 화면 맨 위에 팝업 띄우는 일부터 했습니다.</p>
+<h2 id="왜-하필-잔소리인가">왜 하필 잔소리인가</h2>
+<p>집중 앱은 시장에 이미 많고, 저도 써봤습니다. Forest는 좋은 앱인데 제가 먼저 세션을 켜야 작동합니다. 그 의지가 있는 날은 사실 앱이 없어도 공부가 됩니다. 스크린타임은 오늘의 도피를 내일 아침에 알려줍니다. 부검 보고서지, 개입이 아닙니다. 차단 앱은 확실히 강력한데, 답답해지는 순간 우회로를 찾거나 그냥 지웁니다. 지우는 데 3초면 됩니다.</p>
+<p>셋 다 다른 앱인데 실패하는 지점은 같습니다. <strong>자기조절에 실패한 사람에게, 자기조절을 전제한 도구를 준다는 것.</strong></p>
+<p>잔솔은 그 전제를 버렸습니다. 사용자의 의지는 개입의 조건이 아닙니다. 시스템이 먼저 알아채고 먼저 말을 겁니다. 도서관에서 옆자리 시선이 해주던 관찰자 노릇을, 혼자 있는 자취방에서는 소프트웨어가 대신하는 겁니다. 만들기 전에 대학생 34명한테 물어봤는데 85.3%가 공부하다 폰으로 도피한다고 답했습니다. 문제는 충분히 컸고, 도피가 일어나는 바로 그 순간을 잡는 도구는 비어 있었습니다.</p>
+<h2 id="만들고-싶었던-것-사람을-가려-긁는-잔소리">만들고 싶었던 것: 사람을 가려 긁는 잔소리</h2>
+<p>사람마다 긁히는 잔소리가 다릅니다. 누구는 "막막하지? 한 줄만 써봐" 같은 달래는 말에 돌아오고, 누구는 "내일의 너한테 미안하지 않을까?" 같은 정곡에 돌아옵니다. 같은 문장이 누구한테는 리마인더고 누구한테는 그냥 알림 소음입니다.</p>
+<p>그래서 진짜 만들고 싶었던 건 잔소리 앱이 아니라 <strong>사용자마다 먹히는 잔소리를 학습해서 골라주는 모델</strong>이었습니다. 찾아보니 이 문제에 정확히 들어맞는 기법도 있었습니다. Contextual Bandit이라고, 유저 반응을 보상 신호로 삼아 최적의 선택지를 학습하는 물건입니다. 문제와 기법이 딱 맞아떨어졌습니다.</p>
+<p>계산을 해봤습니다. 잔소리 개인화가 통계적으로 의미가 있으려면 "이 사람한테 이 잔소리를 보여줬더니 돌아왔다/무시했다" 기록이 사용자당 최소 30회는 필요합니다.</p>
+<p>당연하게도 이런 걸 얻을 데가 없다보니, 저희가 가진 기록은 0건이었습니다.</p>
+<h2 id="그래서-ml을-뺐습니다">그래서 ML을 뺐습니다</h2>
+<p>이 벽에는 이름이 이미 붙어 있습니다. cold start. 추천 시스템 하는 사람들이 수십 년째 씨름하는 문제인데, 저희는 거기에 "16주 안에 돌아가는 물건 제출"이라는 조건까지 얹혀 있었습니다.</p>
+<p>학교 팀 프로젝트가 이 지점에서 흔히 가는 길이 두 개 있습니다. 남의 공개 데이터셋을 가져다가 비슷한 문제를 흉내 내거나, 어떻게든 모델을 욱여넣고 보고서에 "데이터가 쌓이면 성능은 개선될 것으로 기대된다"라고 쓰거나. 둘 다 해봤는데, 어느 쪽도 남는 게 없습니다.</p>
+<p>이번엔 문제를 뒤집었습니다. <strong>"어떤 잔소리가 최적인가"를 지금 푸는 게 아니라, "최적을 나중에 계산할 수 있게 만드는 시스템"을 먼저 만들기로.</strong></p>
+<p>그래서 이번 학기 버전(V1)에는 모델이 하나도 없습니다. 전부 규칙입니다. 대신 V1이 내보내는 모든 로그를 처음부터 미래 모델의 학습 데이터 포맷으로 설계했습니다. V1은 미완성 버전이 아니라 V2의 데이터 수집 파이프라인이고, 그러니까 ML을 뺀 게 아니라 순서를 바꾼 겁니다.</p>
+<h2 id="규칙은-회의실에서-정하면-안-된다">규칙은 회의실에서 정하면 안 된다</h2>
+<p>모델을 빼면 그 자리를 규칙이 채워야 합니다. 그럼 규칙은 어디서 와야할까요? 팀원 넷이 회의실에서 "30초 쯤이면 되지 않을까?" 하고 정하면 그건 규칙이 아니라 그저 저희들의 기분일 뿐입니다.</p>
+<p>저희는 이 문제를 이미 사람 손으로 풀고 있는 전문가들을 찾아갔습니다. 학습상담사, 그리고 고등학교에서 자습 감독하는 교사. 딴짓하는 학생한테 무슨 순서로 말을 겁니까. 어떤 말에 돌아오고 어떤 말에 반항합니까.</p>
+<p>답이 의외로 일관됐습니다. 처음부터 혼내는 사람이 없었습니다. 그걸 옮겨 적은 게 3단계 에스컬레이션입니다.</p>
 <ul>
-<li><strong>Immediately:</strong> ‘Look up just one source’—a concrete action to get moving.</li>
-<li><strong>After 30 seconds:</strong> ‘Feeling stuck? Write just one line’—empathy and a smaller task.</li>
-<li><strong>After two minutes:</strong> ‘Will tomorrow's you regret this?’—a more forceful, full-screen intervention.</li>
+<li><strong>즉시:</strong> "자료 하나만 찾아봐" — 일단 몸을 움직이게 하는 행동 제안</li>
+<li><strong>30초 뒤:</strong> "막막하지? 한 줄만 써봐" — 공감하면서 난이도 낮추기</li>
+<li><strong>2분 뒤:</strong> "내일의 너한테 미안하지 않을까?" — 화면 전체를 덮는 압박</li>
 </ul>
-<p>The timing wasn't arbitrary either. Immediate intervention had to arrive within a second, before attention shifted to the video. Thirty seconds reflected research on screenertia: the longer you stay, the harder it becomes to disengage. At two minutes, attention is already deeply captured, so a gentle message may not be enough.</p>
-<p>The order also mattered. Distracted students often know what they should do but can't get themselves to do it. Opening with ‘Having a hard time?’ can feel like another interruption rather than comfort. A failed action suggestion signals a possible emotional obstacle; that's when empathy comes in. Pressure came last because scolding from the start seemed likely to get the app deleted.</p>
-<h2 id="02초--서버가-죽어도-잔소리는-뜬다">0.2 seconds: nudges still appear when the server is down</h2><p>Perhaps it's a server developer's habit, but I started with failure scenarios. The worst failure for a nudging app isn't a server outage. It's an outage stopping the nudge from appearing.</p>
-<p>So I removed the server from the intervention path. Detection → decision → overlay runs entirely on the phone. The server receives logs; it has no say in whether an intervention occurs. Nudges still appear when it's down. Anyone who's operated a service through an outage will understand that choice.</p>
-<p>Detection has two layers. AccessibilityService screen-change events catch entry into a distracting app, backed by polling every 30 seconds. Events are fast but can be missed; polling is slower but returns. Together, they normally respond immediately and recover within 30 seconds in the worst case. That interval reflects battery constraints and aligns with the second intervention. Rule-based decisions also avoid model-inference latency. That's how we arrived at 0.2 seconds.</p>
-<h2 id="보상은-복귀-버튼이-아니라-버틴-시간에-걸었다">Reward sustained focus, not the return button</h2><p>The character and coins weren't just decorative gamification. Three decisions went into them.</p>
-<p>First, rewards and penalties were asymmetric. Returning earns coins; ignoring the nudge reduces character health. Prospect theory suggests losses can feel roughly twice as painful as equivalent gains. With a small student-app reward budget, putting some weight on loss could go further.</p>
-<p>Second, rewards accumulate with time spent back in focus without reopening a distracting app, rather than with pressing ‘return.’ Incentives need to account for abuse. Reward the button, and someone can farm coins by closing a popup and reopening YouTube three seconds later. Reward sustained time, and that trick no longer qualifies.</p>
-<p>Finally, sessions have no target duration. A Pomodoro countdown can turn ‘didn't finish 25 minutes’ into a failure, raising the barrier to starting again. Our metric is returning to study, not completing a timer, so the screen shows elapsed time instead.</p>
-<h2 id="진짜-설계는-화면이-아니라-로그였다">The real design was in the logs, not the screens</h2><p>My backend habits showed up most clearly elsewhere. While the team sketched screens, I sketched table schemas. If I had to name the design I worked hardest on, it wasn't the messages or character. It was the logging schema.</p>
-<p>We made 600 messages across three stages and three tones—gentle, neutral, and harsh—and encoded those coordinates in message IDs. For example, <code>s1t2_034</code> identifies the second stage, harsh tone, and message 34. Every intervention records which message appeared, at what stage, over which app, and how the user responded after how many seconds.</p>
-<p>The key field is <code>outcome</code>. The system automatically records whether the user returned to studying (<code>returned</code>) or dismissed the nudge (<code>dismissed</code>). <strong>Labels appear without manual labeling.</strong> Ordinary app usage produces reward signals for the future bandit.</p>
-<img width="3420" height="2214" alt="Image" src="/assets/511785cac4cfceea.png" loading="lazy"><p>A side note: AI drafted the 600 messages, and the team reviewed every one. We reassigned incorrect tones, removed lines that went too far, and shortened anything over 26 characters because it made the overlay ugly. After reading 600 nagging messages all day, you start feeling guilty without knowing what you did.</p>
-<h2 id="배포-팀-넷에서-152명으로">Deployment: from four teammates to 152 users</h2><p>We shipped through Google Play internal testing and first dogfooded with our four-person team. The return rate was 73.4%, but it mostly reflected one heavy user. Creators complying with their own app is affection, not convincing data.</p>
-<p>We brought in external users. Final totals: <strong>152 registered users, 91 who received at least one intervention, and 47 weekly active users. Over four weeks, 9,214 interventions produced 6,493 returns—a 70.5% return rate.</strong></p>
-<p>The return rate fell from dogfooding, and that's what I like about it. Among 152 users, some scoff at nudges and others disable notifications altogether. A more diverse sample should change the number; a growing sample that only improved it would deserve scrutiny. The number didn't become worse so much as more honest.</p>
-<img width="1950" height="975" alt="Intervention exposures and return rates by escalation stage" src="/assets/en/zansol-stages.png" loading="lazy"><p>The distribution was interesting. 93.9% of interventions ended at stage one. The carefully designed full-screen third stage appeared only 93 times out of 9,214. What we'd suspected while dogfooding held up at a larger scale: much distraction was forgetfulness, not a collapse of willpower. A popup prompted ‘Oh, right,’ and a return. Many nudges were alarms, not punishments.</p>
-<p>There's a trap here. Stage two returned 41.2%, roughly half of stage one's 72.2%. I initially thought our second-stage messages were poor. That was the wrong interpretation. People responsive to stage one had already returned. Reaching stage two means ignoring the first nudge and staying attached to the screen. The remaining users are inherently harder to bring back. This is survivor bias: a different sample, not necessarily worse wording. Miss that distinction, and you waste effort rewriting stage two.</p>
-<h2 id="ㅋㅋ-공부한다고-해놓고--문구가-승부를-가른다">‘Weren't you supposed to be studying?’: wording matters</h2><p>Breaking results down by message got more interesting. Even within the same stage and tone, individual messages performed differently.</p>
-<img width="2250" height="975" alt="Top and bottom message return rates within the same stage and tone" src="/assets/en/zansol-messages.png" loading="lazy"><p>‘Weren't you supposed to be studying? lol’ had 142 exposures and an 89% return rate. ‘Your competition is solving problems right now’ also ranked highly. At the other end, sarcastic praise such as ‘Amazing job not studying’ sank to 31%. Direct mockery didn't move people; an uncomfortable observation like ‘Same regret, same routine, every day’ did. Mockery seems to turn nudging into picking a fight.</p>
-<p>But there's a boundary: these are observational rankings, not causal effects. A good message may have happened to appear at better moments. The solid takeaway is that observed return rates vary threefold among messages under the same broad conditions, making message selection worth investigating. Optimizing it is V2's task.</p>
-<h2 id="낚일-뻔한-그래프-석-장">Three charts that nearly fooled me</h2><p>A larger service produces more charts, and more charts produce more plausible stories. Here are three I rejected in this analysis.</p>
-<img width="2100" height="930" alt="Share of intervention events accounted for by the ten most active users" src="/assets/en/zansol-user-share.png" loading="lazy"><p>First, the ‘average’ return rate of 70.5%. The top ten users account for 41% of events. Heavy users drive the average. That's common in apps; the mistake is claiming it describes a typical user. An average hides its denominator. User-level metrics need distributions. During dogfooding, one person accounted for about 80%, so this was still a substantial improvement in balance.</p>
-<img width="2100" height="930" alt="Tone exposure and return rates with a warning about self-selection bias" src="/assets/en/zansol-tones.png" loading="lazy"><p>Second, tone: gentle 74.1%, neutral 71.3%, harsh 69.2%. ‘Gentle nudges work better!’ would look great on a slide. We couldn't claim that. Users choose tone during onboarding, and 58% of our 152 users chose harsh. People install an app to be strict with themselves, pick blunt messages, and regret it three days later. They may also be more distracted to begin with. With self-selection, 9,214 events don't make the comparison valid. <strong>A larger sample doesn't remove selection bias. Randomization does.</strong> We excluded that comparison from the report.</p>
-<p>Only 507 of 600 messages got onstage</p>
-<p>Third: of 600 carefully written messages, only 507 were shown. The remaining 93 never appeared in four weeks. Even among those shown, the median was just 14 exposures. Individual-message results are hypotheses, not conclusions. Random selection from the pool still produced this pattern because exposure concentrated in certain stage–tone combinations.</p>
-<p>All three charts point in one direction: <strong>exploration can't be left to people and chance.</strong> Users stay in one tone, exposure concentrates, and comparisons get contaminated. The system needs to decide how to distribute exposure. That's exactly what a bandit does.</p>
-<h2 id="사람은-자기에게-먹히는-잔소리를-모른다">People don't know which nudges work for them</h2><p>Was V2's bandit worth building? Real-data tone comparisons were contaminated by self-selection, so simulation was the place to compare policies fairly. We created a hypothetical user-type matrix—empathetic users responding to gentle tones, pressure-responsive users responding to harsh ones—and simulated 10,000 interventions for 200 users. <strong>Every number in this section comes from synthetic simulation, not live-service performance.</strong></p>
-<p>We compared three policies: random tone selection, a fixed onboarding-selected tone, and per-user learning with Thompson Sampling.</p>
-<img width="2945" height="1763" alt="Simulated policy comparison of rolling return rates across intervention count" src="/assets/en/zansol-policy-returns.png" loading="lazy"><p>The bandit winning—72.0%, 6.7 percentage points above random, and 94.9% of the theoretical upper bound—was expected. The real surprise was the race for second place.</p>
-<p><strong>The user-selected tone, at 65.6%, was effectively tied with random selection at 65.3%.</strong></p>
-<p>That happened even though each simulated user had a clearly optimal tone. Self-perception errors—an empathy-responsive user believing they need pressure, for example—canceled the advantage of choosing. People don't necessarily know which nudges work for them. If 58% choosing harsh at onboarding was the observation, this simulation explored how that pattern could reduce system performance. It gave us a reason not to leave personalization entirely to a settings screen.</p>
-<p>I also checked whether learning was actually occurring.</p>
-<img width="4090" height="1695" alt="Simulated early and late tone-selection distributions by user type" src="/assets/en/zansol-tone-heatmap.png" loading="lazy"><p>In the first 1,000 interventions, tones were distributed similarly across user types. In the final 1,000, empathetic users received gentle tones 58% of the time, and pressure-responsive users received harsh tones 48%. User type was a hidden simulation variable; the system didn't know it. It learned from returns and dismissals. That convergence demonstrated personalization within the simulation.</p>
-<p>One more metric: cumulative regret—the accumulated reward missed relative to always choosing the best option. An apt name.</p>
-<img width="2960" height="1762" alt="Simulated policy comparison of cumulative regret" src="/assets/en/zansol-policy-regret.png" loading="lazy"><p>Random selection's regret grows linearly: at the ten-thousandth decision, it still makes mistakes with the same probability as at the first. The learning policy's curve flattens. The more it learns, the less it regrets.</p>
-<p>We also took two practical leads from simulation. An optimistic prior, <code>Beta(5,2)</code>, noticeably accelerated early learning, suggesting we needn't spend a new user's entire first experience on exploration. Personalization also started to matter around 20 interventions per user. At roughly 100 events per user in our dataset, we had enough interaction density for the next experiment.</p>
-<h2 id="남은-것">What remains</h2><p>Our V2 gates were 1,500 accumulated events and 50 weekly active users. We passed one sixfold with 9,214 events and missed the other by three users at 47. The bottleneck was still people, not technology. Heavy users can produce events, but a bandit needs to learn differences between people. Event volume can't replace headcount.</p>
-<p>The observational-data limitation remains. Without an A/B test, we don't know whether the 70.5% return rate reflects the nudges or people who would have returned anyway.</p>
-<p>Still, I think our early decision was right: with zero data, build a place for the model before squeezing a model in. By the end of the semester, our ‘ML project without ML’ had nearly ten thousand labeled events, a working collection pipeline, and a next step explored through simulation.</p>
-<p>We don't yet have the model. We do have a foundation for it.</p>
-<p>When we fill that space, there's one thing I want to find out first: what kind of nudge will the trained model choose for me?</p>
+<p>시점 세 개도 감으로 정한 게 아닙니다. 즉시 개입은 사고 흐름이 영상 쪽으로 넘어가기 전, 그러니까 1초 안에 들어가야 하고, 30초는 화면에 오래 머물수록 못 빠져나온다는 screenertia 연구에서 짧은 체류와 고착이 갈리는 지점이고, 2분이면 이미 완전히 빨려 들어간 상태라 점잖은 말이 안 통합니다.</p>
+<p>순서에도 이유가 있습니다. 딴짓하는 사람은 해야 할 걸 몰라서 안 하는 게 아니라 알면서 못 하는 상태입니다. 그런 사람한테 다짜고짜 "힘들지?" 하고 들어가면 위로가 아니라 방해가 됩니다. 행동 제안이 실패했다는 것 자체가 감정이 막혀 있다는 신호고, 그때가 공감 차례입니다. 압박은 맨 뒤로 뺐습니다. 왜냐하면 처음부터 혼내면 앱을 지울 거라고 생각했기 떄문입니다.</p>
+<h2 id="02초--서버가-죽어도-잔소리는-뜬다">0.2초 — 서버가 죽어도 잔소리는 뜬다</h2>
+<p>서버 하던 사람 버릇인지, 설계하면서 장애 시나리오부터 생각하게 됩니다. 잔소리 앱한테 최악의 장애가 뭘까요? 서버가 죽는 게 아닙니다. 서버가 죽는 바람에 잔소리가 안 뜨는 겁니다.</p>
+<p>그래서 서버를 개입 경로에서 빼버렸습니다. 감지→판정→오버레이로 이어지는 핵심 루프는 전부 폰 안에서 돕니다. 서버는 로그나 받아 가는 처지고, 개입 자체에는 발언권이 없습니다. 서버가 내려가 있어도 잔소리는 뜹니다. 장애를 겪어본 사람일수록 이해할 결정이라고 생각합니다.</p>
+<p>감지는 두 겹으로 짰습니다. AccessibilityService의 화면 전환 이벤트가 딴짓 앱 진입의 찰나를 잡고, 30초 주기 폴링이 뒤를 받칩니다. 이벤트는 빠르지만 놓치면 그만이고, 폴링은 느리지만 반드시 돌아옵니다. 겹치면 평상시엔 즉시 반응, 최악의 경우에도 30초 안에 복구입니다. 폴링 주기가 하필 30초인 건 배터리 사정도 있지만 2차 개입 시점(30초)이랑 맞물리게 하려는 것이기도 합니다. 판정이 규칙 기반이라 모델 추론 지연 같은 변수는 애초에 없고요. 0.2초는 그렇게 나온 숫자입니다.</p>
+<h2 id="보상은-복귀-버튼이-아니라-버틴-시간에-걸었다">보상은 '복귀 버튼'이 아니라 '버틴 시간'에 걸었다</h2>
+<p>캐릭터랑 코인도 그냥 붙인 게임화가 아니라, 결정이 세 개 들어 있습니다.</p>
+<p>먼저 페널티를 비대칭으로 뒀습니다. 복귀하면 코인을 받지만 무시하면 캐릭터 체력이 깎입니다. 사람은 같은 크기의 이득보다 손실을 두 배쯤 아프게 느낀다는 게 전망 이론이 하는 얘기고, 학생 앱의 보상 예산이라 해봐야 코인 몇 개라, 같은 예산이면 손실 쪽에 거는 게 더 멀리 갑니다.</p>
+<p>다음으로 보상을 "복귀 버튼 누르기"가 아니라 "복귀한 뒤 딴짓 앱을 다시 안 열고 버틴 시간"에 비례해서 누적시켰습니다. 인센티브를 설계할 때는 어뷰징부터 생각해야 합니다. 보상이 버튼에 걸려 있으면 팝업 닫고 3초 뒤에 유튜브를 다시 여는 코인 파밍이 성립하는데, 유지 시간에 걸어버리면 그 꼼수는 정의상 성립을 못 합니다.</p>
+<p>마지막으로 세션에 목표 시간을 없앴습니다. Pomodoro식 카운트다운은 "25분 못 채움"이라는 실패감을 만들고, 실패감은 다음 세션의 진입 장벽이 됩니다. 우리 지표는 복귀지 시간 채우기가 아니라서, 화면에는 경과 시간만 흐릅니다.</p>
+<h2 id="진짜-설계는-화면이-아니라-로그였다">진짜 설계는 화면이 아니라 로그였다</h2>
+<p>저의 백엔드하던 버릇이 제일 크게 남은 데는 따로 있습니다. 팀이 화면 시안을 그리는 동안 저는 테이블 스키마부터 그렸습니다. 이 프로젝트에서 제일 공들인 설계를 하나만 꼽으라면 잔소리 문구도 캐릭터도 아니고 이 로그 스키마입니다.</p>
+<p>잔소리 600개를 3단계 × 3톤(약하게/보통/세게) 9개 조합으로 만들고, 메시지 ID에 좌표를 그대로 박았습니다. <code>s1t2_034</code>면 2단계·독설 톤·34번 메시지. 잔소리가 뜰 때마다 이벤트가 한 줄 쌓입니다. 어떤 메시지가, 몇 번째 개입에서, 무슨 앱을 쓰다가 떴고, 유저가 몇 초 만에 어떻게 반응했는지.</p>
+<p>핵심은 <code>outcome</code> 필드입니다. 잔소리가 뜨고 나서 유저가 공부로 돌아왔는지(returned) 무시했는지(dismissed)가 자동으로 찍힙니다. <strong>아무도 라벨링하지 않았는데 라벨이 생기는 겁니다.</strong> 앱이 그냥 돌아가는 것만으로 미래의 Bandit이 먹을 보상 신호가 쌓이는 구조입니다.</p>
+<img width="3420" height="2214" alt="Image" src="/assets/511785cac4cfceea.png" loading="lazy"><p>여담인데 잔소리 600개는 초안을 AI한테 시키고 팀이 전수 검수했습니다. 톤 분류가 틀린 걸 재배치하고, 선 넘는 문구를 빼고, 26자 넘으면 오버레이가 못 생겨져서 줄이고. 잔소리 600개를 하루 종일 읽다 보면 뭘 잘못했는지도 모르면서 일단 반성하게 됩니다.</p>
+<h2 id="배포-팀-넷에서-152명으로">배포: 팀 넷에서 152명으로</h2>
+<p>Google Play 내부 테스트로 배포하고 처음엔 팀 넷이서 도그푸딩을 했습니다. 이 시기 복귀율이 73.4%였는데, 사실상 팀 내 최다 사용자 한 명의 기록이나 다름없었습니다. 만든 사람들이 자기 앱에 순응하는 건 데이터가 아니라 애정입니다.</p>
+<p>그래서 외부 유저를 받아서 판을 키웠습니다. 최종 집계는 이렇습니다. <strong>등록 152명, 개입을 한 번이라도 받은 유저 91명, 주간 활성 47명. 4주간 개입 9,214건, 복귀 6,493건 — 복귀율 70.5%.</strong></p>
+<p>복귀율이 도그푸딩 시절보다 떨어졌습니다. 저는 이게 이 숫자에서 제일 마음에 드는 부분입니다. 152명 안에는 잔소리에 코웃음 치는 사람도 있고 알림을 통째로 꺼놓는 사람도 있습니다. 표본이 다양해지면 숫자는 내려가는 게 정상이고, 규모를 키웠는데 지표가 올랐다면 그게 오히려 수상한 겁니다. 숫자가 나빠진 게 아니라 정직해진 겁니다.</p>
+<img width="1950" height="975" alt="Image" src="/assets/1437dc76f23edc13.png" loading="lazy"><p>분포가 재미있습니다. 개입의 93.9%가 1차 잔소리 선에서 끝났습니다. 만들 때 제일 살벌하게 공들인 3차 전체화면은 9,214건 중에 93번밖에 출동을 안 했습니다. 도그푸딩 때 어렴풋이 느꼈던 게 규모에서 확인됐는데, 딴짓의 상당수는 의지가 무너진 게 아니라 그냥 까먹은 겁니다. 잔소리가 뜨면 "아 맞다" 하고 돌아갑니다. 잔소리의 절반은 회초리가 아니라 알람이었던 거죠.</p>
+<p>여기 함정이 하나 있습니다. 2차 개입 복귀율이 41.2%로 1차(72.2%)의 반토막인데, 처음엔 저도 "2차 잔소리가 구리네"라고 생각했습니다. 틀린 해석입니다. 1차에서 돌아올 사람은 이미 1차에서 돌아갔고, 2차까지 갔다는 건 첫 잔소리를 무시할 만큼 화면에 붙어버렸다는 뜻입니다. 남은 손님이 원래 어려운 손님인 겁니다. 생존자 편향이고, 2차 문구의 품질 문제가 아니라 표본의 성질이 변한 겁니다. 이걸 구분 못 하면 "2차 문구 갈아엎자" 같은 엉뚱한 데 공수를 씁니다.</p>
+<h2 id="ㅋㅋ-공부한다고-해놓고--문구가-승부를-가른다">"ㅋㅋ 공부한다고 해놓고" — 문구가 승부를 가른다</h2>
+<p>메시지 단위로 쪼개면 더 재미있어집니다. 같은 1차, 같은 톤 안에서도 문구별 성적이 갈립니다.</p>
+<img width="2250" height="975" alt="Image" src="/assets/2c45d844fa16aa4c.png" loading="lazy"><p>"ㅋㅋ 공부한다고 해놓고"가 노출 142회에 복귀율 89%. "경쟁자는 지금 문제 풀고 있어"도 상위권입니다. 반대쪽 끝에는 "공부 안 하는 너 진짜 멋있다" 같은 비꼬기가 31%로 바닥을 깁니다. 정면 비아냥은 사람을 못 움직이고, 허를 찌르는 팩트("매일 후회하면서 매일 반복하네")는 움직입니다. 비꼬면 잔소리가 아니라 시비가 되는 모양입니다.</p>
+<p>다만 선은 긋고 갑니다. 이건 관찰 데이터 랭킹이지 인과가 아닙니다. 좋은 문구가 좋은 순간에 우연히 더 노출됐을 수도 있습니다. 이 그래프에서 확정으로 가져갈 결론은 하나뿐입니다. 같은 조건에서도 문구에 따라 복귀율이 세 배 갈린다는 것, 그러니까 문구 선택은 최적화할 가치가 있는 변수라는 것. 그 최적화가 V2에 넘길 숙제입니다.</p>
+<h2 id="낚일-뻔한-그래프-석-장">낚일 뻔한 그래프 석 장</h2>
+<p>규모가 생기면 그래프가 많아지고, 그래프가 많아지면 그럴싸한 거짓말도 많아집니다. 이번 분석에서 걷어낸 것 세 개만 보여드리겠습니다.</p>
+<img width="2100" height="930" alt="Image" src="/assets/b05da13a0565b758.png" loading="lazy"><p>첫째, 전체 복귀율 70.5%라는 "평균". 유저별로 열어보면 상위 10명이 전체 이벤트의 41%를 차지합니다. 헤비유저의 행동이 평균을 끌고 다닌다는 얘기입니다. 헤비유저 스큐 자체는 어느 앱에나 있어서 문제가 아닌데, 이걸 두고 "우리 유저는 평균적으로 이렇다"라고 말하는 순간 거짓말이 됩니다. 평균은 분모를 감춥니다. 유저 단위 지표는 분포로 봐야 합니다. (도그푸딩 시절엔 한 명이 8할이었으니 이 정도로 완만해진 것만도 장족의 발전이긴 합니다.)</p>
+<img width="2100" height="930" alt="Image" src="/assets/3cddc9af2c7b5c9f.png" loading="lazy"><p>둘째는 톤입니다. 톤별 복귀율을 뽑으면 약하게 74.1%, 보통 71.3%, 세게 69.2%. "부드러운 잔소리가 더 효과적입니다!" — 발표 슬라이드에 넣기 딱 좋은 문장이죠. 못 넣습니다. 톤은 유저가 온보딩에서 직접 고르는데 152명 중 58%가 독한 톤을 골랐습니다. 다들 자기한테 엄격한 앱을 깔면서 독설을 고르고, 사흘 뒤에 후회합니다. 문제는 독한 톤을 고른 사람들이 애초에 딴짓이 심한 사람들일 수 있다는 겁니다. 자기선택이 끼어 있는 한 톤 비교는 n이 9,214건이어도 성립하지 않습니다. <strong>표본을 키워도 selection bias는 안 사라집니다. 이걸 고치는 건 유저 수가 아니라 랜덤화입니다.</strong> 이 비교는 그래서 보고서에서 뺐습니다.</p>
+<p>600개 중 507개만 무대에 올랐다</p>
+<p>셋째. 정성껏 만든 잔소리 600개 중에 실제로 노출된 건 507개입니다. 꼬리 93개는 4주 동안 한 번도 무대에 못 올랐고, 노출된 것들도 중앙값 14회 수준이라 개별 메시지 성적은 아직 가설 후보지 결론이 아닙니다. 풀에서 랜덤으로 뽑는데도 이렇게 됩니다. 노출이 특정 단계·특정 톤 조합에 쏠리니까요.</p>
+<p>석 장이 가리키는 방향은 하나입니다. <strong>탐색을 사람과 우연에 맡기면 안 된다.</strong> 유저는 한 가지 톤에 고이고, 노출은 구석에 쏠리고, 비교는 오염됩니다. 노출 배분 자체를 시스템의 결정으로 만들어야 하고, 그게 정확히 Bandit이 하는 일입니다.</p>
+<h2 id="사람은-자기에게-먹히는-잔소리를-모른다">사람은 자기에게 먹히는 잔소리를 모른다</h2>
+<p>그래서 V2의 Bandit은 진짜 만들 가치가 있나. 실데이터의 톤 비교가 자기선택으로 오염된 이상, 정책끼리 공정하게 붙여볼 수 있는 데는 시뮬레이션뿐입니다. "공감형 유저는 부드러운 톤에 잘 돌아오고 압박형은 독설에 잘 돌아온다"는 식으로 유저 타입 가설 행렬을 세우고, 가상 유저 200명한테 개입 10,000회를 돌렸습니다. <strong>이 절의 숫자는 전부 합성 시뮬레이션 결과입니다. 실서비스 성능이 아닙니다.</strong></p>
+<p>비교한 정책은 셋. 톤을 랜덤으로 뿌리기, 유저가 온보딩에서 고른 톤으로 고정하기, Thompson Sampling으로 유저별 학습하기.</p>
+<img width="2945" height="1763" alt="Image" src="/assets/ae684e4653ff5a95.png" loading="lazy"><p>Bandit이 이긴 것 자체(72.0%, 랜덤 대비 +6.7%p, 이론 상한의 94.9%)는 예상 범위였고, 진짜 발견은 2등 싸움이었습니다.</p>
+<p><strong>유저가 직접 고른 톤(65.6%)이 아무거나 랜덤(65.3%)이랑 사실상 같았습니다.</strong></p>
+<p>시뮬레이션 설계상 유저마다 최적 톤이 분명히 존재하는데도 그렇습니다. 공감형인 사람이 자기를 압박형이라 믿고 독설을 고르는 식의 자기 인식 오류가 "직접 골랐다"는 이점을 다 상쇄해버리는 겁니다. 사람은 자기에게 먹히는 잔소리를 모릅니다. 앞에서 본 "온보딩에서 58%가 독설을 고른다"가 현상이라면, 이건 그 현상이 시스템 성능을 얼마나 깎는지에 대한 답입니다. 개인화를 설정 화면에 맡기면 안 되는 이유가 숫자로 나왔습니다.</p>
+<p>학습이 진짜 일어나는지도 열어봤습니다.</p>
+<img width="4090" height="1695" alt="Image" src="/assets/c25e4a51b67b2eeb.png" loading="lazy"><p>처음 1,000회 구간에서는 모든 유저 타입한테 톤이 비슷비슷하게 뿌려집니다. 마지막 1,000회 구간에서는 공감형한테 부드러운 톤이 58%, 압박형한테 독설이 48%로 쏠려 있습니다. 유저 타입은 시뮬레이션의 숨겨진 변수라서 시스템은 모릅니다. 돌아왔는지 무시했는지만 보고 알아낸 겁니다. 이 수렴이 개인화 학습이 작동한다는 직접 증거입니다.</p>
+<p>지표 하나만 더 소개하겠습니다. 누적 후회(cumulative regret) — 매번 최적을 골랐을 때와 비교해 놓친 보상의 누적량입니다. 이름을 잘 지었다고 생각합니다.</p>
+<img width="2960" height="1762" alt="Image" src="/assets/055a01df6934260f.png" loading="lazy"><p>랜덤 정책의 후회는 직선으로 자랍니다. 1만 번째 실수에서도 첫 번째랑 똑같은 확률로 틀리니까요. 학습하는 정책의 후회 곡선은 갈수록 완만해집니다. 배운 만큼 덜 후회하는 겁니다.</p>
+<p>시뮬레이션에서 실무용 답도 두 개 챙겼습니다. 초기 prior를 낙관적으로 주면(성공 쪽으로 기울인 Beta(5,2)) 서비스 초반 학습이 눈에 띄게 빨라진다는 것 — 신규 유저의 첫 경험을 탐색 비용으로 다 태우지 않아도 된다는 뜻입니다. 그리고 유저당 개입 20회 언저리부터 개인화가 의미를 갖기 시작한다는 것 — 저희 규모(유저당 평균 100회 수준)면 학습에 필요한 밀도는 이미 넘겼다는 확인입니다.</p>
+<h2 id="남은-것">남은 것</h2>
+<p>V2로 넘어가는 조건은 두 개였습니다. 누적 이벤트 1,500건, 주간 활성 유저 50명. 하나는 여섯 배로 넘겼고(9,214건) 하나는 세 명이 모자랍니다(47명). 병목은 끝까지 기술이 아니라 사람이었습니다. 이벤트야 헤비유저가 쌓아주지만 Bandit이 배워야 하는 건 사람들 사이의 차이라서, 머릿수는 다른 걸로 대체가 안 됩니다.</p>
+<p>대조군 없는 관찰 데이터라는 한계도 그대로 남아 있습니다. 70.5%가 잔소리의 효과인지, 잔소리 없이도 돌아왔을 사람들인지는 A/B 테스트 전까지 모릅니다.</p>
+<p>그래도 학기 초의 그 결정 — 데이터 0건인 상태에서 모델을 욱여넣지 않고 모델이 설 자리를 먼저 만든 것 — 은 옳았다고 생각합니다. 덕분에 "ML 없는 ML 프로젝트"는 학기가 끝난 지금 만 건 규모의 라벨 달린 데이터와 검증된 수집 구조, 시뮬레이션으로 확인한 다음 스텝을 가진 프로젝트가 됐습니다.</p>
+<p>모델은 아직 없으나 저희는 모델이 설 자리를 확고히 만들었습니다.</p>
+<p>그 자리가 채워지면 제일 먼저 확인하고 싶은 게 있습니다. 학습을 마친 모델이 저한테는 어떤 잔소리를 할까요?</p>
 </body></html>
         </div>
       </article>
-    <nav class="post-nav" aria-label="Previous and next posts">
+    <nav class="post-nav" aria-label="이전/다음 글">
       <a class="post-nav-item post-nav-item--prev" href="/posts/production-database-migration/">
-        <span class="post-nav-label">previous post</span>
-        <span class="post-nav-title">Moving a Production Database: Pressing a Button You Can&#39;t Undo</span>
+        <span class="post-nav-label">이전 글</span>
+        <span class="post-nav-title">운영 DB 옮기기: 되돌릴 수 없는 버튼 누르기</span>
       </a>
       <a class="post-nav-item post-nav-item--next" href="/posts/design-context-to-code/">
-        <span class="post-nav-label">next post</span>
-        <span class="post-nav-title">Turning ‘Make It Look Good’ into Code</span>
+        <span class="post-nav-label">다음 글</span>
+        <span class="post-nav-title">&quot;예쁘게&quot;를 코드로 옮기는 법</span>
       </a>
     </nav>
       <nav class="post-back">
-        <a href="/">← back to posts</a>
+        <a href="/">← 글 목록으로</a>
       </nav>
     </div>
-    <aside class="toc" id="toc" aria-label="Contents">
-      <p class="toc-title">contents</p>
+    <aside class="toc" id="toc" aria-label="목차">
+      <p class="toc-title">목차</p>
       <ul class="toc-list">
-        <li class="toc-item toc-item--h2"><a href="#왜-하필-잔소리인가" data-target="왜-하필-잔소리인가">Why nudging?</a></li>
-        <li class="toc-item toc-item--h2"><a href="#만들고-싶었던-것-사람을-가려-긁는-잔소리" data-target="만들고-싶었던-것-사람을-가려-긁는-잔소리">What we wanted: nudges that work for each person</a></li>
-        <li class="toc-item toc-item--h2"><a href="#그래서-ml을-뺐습니다" data-target="그래서-ml을-뺐습니다">So we took the ML out</a></li>
-        <li class="toc-item toc-item--h2"><a href="#규칙은-회의실에서-정하면-안-된다" data-target="규칙은-회의실에서-정하면-안-된다">Rules shouldn&#39;t come from a meeting room</a></li>
-        <li class="toc-item toc-item--h2"><a href="#02초--서버가-죽어도-잔소리는-뜬다" data-target="02초--서버가-죽어도-잔소리는-뜬다">0.2 seconds: nudges still appear when the server is down</a></li>
-        <li class="toc-item toc-item--h2"><a href="#보상은-복귀-버튼이-아니라-버틴-시간에-걸었다" data-target="보상은-복귀-버튼이-아니라-버틴-시간에-걸었다">Reward sustained focus, not the return button</a></li>
-        <li class="toc-item toc-item--h2"><a href="#진짜-설계는-화면이-아니라-로그였다" data-target="진짜-설계는-화면이-아니라-로그였다">The real design was in the logs, not the screens</a></li>
-        <li class="toc-item toc-item--h2"><a href="#배포-팀-넷에서-152명으로" data-target="배포-팀-넷에서-152명으로">Deployment: from four teammates to 152 users</a></li>
-        <li class="toc-item toc-item--h2"><a href="#ㅋㅋ-공부한다고-해놓고--문구가-승부를-가른다" data-target="ㅋㅋ-공부한다고-해놓고--문구가-승부를-가른다">‘Weren&#39;t you supposed to be studying?’: wording matters</a></li>
-        <li class="toc-item toc-item--h2"><a href="#낚일-뻔한-그래프-석-장" data-target="낚일-뻔한-그래프-석-장">Three charts that nearly fooled me</a></li>
-        <li class="toc-item toc-item--h2"><a href="#사람은-자기에게-먹히는-잔소리를-모른다" data-target="사람은-자기에게-먹히는-잔소리를-모른다">People don&#39;t know which nudges work for them</a></li>
-        <li class="toc-item toc-item--h2"><a href="#남은-것" data-target="남은-것">What remains</a></li>
+        <li class="toc-item toc-item--h2"><a href="#왜-하필-잔소리인가" data-target="왜-하필-잔소리인가">왜 하필 잔소리인가</a></li>
+        <li class="toc-item toc-item--h2"><a href="#만들고-싶었던-것-사람을-가려-긁는-잔소리" data-target="만들고-싶었던-것-사람을-가려-긁는-잔소리">만들고 싶었던 것: 사람을 가려 긁는 잔소리</a></li>
+        <li class="toc-item toc-item--h2"><a href="#그래서-ml을-뺐습니다" data-target="그래서-ml을-뺐습니다">그래서 ML을 뺐습니다</a></li>
+        <li class="toc-item toc-item--h2"><a href="#규칙은-회의실에서-정하면-안-된다" data-target="규칙은-회의실에서-정하면-안-된다">규칙은 회의실에서 정하면 안 된다</a></li>
+        <li class="toc-item toc-item--h2"><a href="#02초--서버가-죽어도-잔소리는-뜬다" data-target="02초--서버가-죽어도-잔소리는-뜬다">0.2초 — 서버가 죽어도 잔소리는 뜬다</a></li>
+        <li class="toc-item toc-item--h2"><a href="#보상은-복귀-버튼이-아니라-버틴-시간에-걸었다" data-target="보상은-복귀-버튼이-아니라-버틴-시간에-걸었다">보상은 &#39;복귀 버튼&#39;이 아니라 &#39;버틴 시간&#39;에 걸었다</a></li>
+        <li class="toc-item toc-item--h2"><a href="#진짜-설계는-화면이-아니라-로그였다" data-target="진짜-설계는-화면이-아니라-로그였다">진짜 설계는 화면이 아니라 로그였다</a></li>
+        <li class="toc-item toc-item--h2"><a href="#배포-팀-넷에서-152명으로" data-target="배포-팀-넷에서-152명으로">배포: 팀 넷에서 152명으로</a></li>
+        <li class="toc-item toc-item--h2"><a href="#ㅋㅋ-공부한다고-해놓고--문구가-승부를-가른다" data-target="ㅋㅋ-공부한다고-해놓고--문구가-승부를-가른다">&quot;ㅋㅋ 공부한다고 해놓고&quot; — 문구가 승부를 가른다</a></li>
+        <li class="toc-item toc-item--h2"><a href="#낚일-뻔한-그래프-석-장" data-target="낚일-뻔한-그래프-석-장">낚일 뻔한 그래프 석 장</a></li>
+        <li class="toc-item toc-item--h2"><a href="#사람은-자기에게-먹히는-잔소리를-모른다" data-target="사람은-자기에게-먹히는-잔소리를-모른다">사람은 자기에게 먹히는 잔소리를 모른다</a></li>
+        <li class="toc-item toc-item--h2"><a href="#남은-것" data-target="남은-것">남은 것</a></li>
       </ul>
     </aside>
   </main>
-  <script src="/app.js?v=3eb51ad7"></script>
+  <script src="/app.js?v=fc2a680d"></script>
 </body>
 </html>

@@ -1,11 +1,8 @@
-name: Rebuild from Issues
+name: Rebuild site
 
 on:
-  # Posts are closed GitHub Issues authored by the owner (minus `excluded`).
-  # Publish = close, edit = edit body, unpublish = reopen / add `excluded` / delete.
-  issues:
-    types: [closed, reopened, edited, deleted, labeled, unlabeled]
-  # Rebuild when the generator or assets change (but not the generated output).
+  # Posts are Markdown files in content/posts/. Rebuild when a post, the
+  # generator, or an asset changes (but not the generated output).
   push:
     branches: [main]
     paths-ignore:
@@ -13,12 +10,11 @@ on:
       - 'posts/**'
       - 'sitemap.xml'
       - 'robots.txt'
-      - '**.md'
+      - 'README.md'
   workflow_dispatch:
 
 permissions:
   contents: write
-  issues: read
 
 concurrency:
   group: rebuild
@@ -30,7 +26,7 @@ jobs:
     steps:
       - uses: actions/checkout@v4
         with:
-          # Queued issue events can point to an older commit than the last rebuild.
+          # Queued runs can point to an older commit than the last rebuild.
           ref: main
 
       - uses: actions/setup-node@v4
@@ -42,11 +38,9 @@ jobs:
 
       - name: Build
         run: node scripts/build.js
-        env:
-          GITHUB_TOKEN: ${{ github.token }}
 
       - name: Validate generated site
-        run: npm run test:portfolio && npm run test:translations
+        run: npm test
 
       - name: Commit if changed
         env:
@@ -55,13 +49,13 @@ jobs:
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
           for attempt in 1 2 3; do
-            git add -A index.html posts sitemap.xml robots.txt assets about work writing
+            git add -A index.html posts sitemap.xml robots.txt assets writing
             if git diff --staged --quiet; then
               echo "No changes — skipping commit."
               exit 0
             fi
             base=$(git rev-parse HEAD)
-            git commit -m "rebuild: sync from issues $(date -u +%Y-%m-%d) [skip ci]"
+            git commit -m "rebuild: regenerate site $(date -u +%Y-%m-%d) [skip ci]"
             if git push origin HEAD:main; then
               exit 0
             fi
@@ -78,6 +72,5 @@ jobs:
             git reset --hard origin/main
             npm install --no-package-lock
             node scripts/build.js
-            npm run test:portfolio
-            npm run test:translations
+            npm test
           done

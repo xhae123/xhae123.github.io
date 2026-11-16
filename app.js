@@ -1,4 +1,48 @@
 (() => {
+  // Theme toggle. The page follows the system setting until the reader picks a
+  // theme; the inline script in <head> re-applies a stored choice before paint.
+  const themeToggle = document.querySelector('[data-theme-toggle]');
+  if (themeToggle) {
+    const root = document.documentElement;
+    const systemDark = window.matchMedia('(prefers-color-scheme: dark)');
+    const systemTheme = () => (systemDark.matches ? 'dark' : 'light');
+    const activeTheme = () => root.dataset.theme || systemTheme();
+    const render = () => {
+      const label = activeTheme() === 'dark' ? '라이트 모드로 전환' : '다크 모드로 전환';
+      themeToggle.setAttribute('aria-label', label);
+      themeToggle.title = label;
+    };
+    const apply = (theme) => {
+      if (theme === 'light' || theme === 'dark') root.dataset.theme = theme;
+      else delete root.dataset.theme;
+      render();
+    };
+    const stored = () => {
+      try { return localStorage.getItem('theme'); } catch { return null; }
+    };
+    themeToggle.addEventListener('click', () => {
+      const next = activeTheme() === 'dark' ? 'light' : 'dark';
+      // Picking what the system already shows clears the choice, so the page
+      // goes back to following the system setting.
+      const choice = next === systemTheme() ? null : next;
+      try {
+        if (choice) localStorage.setItem('theme', choice);
+        else localStorage.removeItem('theme');
+      } catch { /* storage unavailable: the choice lasts for this page only */ }
+      apply(choice);
+    });
+    systemDark.addEventListener('change', render);
+    // Keep other tabs, and pages restored from the back/forward cache, in step.
+    window.addEventListener('storage', (event) => {
+      if (event.key === 'theme' || event.key === null) apply(stored());
+    });
+    window.addEventListener('pageshow', (event) => {
+      if (event.persisted) apply(stored());
+    });
+    themeToggle.hidden = false;
+    render();
+  }
+
   // Shared figure galleries. Native scrolling also works without this enhancement.
   document.querySelectorAll('[data-gallery]').forEach((gallery, galleryIndex) => {
     const track = gallery.querySelector(':scope > ol');

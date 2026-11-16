@@ -1,6 +1,5 @@
+/* Light and dark colors come from theme.css, which blog.css maps onto these names. */
 :root {
-  color-scheme: light dark;
-
   --color-bg: #ffffff;
   --color-text: #191f28;
   --color-text-sub: #6b7684;
@@ -23,28 +22,6 @@
   --font-mono: 'JetBrains Mono', ui-monospace, Menlo, Monaco, Consolas, monospace;
 
   --header-h: 64px;
-}
-
-@media (prefers-color-scheme: dark) {
-  :root {
-    --color-bg: #131519;
-    --color-text: #e9eaee;
-    --color-text-sub: #9aa1ac;
-    --color-text-mute: #6e7580;
-    --color-border: #2b2e35;
-    --color-border-faint: #1f2126;
-    --color-hover: rgba(190, 190, 190, 0.12);
-    --color-accent: #e5a0b3;
-    --color-accent-weak: rgba(229, 160, 179, 0.4);
-    --color-selection: rgba(229, 160, 179, 0.28);
-    --color-code-bg: rgba(190, 190, 190, 0.14);
-    --color-header-bg: rgba(19, 21, 25, 0.85);
-    --color-toolbar-bg: rgba(19, 21, 25, 0.93);
-    --color-thumb-border: rgba(255, 255, 255, 0.08);
-    --color-pre-bg: #0d1117;
-    --color-pre-text: #c9d1d9;
-    --color-pre-lang: rgba(201, 209, 217, 0.45);
-  }
 }
 
 * {
@@ -817,6 +794,45 @@ a:focus-visible,
   text-transform: uppercase;
   pointer-events: none;
 }
+
+/* Syntax colors for the classes highlight.js writes at build time. The groups
+   follow its GitHub theme; the values are theme.css tokens so they change
+   with the page theme. */
+.post-body .hljs-keyword,
+.post-body .hljs-selector-tag { color: var(--hl-keyword); }
+.post-body .hljs-title { color: var(--hl-title); }
+.post-body .hljs-string,
+.post-body .hljs-regexp { color: var(--hl-string); }
+.post-body .hljs-comment,
+.post-body .hljs-code,
+.post-body .hljs-formula { color: var(--hl-comment); }
+.post-body .hljs-doctag,
+.post-body .hljs-template-tag,
+.post-body .hljs-template-variable,
+.post-body .hljs-type,
+.post-body .hljs-variable.language_ { color: var(--hl-type); }
+.post-body .hljs-attr,
+.post-body .hljs-attribute,
+.post-body .hljs-literal,
+.post-body .hljs-meta,
+.post-body .hljs-number,
+.post-body .hljs-operator,
+.post-body .hljs-variable,
+.post-body .hljs-selector-attr,
+.post-body .hljs-selector-class,
+.post-body .hljs-selector-id { color: var(--hl-constant); }
+.post-body .hljs-built_in,
+.post-body .hljs-symbol { color: var(--hl-variable); }
+.post-body .hljs-name,
+.post-body .hljs-quote,
+.post-body .hljs-selector-pseudo { color: var(--hl-tag); }
+.post-body .hljs-subst { color: var(--hl-plain); }
+.post-body .hljs-section { color: var(--hl-constant); font-weight: bold; }
+.post-body .hljs-bullet { color: var(--hl-bullet); }
+.post-body .hljs-emphasis { color: var(--hl-plain); font-style: italic; }
+.post-body .hljs-strong { color: var(--hl-plain); font-weight: bold; }
+.post-body .hljs-addition { color: var(--hl-tag); background-color: var(--hl-added-surface); }
+.post-body .hljs-deletion { color: var(--hl-removed); background-color: var(--hl-removed-surface); }
 
 .post-body hr {
   border: none;

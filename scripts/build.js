@@ -5,6 +5,7 @@ import * as cheerio from 'cheerio';
 import hljs from 'highlight.js';
 import { marked } from 'marked';
 import { writeArchive, primaryNavigation } from './archive.js';
+import { themeHead, themeToggle } from './theme.js';
 import { legacyRedirect, localizePostUrls, postRoutes } from './post-routes.js';
 import { requireSemanticArticle, requireSharedEmphasis, requireSharedArticleFrame } from './article-presentation.js';
 import { applyArticleSections } from './article-sections.js';
@@ -376,6 +377,7 @@ function processContent(html) {
 function head({ title, description, canonical, ogImage, ogType, extraHead = '' }) {
   return `  <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  ${themeHead}
   <meta name="google-site-verification" content="${GOOGLE_SITE_VERIFICATION}" />
   <title>woojin kim · ${esc(title.replace(/ · Woojin Kim$/, ''))}</title>
   <meta name="description" content="${esc(description)}" />
@@ -574,7 +576,6 @@ ${head({
   ogImage,
   ogType: 'article',
   extraHead: `
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/github.min.css" />
   <link rel="stylesheet" href="/blog.css?v=gray-2" />
   <meta property="article:published_time" content="${pubISO}" />
   <meta property="article:modified_time" content="${modifiedISO}" />
@@ -607,6 +608,7 @@ ${body}
     <aside class="toc" id="toc" aria-label="목차">${tocHtml}
     </aside>
   </main>
+  ${themeToggle}
   <script src="/app.js?v=${APP_VER}"></script>
 </body>
 </html>

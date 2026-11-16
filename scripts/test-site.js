@@ -25,6 +25,27 @@ async function requireLocalTargets($, file) {
   }
 }
 
+// Each page applies a stored theme before its stylesheets load and offers one toggle.
+function requireThemeSupport($, file) {
+  assert.equal($('meta[name="color-scheme"]').attr('content'), 'light dark', `${file}: follows the system theme by default`);
+  const early = $('head').children().toArray();
+  const script = early.findIndex(el => el.tagName === 'script' && $(el).text().includes("localStorage.getItem('theme')"));
+  const stylesheet = early.findIndex(el => el.tagName === 'link' && $(el).attr('rel') === 'stylesheet');
+  assert.ok(script >= 0 && script < stylesheet, `${file}: stored theme is applied before the stylesheets`);
+  assert.equal($('button[data-theme-toggle][hidden]').length, 1, `${file}: one theme toggle, hidden until scripted`);
+  assert.equal($('link[href*="highlight.js"]').length, 0, `${file}: syntax colors come from the themed stylesheet`);
+}
+
+// theme.css writes the dark palette twice (system setting and stored choice).
+const themeCss = await readFile('theme.css', 'utf8');
+const declarations = block => block.split(';').map(line => line.trim()).filter(Boolean);
+const palettes = [...themeCss.matchAll(/:root(\S*)\s*\{([^}]*)\}/g)].map(([, selector, body]) => [selector, declarations(body)]);
+assert.deepEqual(palettes.map(([selector]) => selector), ['', ':not([data-theme="light"])', '[data-theme="dark"]'], 'theme.css: light palette, then both dark selectors');
+assert.deepEqual(palettes[1][1], palettes[2][1], 'theme.css: both dark palettes are identical');
+const names = list => list.map(line => line.split(':')[0]);
+const fonts = ['--sans', '--mono'];
+assert.deepEqual(names(palettes[1][1]), names(palettes[0][1]).filter(name => !fonts.includes(name)), 'theme.css: dark palette redefines every light color');
+
 const sources = (await readdir('content/posts')).filter(f => f.endsWith('.md'));
 const slugs = sources.map(f => f.slice(0, -3));
 
@@ -39,6 +60,7 @@ for (const file of ['index.html']) {
   assert.equal($('link[href^="/navigation.css"]').length, 1);
   const ids = $('[id]').toArray().map(el => $(el).attr('id'));
   assert.equal(new Set(ids).size, ids.length, `${file}: unique IDs`);
+  requireThemeSupport($, file);
   await requireLocalTargets($, file);
 }
 
@@ -90,6 +112,7 @@ for (const slug of slugs) {
     assert.equal($(el).text(), heading.text(), `${file}: contents label matches its heading`);
   });
   assert.equal($('img[src^="/assets/en/"]').length, 0, `${file}: no English figure variants`);
+  requireThemeSupport($, file);
   await requireLocalTargets($, file);
   const item = home(`.feed .item[href="/posts/${slug}/"]`);
   assert.equal(item.find('.i-title').text(), title, `${file}: archive title`);

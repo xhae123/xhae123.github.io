@@ -8,9 +8,11 @@
   unicode-range: U+0030-0039;
 }
 
+/* Light palette. It is also what print uses, whatever the reader chose on screen. */
 :root {
   color-scheme: light;
   --paper: #fcfcfb;
+  --veil: #fcfcfbf2;
   --ink: #333333;
   --body-ink: #4f4f4f;
   --muted: #707070;
@@ -21,6 +23,105 @@
   --highlight: #f7e8ed;
   --quote-surface: #fbf3f5;
   --code-surface: #f1f1ef;
+  --pre-surface: #f5f5f5;
+  --frame-surface: #f2f1ef;
+  --thumb-edge: #0000000f;
+  --dot: #d4d2d0;
+  --track: #56334024;
+  --hl-keyword: #444444;
+  --hl-title: #555555;
+  --hl-string: #606060;
+  --hl-comment: #707070;
+  --hl-plain: #24292e;
+  --hl-type: #d73a49;
+  --hl-constant: #005cc5;
+  --hl-variable: #e36209;
+  --hl-tag: #22863a;
+  --hl-bullet: #735c0f;
+  --hl-added-surface: #f0fff4;
+  --hl-removed: #b31d28;
+  --hl-removed-surface: #ffeef0;
+  --icon-sun: none;
+  --icon-moon: block;
   --sans: 'Plain Numerals', -apple-system, BlinkMacSystemFont, 'Apple SD Gothic Neo', 'Noto Sans KR', system-ui, sans-serif;
   --mono: 'SFMono-Regular', Consolas, 'Liberation Mono', monospace;
+}
+
+/* Dark palette. The page follows the system setting until the reader picks a
+   theme, which the toggle stores as data-theme on <html>. CSS cannot share one
+   block between a media query and an attribute, so the palette is written
+   twice; scripts/test-site.js fails when the two copies differ. */
+@media screen and (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    color-scheme: dark;
+    --paper: #181817;
+    --veil: #181817f2;
+    --ink: #ececea;
+    --body-ink: #c8c8c5;
+    --muted: #969693;
+    --line: #2d2d2b;
+    --rule: #40403d;
+    --accent: #e5a0b3;
+    --accent-soft: #7d4b5a;
+    --highlight: #40272f;
+    --quote-surface: #231c1e;
+    --code-surface: #272726;
+    --pre-surface: #1f1f1e;
+    --frame-surface: #222221;
+    --thumb-edge: #ffffff14;
+    --dot: #4c4c49;
+    --track: #ffffff1f;
+    --hl-keyword: #d0d0cd;
+    --hl-title: #bcbcb9;
+    --hl-string: #a8a8a5;
+    --hl-comment: #8a8a87;
+    --hl-plain: #ececea;
+    --hl-type: #ff7b72;
+    --hl-constant: #79c0ff;
+    --hl-variable: #ffa657;
+    --hl-tag: #7ee787;
+    --hl-bullet: #f2cc60;
+    --hl-added-surface: #033a16;
+    --hl-removed: #ffdcd7;
+    --hl-removed-surface: #67060c;
+    --icon-sun: block;
+    --icon-moon: none;
+  }
+}
+@media screen {
+  :root[data-theme="dark"] {
+    color-scheme: dark;
+    --paper: #181817;
+    --veil: #181817f2;
+    --ink: #ececea;
+    --body-ink: #c8c8c5;
+    --muted: #969693;
+    --line: #2d2d2b;
+    --rule: #40403d;
+    --accent: #e5a0b3;
+    --accent-soft: #7d4b5a;
+    --highlight: #40272f;
+    --quote-surface: #231c1e;
+    --code-surface: #272726;
+    --pre-surface: #1f1f1e;
+    --frame-surface: #222221;
+    --thumb-edge: #ffffff14;
+    --dot: #4c4c49;
+    --track: #ffffff1f;
+    --hl-keyword: #d0d0cd;
+    --hl-title: #bcbcb9;
+    --hl-string: #a8a8a5;
+    --hl-comment: #8a8a87;
+    --hl-plain: #ececea;
+    --hl-type: #ff7b72;
+    --hl-constant: #79c0ff;
+    --hl-variable: #ffa657;
+    --hl-tag: #7ee787;
+    --hl-bullet: #f2cc60;
+    --hl-added-surface: #033a16;
+    --hl-removed: #ffdcd7;
+    --hl-removed-surface: #67060c;
+    --icon-sun: block;
+    --icon-moon: none;
+  }
 }

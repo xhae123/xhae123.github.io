@@ -19,6 +19,8 @@ Run `npm run build` to regenerate the site and `npm test` to check it; neither n
 
 Every article uses the same template and `blog.css`. Markdown `**emphasis**` becomes `<strong>` and receives the shared pink highlight. Blockquotes use the shared blockquote treatment.
 
+Every page has a light and a dark theme. It follows the system setting until the reader uses the toggle, which stores the choice in `localStorage` under `theme` and sets `data-theme` on `<html>`; choosing the theme the system already shows clears the choice again. All colors, including the syntax colors, are tokens in `theme.css`. The dark palette appears there twice, once for the system setting and once for the stored choice, and `npm test` fails when the two copies differ. Print always uses the light palette. Figures are not recolored.
+
 Article source may contain semantic HTML such as figures, captions, tables, and heading IDs. It must not contain stylesheets, inline styles, executable HTML, presentational attributes, custom CSS classes, or the presentational `<b>` tag. Use Markdown emphasis or semantic `<strong>`. The existing `aside.sidebar` and code-language classes are allowed. Syntax-highlighting classes are generated after the source check.
 
 Local section edits live in `content/article-sections/<post-slug>/<heading-id>.html`. Each file starts with its matching `<h2 id="…">` and replaces that section through the next H2 during a build. Missing or ambiguous source headings fail the build. The Markdown file still owns the title, metadata, and all other sections. Preview a section edit offline with `node scripts/preview-article.js <post-slug>` against the existing local page.
